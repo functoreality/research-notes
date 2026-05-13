@@ -26,15 +26,15 @@
   --color-accent: #c2410c;        /* Burnt orange accent */
   
   /* Indent Colors - Refined palette */
-  --indent-0: #0d9488;            /* Teal */
-  --indent-1: #059669;            /* Emerald */
-  --indent-2: #0284c7;            /* Sky */
-  --indent-3: #7c3aed;            /* Violet */
-  --indent-4: #db2777;            /* Pink */
+  --indent-0: #059669;            /* Emerald */
+  --indent-1: #0284c7;            /* Sky */
+  --indent-2: #7c3aed;            /* Violet */
+  --indent-3: #db2777;            /* Pink */
+  --indent-4: #dc2626;            /* Red */
   --indent-5: #ea580c;            /* Orange */
   --indent-6: #ca8a04;            /* Yellow */
   --indent-7: #16a34a;            /* Green */
-  --indent-8: #dc2626;            /* Red */
+  --indent-8: #0d9488;            /* Teal */
   --indent-9: #0891b2;            /* Cyan */
   
   /* Typography Scale */
@@ -66,6 +66,7 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;
 }
 
 body {
