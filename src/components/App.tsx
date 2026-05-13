@@ -40,6 +40,7 @@ export function App({ initialFile, initialLine }: AppProps) {
   const { tabs, activeTab, activeTabId, openTab, closeTab, switchTab } = useTabs();
   const [highlightLine, setHighlightLine] = useState<number | null>(null);
   const fileSelectorRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
   
   const activeFile = activeTab ? data?.files[activeTab.file] : null;
   
@@ -106,18 +107,19 @@ export function App({ initialFile, initialLine }: AppProps) {
   } = useSearch(allLines);
 
   useEffect(() => {
-    if (!data) return;
+    if (!data || initializedRef.current) return;
+    initializedRef.current = true;
     
     if (initialFile) {
       openTab(initialFile, initialLine || null);
       if (initialLine) {
         setHighlightLine(initialLine);
       }
-    } else if (Object.keys(data.files).length > 0) {
+    } else if (Object.keys(data.files).length > 0 && tabs.length === 0) {
       const firstFile = Object.keys(data.files)[0];
       openTab(firstFile, null);
     }
-  }, [initialFile, initialLine, openTab, data]);
+  }, [initialFile, initialLine, openTab, data, tabs.length]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -296,15 +298,6 @@ export function App({ initialFile, initialLine }: AppProps) {
             ⌕
           </button>
           
-          <button 
-            className="icon-btn" 
-            onClick={toggleTheme}
-            title={theme === 'system' ? `跟随系统 (${resolvedTheme === 'dark' ? '深色' : '浅色'})` : theme === 'dark' ? '深色模式' : '浅色模式'}
-            aria-label="切换主题"
-          >
-            {theme === 'system' ? '☍' : theme === 'dark' ? '◐' : '○'}
-          </button>
-          
           <div className="file-selector" ref={fileSelectorRef}>
             <button 
               className="file-selector-btn"
@@ -329,6 +322,15 @@ export function App({ initialFile, initialLine }: AppProps) {
               </div>
             )}
           </div>
+          
+          <button 
+            className="icon-btn" 
+            onClick={toggleTheme}
+            title={theme === 'system' ? `跟随系统 (${resolvedTheme === 'dark' ? '深色' : '浅色'})` : theme === 'dark' ? '深色模式' : '浅色模式'}
+            aria-label="切换主题"
+          >
+            {theme === 'system' ? '☍' : theme === 'dark' ? '◐' : '○'}
+          </button>
         </div>
       </header>
       
