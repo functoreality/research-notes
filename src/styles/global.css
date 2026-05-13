@@ -17,7 +17,7 @@
   --color-text-muted: #718096;    /* Muted text */
   --color-text-light: #a0aec0;    /* Light text */
   
-  /* Accent Colors */
+  --color-active-tab-text: #faf9f7;
   --color-link: #0d9488;          /* Teal for links */
   --color-link-hover: #0f766e;    /* Darker teal on hover */
   --color-highlight: #fef3c7;     /* Warm amber highlight */
@@ -25,7 +25,6 @@
   --color-code: #be185d;          /* Deep pink for code */
   --color-accent: #c2410c;        /* Burnt orange accent */
   
-  /* Indent Colors - Refined palette */
   --indent-0: #059669;            /* Emerald */
   --indent-1: #0284c7;            /* Sky */
   --indent-2: #7c3aed;            /* Violet */
@@ -37,11 +36,9 @@
   --indent-8: #0d9488;            /* Teal */
   --indent-9: #0891b2;            /* Cyan */
   
-  /* Typography Scale */
   --font-display: 'JetBrains Mono', monospace;
   --font-body: 'IBM Plex Mono', monospace;
   
-  /* Spacing Scale (4px base) */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -49,17 +46,46 @@
   --space-5: 20px;
   --space-6: 24px;
   
-  /* Header Height */
   --header-height: 20px;
   
-  /* Border Radius */
   --radius-sm: 3px;
   --radius-md: 6px;
   --radius-lg: 8px;
   
-  /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 200ms ease;
+}
+
+[data-theme="dark"] {
+  --color-ink: #0d1117;
+  --color-ink-light: #161b22;
+  --color-ink-muted: #30363d;
+  
+  --color-paper: #0d1117;
+  --color-paper-dark: #161b22;
+  --color-paper-line: #30363d;
+  
+  --color-text: #c9d1d9;
+  --color-text-muted: #8b949e;
+  --color-text-light: #6e7681;
+  
+  --color-link: #58a6ff;
+  --color-link-hover: #79c0ff;
+  --color-highlight: #3d2a00;
+  --color-highlight-ring: #d29922;
+  --color-code: #ff7b72;
+  --color-accent: #ffa657;
+  
+  --indent-0: #3fb950;
+  --indent-1: #58a6ff;
+  --indent-2: #a371f7;
+  --indent-3: #ff7b72;
+  --indent-4: #f85149;
+  --indent-5: #ffa657;
+  --indent-6: #d29922;
+  --indent-7: #56d364;
+  --indent-8: #39c5cf;
+  --indent-9: #79c0ff;
 }
 
 html, body, #root {
@@ -179,12 +205,12 @@ code {
 }
 
 .tab:hover {
-  color: var(--color-paper);
+  color: var(--color-active-tab-text);
   background-color: var(--color-ink-light);
 }
 
 .tab.active {
-  color: var(--color-paper);
+  color: var(--color-active-tab-text);
   border-bottom-color: var(--color-link);
 }
 
@@ -201,7 +227,7 @@ code {
   justify-content: center;
   border-radius: var(--radius-sm);
   font-size: 12px;
-  color: var(--color-text);
+  color: var(--color-ink-muted);
   cursor: pointer;
   border: none;
   background: transparent;
@@ -358,7 +384,7 @@ code {
 .search-overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(26, 31, 46, 0.6);
+  background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;

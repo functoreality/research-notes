@@ -6,6 +6,24 @@ import { useSearch } from '../hooks/useSearch';
 import { useFolding } from '../hooks/useFolding';
 import type { NotesData } from '../types';
 
+type Theme = 'light' | 'dark' | 'system';
+
+function getSystemTheme(): 'light' | 'dark' {
+  if (typeof window !== 'undefined' && window.matchMedia) {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return 'light';
+}
+
+function getStoredTheme(): Theme {
+  if (typeof window === 'undefined') return 'system';
+  const stored = localStorage.getItem('theme');
+  if (stored === 'light' || stored === 'dark' || stored === 'system') {
+    return stored;
+  }
+  return 'system';
+}
+
 interface AppProps {
   initialFile?: string;
   initialLine?: number;
@@ -16,6 +34,8 @@ export function App({ initialFile, initialLine }: AppProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFileSelector, setShowFileSelector] = useState(false);
+  const [theme, setTheme] = useState<Theme>('system');
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
   
   const { tabs, activeTab, activeTabId, openTab, closeTab, switchTab } = useTabs();
   const [highlightLine, setHighlightLine] = useState<number | null>(null);
@@ -24,6 +44,33 @@ export function App({ initialFile, initialLine }: AppProps) {
   const activeFile = activeTab ? data?.files[activeTab.file] : null;
   
   const folding = useFolding(activeFile?.lines || [], highlightLine);
+  
+  useEffect(() => {
+    const stored = getStoredTheme();
+    setTheme(stored);
+  }, []);
+  
+  useEffect(() => {
+    const resolved = theme === 'system' ? getSystemTheme() : theme;
+    setResolvedTheme(resolved);
+    document.documentElement.setAttribute('data-theme', resolved);
+  }, [theme]);
+  
+  useEffect(() => {
+    if (theme !== 'system') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => setResolvedTheme(getSystemTheme());
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [theme]);
+  
+  const toggleTheme = useCallback(() => {
+    setTheme(prev => {
+      const next: Theme = prev === 'system' ? 'light' : prev === 'light' ? 'dark' : 'system';
+      localStorage.setItem('theme', next);
+      return next;
+    });
+  }, []);
   
   useEffect(() => {
     const base = import.meta.env.BASE_URL || '/';
@@ -247,6 +294,15 @@ export function App({ initialFile, initialLine }: AppProps) {
             aria-label="搜索"
           >
             ⌕
+          </button>
+          
+          <button 
+            className="icon-btn" 
+            onClick={toggleTheme}
+            title={theme === 'system' ? `跟随系统 (${resolvedTheme === 'dark' ? '深色' : '浅色'})` : theme === 'dark' ? '深色模式' : '浅色模式'}
+            aria-label="切换主题"
+          >
+            {theme === 'system' ? '☍' : theme === 'dark' ? '◐' : '○'}
           </button>
           
           <div className="file-selector" ref={fileSelectorRef}>
