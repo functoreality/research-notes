@@ -186,8 +186,10 @@ export function App({ initialFile, initialLine }: AppProps) {
           display: 'flex', 
           alignItems: 'center', 
           flex: 1, 
-          overflow: 'hidden',
-          gap: '1px'
+          overflowX: 'auto',
+          overflowY: 'hidden',
+          gap: '1px',
+          scrollbarWidth: 'none'
         }}>
           {tabs.map(tab => (
             <div

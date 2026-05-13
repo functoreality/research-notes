@@ -175,6 +175,7 @@ code {
   border-bottom: 2px solid transparent;
   transition: all var(--transition-fast);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tab:hover {
@@ -185,6 +186,11 @@ code {
 .tab.active {
   color: var(--color-paper);
   border-bottom-color: var(--color-link);
+}
+
+/* Hide scrollbar for tab container */
+.header-bar > div:first-child::-webkit-scrollbar {
+  display: none;
 }
 
 .tab-close {
