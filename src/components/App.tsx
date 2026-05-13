@@ -7,18 +7,39 @@ import { useSearch } from '../hooks/useSearch';
 import type { NotesData } from '../types';
 
 interface AppProps {
-  data: NotesData;
   initialFile?: string;
   initialLine?: number;
 }
 
-export function App({ data, initialFile, initialLine }: AppProps) {
+export function App({ initialFile, initialLine }: AppProps) {
+  const [data, setData] = useState<NotesData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   const { tabs, activeTab, activeTabId, openTab, closeTab, switchTab } = useTabs();
   const [highlightLine, setHighlightLine] = useState<number | null>(null);
   
+  useEffect(() => {
+    const basePath = import.meta.env.BASE_URL || '/';
+    fetch(`${basePath}data/notes.json`)
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then(json => {
+        setData(json as NotesData);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+  
   const allLines = useMemo(() => {
+    if (!data) return [];
     return Object.values(data.files).flatMap(f => f.lines);
-  }, [data.files]);
+  }, [data]);
   
   const {
     query,
@@ -31,6 +52,8 @@ export function App({ data, initialFile, initialLine }: AppProps) {
   } = useSearch(allLines);
 
   useEffect(() => {
+    if (!data) return;
+    
     if (initialFile) {
       openTab(initialFile, initialLine || null);
       if (initialLine) {
@@ -40,7 +63,7 @@ export function App({ data, initialFile, initialLine }: AppProps) {
       const firstFile = Object.keys(data.files)[0];
       openTab(firstFile, null);
     }
-  }, [initialFile, initialLine, openTab, data.files]);
+  }, [initialFile, initialLine, openTab, data]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -81,6 +104,30 @@ export function App({ data, initialFile, initialLine }: AppProps) {
     openTab(file, lineNum);
     setHighlightLine(lineNum);
   }, [openTab]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin text-4xl mb-4">⏳</div>
+          <p className="text-gray-500">加载笔记数据中...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">❌</div>
+          <p className="text-red-500">加载失败: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) return null;
 
   const activeFile = activeTab ? data.files[activeTab.file] : null;
   const fileList = Object.keys(data.files).sort();

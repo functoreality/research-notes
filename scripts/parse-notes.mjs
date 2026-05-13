@@ -14,9 +14,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// Research directory is at parent level (research-notes/research)
-const RESEARCH_DIR = path.join(__dirname, '..', '..', 'research');
-const OUTPUT_DIR = path.join(__dirname, '..', 'src', 'data');
+const RESEARCH_DIR = path.join(__dirname, '..', 'raw');
+const OUTPUT_DIR = path.join(__dirname, '..', 'public', 'data');
 const OUTPUT_FILE = path.join(OUTPUT_DIR, 'notes.json');
 
 // Regex patterns
