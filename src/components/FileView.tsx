@@ -82,7 +82,6 @@ export function FileView({
             >
               <NoteLineComponent
                 line={line}
-                index={index}
                 isExpanded={isLineExpanded(line)}
                 isVisible={isVisible}
                 isHighlighted={isHighlighted}

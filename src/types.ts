@@ -10,6 +10,7 @@ export interface NoteLine {
   isHeading: boolean;
   headingLevel: number;
   descendantCount: number;
+  lineType: 'bullet' | 'quote' | 'normal';
 }
 
 export interface NoteFile {

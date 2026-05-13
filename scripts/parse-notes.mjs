@@ -13,40 +13,47 @@ const LINK_PATTERN = /\(\(([_\w]+)\)\)/g;
 const MARKER_PATTERN = /\{([_\w]+)\}$/;
 const INDENT_PATTERN = /^(\t*)/;
 const HEADING_PATTERN = /^#+\s/;
+const BULLET_PATTERN = /^\*\s/;
+const QUOTE_PATTERN = /^>\s/;
 
 function parseLine(line, lineNum, fileName) {
   if (line.trim() === '') return null;
   
   const indentMatch = line.match(INDENT_PATTERN);
   const indent = indentMatch ? indentMatch[1].length : 0;
-  const content = line.slice(indent);
+  let content = line.slice(indent);
   
-  // Check if this is a heading (no indent + starts with #)
   const isHeading = indent === 0 && HEADING_PATTERN.test(content);
   
   let headingLevel = 0;
-  let displayContent = content;
+  let lineType = 'normal';
   
   if (isHeading) {
     const headingMatch = content.match(/^(#+)\s*/);
     if (headingMatch) {
       headingLevel = headingMatch[1].length;
-      displayContent = content.slice(headingMatch[0].length);
+      content = content.slice(headingMatch[0].length);
+    }
+  } else {
+    if (QUOTE_PATTERN.test(content)) {
+      lineType = 'quote';
+      content = content.replace(QUOTE_PATTERN, '');
+    } else if (BULLET_PATTERN.test(content)) {
+      lineType = 'bullet';
+      content = content.replace(BULLET_PATTERN, '');
     }
   }
   
-  // Extract marker from end of line
   let marker = null;
-  const markerMatch = displayContent.match(MARKER_PATTERN);
+  const markerMatch = content.match(MARKER_PATTERN);
   if (markerMatch) {
     marker = markerMatch[1];
-    displayContent = displayContent.slice(0, -markerMatch[0].length);
+    content = content.slice(0, -markerMatch[0].length);
   }
   
-  // Extract links from content
   const links = [];
   let linkMatch;
-  while ((linkMatch = LINK_PATTERN.exec(displayContent)) !== null) {
+  while ((linkMatch = LINK_PATTERN.exec(content)) !== null) {
     links.push(linkMatch[1]);
   }
   LINK_PATTERN.lastIndex = 0;
@@ -56,12 +63,13 @@ function parseLine(line, lineNum, fileName) {
     file: fileName,
     lineNum,
     indent,
-    content: displayContent.trim(),
+    content: content.trim(),
     originalLine: line,
     marker,
     links,
     isHeading,
-    headingLevel
+    headingLevel,
+    lineType
   };
 }
 
@@ -83,7 +91,6 @@ function parseFile(filePath) {
     }
   }
   
-  // Calculate descendant count for each line
   for (let i = 0; i < parsedLines.length; i++) {
     const line = parsedLines[i];
     let count = 0;
