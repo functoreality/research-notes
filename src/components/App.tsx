@@ -176,24 +176,12 @@ export function App({ initialFile, initialLine }: AppProps) {
 
   return (
     <div style={{ 
-      minHeight: '100vh', 
+      height: '100vh', 
       backgroundColor: 'var(--color-paper)', 
       display: 'flex', 
       flexDirection: 'column' 
     }}>
       <header className="header-bar">
-        <div style={{ 
-          fontFamily: 'var(--font-display)', 
-          fontWeight: 600, 
-          fontSize: '15px',
-          letterSpacing: '-0.02em',
-          color: 'var(--color-paper)',
-          marginRight: 'var(--space-4)',
-          flexShrink: 0
-        }}>
-          Notes
-        </div>
-        
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -229,7 +217,7 @@ export function App({ initialFile, initialLine }: AppProps) {
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
-          gap: 'var(--space-1)',
+          gap: '2px',
           flexShrink: 0
         }}>
           <button 
@@ -286,7 +274,12 @@ export function App({ initialFile, initialLine }: AppProps) {
         </div>
       </header>
       
-      <main style={{ flex: 1, overflow: 'auto' }}>
+      <main style={{ 
+        flex: 1, 
+        overflow: 'auto', 
+        marginTop: 'var(--header-height)',
+        minHeight: 0
+      }}>
         {activeFile ? (
           <FileView
             file={activeFile}

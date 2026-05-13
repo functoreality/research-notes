@@ -191,12 +191,15 @@ export const NoteLineComponent = forwardRef<HTMLDivElement, NoteLineProps>(
           className={`note-line ${isHighlighted ? 'highlighted' : ''}`}
           style={{ paddingTop: 'var(--space-2)', paddingBottom: 'var(--space-2)' }}
         >
-          {level === 1 && <h1 style={headingStyle}>{headingContent}</h1>}
-          {level === 2 && <h2 style={headingStyle}>{headingContent}</h2>}
-          {level === 3 && <h3 style={headingStyle}>{headingContent}</h3>}
-          {level === 4 && <h4 style={headingStyle}>{headingContent}</h4>}
-          {level === 5 && <h5 style={headingStyle}>{headingContent}</h5>}
-          {level === 6 && <h6 style={headingStyle}>{headingContent}</h6>}
+          <span className="note-line-number">{line.lineNum}</span>
+          <div style={{ flex: 1 }}>
+            {level === 1 && <h1 style={headingStyle}>{headingContent}</h1>}
+            {level === 2 && <h2 style={headingStyle}>{headingContent}</h2>}
+            {level === 3 && <h3 style={headingStyle}>{headingContent}</h3>}
+            {level === 4 && <h4 style={headingStyle}>{headingContent}</h4>}
+            {level === 5 && <h5 style={headingStyle}>{headingContent}</h5>}
+            {level === 6 && <h6 style={headingStyle}>{headingContent}</h6>}
+          </div>
         </div>
       );
     }
@@ -207,9 +210,59 @@ export const NoteLineComponent = forwardRef<HTMLDivElement, NoteLineProps>(
           ref={ref}
           id={`line-${line.id}`}
           className={`note-line ${isHighlighted ? 'highlighted' : ''}`}
-          style={{ paddingLeft: `${indentPx + 8}px` }}
         >
-          <span className="note-line-number">:{line.lineNum}</span>
+          <span className="note-line-number">{line.lineNum}</span>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'flex-start', 
+            flex: 1,
+            marginLeft: `${indentPx}px`
+          }}>
+            <button 
+              onClick={onToggle} 
+              className="note-bullet"
+              style={{ color: bulletColor }}
+              aria-label={hasChildren ? (isExpanded ? '折叠' : '展开') : undefined}
+            >
+              <span style={{ 
+                transform: hasChildren && isExpanded ? 'rotate(90deg)' : 'none',
+                transition: 'transform var(--transition-fast)',
+                display: 'inline-block',
+                fontSize: '10px'
+              }}>
+                {hasChildren ? '▶' : '•'}
+              </span>
+            </button>
+            <span style={{ 
+              flex: 1, 
+              borderLeft: '2px solid var(--color-paper-line)', 
+              paddingLeft: 'var(--space-2)', 
+              color: 'var(--color-text-muted)',
+              fontStyle: 'italic'
+            }}>
+              {content}
+              {line.marker && <span className="note-marker">{line.marker}</span>}
+              {hasChildren && !isExpanded && line.descendantCount > 0 && 
+                <span className="note-descendants">({line.descendantCount})</span>}
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        ref={ref}
+        id={`line-${line.id}`}
+        className={`note-line ${isHighlighted ? 'highlighted' : ''}`}
+      >
+        <span className="note-line-number">{line.lineNum}</span>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'flex-start', 
+          flex: 1,
+          marginLeft: `${indentPx}px`
+        }}>
           <button 
             onClick={onToggle} 
             className="note-bullet"
@@ -222,54 +275,16 @@ export const NoteLineComponent = forwardRef<HTMLDivElement, NoteLineProps>(
               display: 'inline-block',
               fontSize: '10px'
             }}>
-              {hasChildren ? '▶' : '•'}
+              {hasChildren ? '▶' : bulletSymbol}
             </span>
           </button>
-          <span style={{ 
-            flex: 1, 
-            borderLeft: '2px solid var(--color-paper-line)', 
-            paddingLeft: 'var(--space-2)', 
-            color: 'var(--color-text-muted)',
-            fontStyle: 'italic'
-          }}>
+          <span className="note-content">
             {content}
             {line.marker && <span className="note-marker">{line.marker}</span>}
             {hasChildren && !isExpanded && line.descendantCount > 0 && 
               <span className="note-descendants">({line.descendantCount})</span>}
           </span>
         </div>
-      );
-    }
-
-    return (
-      <div
-        ref={ref}
-        id={`line-${line.id}`}
-        className={`note-line ${isHighlighted ? 'highlighted' : ''}`}
-        style={{ paddingLeft: `${indentPx + 8}px` }}
-      >
-        <span className="note-line-number">:{line.lineNum}</span>
-        <button 
-          onClick={onToggle} 
-          className="note-bullet"
-          style={{ color: bulletColor }}
-          aria-label={hasChildren ? (isExpanded ? '折叠' : '展开') : undefined}
-        >
-          <span style={{ 
-            transform: hasChildren && isExpanded ? 'rotate(90deg)' : 'none',
-            transition: 'transform var(--transition-fast)',
-            display: 'inline-block',
-            fontSize: '10px'
-          }}>
-            {hasChildren ? '▶' : bulletSymbol}
-          </span>
-        </button>
-        <span className="note-content">
-          {content}
-          {line.marker && <span className="note-marker">{line.marker}</span>}
-          {hasChildren && !isExpanded && line.descendantCount > 0 && 
-            <span className="note-descendants">({line.descendantCount})</span>}
-        </span>
       </div>
     );
   }
