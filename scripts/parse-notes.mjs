@@ -1,14 +1,5 @@
 #!/usr/bin/env node
 
-/**
- * Markdown Notes Parser
- * 
- * Parses research notes into structured JSON data for the frontend.
- * 
- * Input: ../research/*.md
- * Output: src/data/notes.json
- */
-
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -18,58 +9,46 @@ const RESEARCH_DIR = path.join(__dirname, '..', 'raw');
 const OUTPUT_DIR = path.join(__dirname, '..', 'public', 'data');
 const OUTPUT_FILE = path.join(OUTPUT_DIR, 'notes.json');
 
-// Regex patterns
-const LINK_PATTERN = /\(\(([_\w]+)\)\)/g;        // ((pattern)) or ((_pattern))
-const MARKER_PATTERN = /\{([_\w]+)\}$/;          // {pattern} at end of line
-const QUOTE_PATTERN = /^(\t*)(>)\s*/;            // > quote
-const BULLET_PATTERN = /^(\t*)(\*)\s*/;          // * bullet
-const INLINE_MATH_PATTERN = /\$([^\$]+)\$/g;     // $...$
-const BLOCK_MATH_PATTERN = /\$\$([\s\S]*?)\$\$/g; // $$...$$
-const CODE_PATTERN = /`([^`]+)`/g;               // `...`
+const LINK_PATTERN = /\(\(([_\w]+)\)\)/g;
+const MARKER_PATTERN = /\{([_\w]+)\}$/;
+const INDENT_PATTERN = /^(\t*)/;
+const HEADING_PATTERN = /^#+\s/;
 
-/**
- * Parse a single line of markdown
- */
 function parseLine(line, lineNum, fileName) {
-  // Determine line type and indent
-  let indent = 0;
-  let content = line;
-  let isQuote = false;
-  let bullet = null;
+  if (line.trim() === '') return null;
   
-  // Check for quote
-  const quoteMatch = line.match(QUOTE_PATTERN);
-  if (quoteMatch) {
-    indent = quoteMatch[1].length;
-    isQuote = true;
-    content = line.slice(quoteMatch[0].length);
-    bullet = '>';
-  } else {
-    // Check for bullet
-    const bulletMatch = line.match(BULLET_PATTERN);
-    if (bulletMatch) {
-      indent = bulletMatch[1].length;
-      content = line.slice(bulletMatch[0].length);
-      bullet = '*';
+  const indentMatch = line.match(INDENT_PATTERN);
+  const indent = indentMatch ? indentMatch[1].length : 0;
+  const content = line.slice(indent);
+  
+  // Check if this is a heading (no indent + starts with #)
+  const isHeading = indent === 0 && HEADING_PATTERN.test(content);
+  
+  let headingLevel = 0;
+  let displayContent = content;
+  
+  if (isHeading) {
+    const headingMatch = content.match(/^(#+)\s*/);
+    if (headingMatch) {
+      headingLevel = headingMatch[1].length;
+      displayContent = content.slice(headingMatch[0].length);
     }
   }
   
   // Extract marker from end of line
   let marker = null;
-  const markerMatch = content.match(MARKER_PATTERN);
+  const markerMatch = displayContent.match(MARKER_PATTERN);
   if (markerMatch) {
     marker = markerMatch[1];
-    content = content.slice(0, -markerMatch[0].length);
+    displayContent = displayContent.slice(0, -markerMatch[0].length);
   }
   
   // Extract links from content
   const links = [];
   let linkMatch;
-  while ((linkMatch = LINK_PATTERN.exec(content)) !== null) {
+  while ((linkMatch = LINK_PATTERN.exec(displayContent)) !== null) {
     links.push(linkMatch[1]);
   }
-  
-  // Reset regex lastIndex
   LINK_PATTERN.lastIndex = 0;
   
   return {
@@ -77,26 +56,15 @@ function parseLine(line, lineNum, fileName) {
     file: fileName,
     lineNum,
     indent,
-    content: content.trim(),
+    content: displayContent.trim(),
     originalLine: line,
     marker,
     links,
-    isQuote,
-    bullet
+    isHeading,
+    headingLevel
   };
 }
 
-/**
- * Process inline formatting (for rendering)
- */
-function processInlineContent(content) {
-  // Keep original content for now - frontend will handle rendering
-  return content;
-}
-
-/**
- * Parse a markdown file
- */
 function parseFile(filePath) {
   const fileName = path.basename(filePath, '.md');
   const content = fs.readFileSync(filePath, 'utf-8');
@@ -106,16 +74,24 @@ function parseFile(filePath) {
   const markerMap = new Map();
   
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (line.trim() === '') continue; // Skip empty lines
-    
-    const parsed = parseLine(line, i + 1, fileName);
-    parsedLines.push(parsed);
-    
-    // Build marker map
-    if (parsed.marker) {
-      markerMap.set(parsed.marker, parsed.lineNum);
+    const parsed = parseLine(lines[i], i + 1, fileName);
+    if (parsed) {
+      parsedLines.push(parsed);
+      if (parsed.marker) {
+        markerMap.set(parsed.marker, parsed.lineNum);
+      }
     }
+  }
+  
+  // Calculate descendant count for each line
+  for (let i = 0; i < parsedLines.length; i++) {
+    const line = parsedLines[i];
+    let count = 0;
+    for (let j = i + 1; j < parsedLines.length; j++) {
+      if (parsedLines[j].indent <= line.indent) break;
+      count++;
+    }
+    line.descendantCount = count;
   }
   
   return {
@@ -125,17 +101,10 @@ function parseFile(filePath) {
   };
 }
 
-/**
- * Build global index from all files
- */
 function buildGlobalIndex(files) {
   const markerToFile = new Map();
-  const allLines = [];
   
   for (const file of files) {
-    allLines.push(...file.lines);
-    
-    // Build marker -> file mapping
     for (const [marker, lineNum] of Object.entries(file.markerMap)) {
       markerToFile.set(marker, { file: file.name, lineNum });
     }
@@ -151,14 +120,10 @@ function buildGlobalIndex(files) {
   };
 }
 
-/**
- * Main function
- */
 function main() {
   console.log('Parsing research notes...');
   console.log(`Research directory: ${RESEARCH_DIR}`);
   
-  // Get all markdown files
   const mdFiles = fs.readdirSync(RESEARCH_DIR)
     .filter(f => f.endsWith('.md'))
     .map(f => path.join(RESEARCH_DIR, f))
@@ -166,27 +131,22 @@ function main() {
   
   console.log(`Found ${mdFiles.length} markdown files`);
   
-  // Parse all files
   const parsedFiles = mdFiles.map(f => {
     console.log(`  Parsing: ${path.basename(f)}`);
     return parseFile(f);
   });
   
-  // Build global index
   const index = buildGlobalIndex(parsedFiles);
   
-  // Combine into output
   const output = {
     files: Object.fromEntries(parsedFiles.map(f => [f.name, f])),
     index
   };
   
-  // Ensure output directory exists
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
   
-  // Write output
   fs.writeFileSync(OUTPUT_FILE, JSON.stringify(output, null, 2));
   console.log(`\nOutput written to: ${OUTPUT_FILE}`);
   console.log(`Total lines: ${index.files.reduce((sum, f) => sum + f.lineCount, 0)}`);

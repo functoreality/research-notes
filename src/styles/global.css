@@ -29,3 +29,7 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #a1a1a1;
 }
+
+.katex {
+  font-size: 1em;
+}
