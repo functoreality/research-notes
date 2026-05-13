@@ -1,93 +1,98 @@
-import { useState, useCallback, useLayoutEffect } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import type { NoteLine } from '../types';
 
+interface LineState {
+  isExpanded: boolean;
+  isVisible: boolean;
+  hasChildren: boolean;
+}
+
 export function useFolding(lines: NoteLine[], highlightLine: number | null) {
-  // Track which indentation levels are expanded for each line
-  const [expandedLines, setExpandedLines] = useState<Set<string>>(new Set());
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const linesRef = useRef(lines);
+  linesRef.current = lines;
 
-  // When highlighting a line, expand all its parents
-  useLayoutEffect(() => {
-    if (highlightLine !== null) {
-      // Find the line and all its parents
-      const targetIdx = lines.findIndex(l => l.lineNum === highlightLine);
-      if (targetIdx === -1) return;
-
-      const targetLine = lines[targetIdx];
-      const targetIndent = targetLine.indent;
+  const lineStates: LineState[] = useMemo(() => {
+    return lines.map((line, index) => {
+      const isExpanded = expandedIds.has(line.id);
       
-      // Walk backwards to find all parents that need to be expanded
-      const parentsToExpand: string[] = [];
-      let currentIndent = targetIndent - 1;
-      
-      for (let i = targetIdx - 1; i >= 0; i--) {
-        const line = lines[i];
-        if (line.indent === currentIndent) {
-          parentsToExpand.push(line.id);
-          currentIndent--;
+      let isVisible = true;
+      if (line.indent > 0) {
+        let parentIndent = line.indent - 1;
+        for (let i = index - 1; i >= 0; i--) {
+          const prevLine = lines[i];
+          if (prevLine.indent === parentIndent) {
+            if (!expandedIds.has(prevLine.id)) {
+              isVisible = false;
+              break;
+            }
+            parentIndent--;
+          }
+          if (parentIndent < 0) break;
         }
-        if (currentIndent < 0) break;
       }
-
-      // Also expand the target line itself (one more level)
-      const targetLineId = targetLine.id;
       
-      setExpandedLines(prev => {
-        const newSet = new Set(prev);
-        parentsToExpand.forEach(id => newSet.add(id));
-        newSet.add(targetLineId);
-        return newSet;
-      });
-    }
-  }, [highlightLine, lines]);
+      const hasChildren = index < lines.length - 1 && 
+                          lines[index + 1].indent > line.indent;
+      
+      return { isExpanded, isVisible, hasChildren };
+    });
+  }, [lines, expandedIds]);
 
-  const isLineExpanded = useCallback((line: NoteLine) => {
-    return expandedLines.has(line.id);
-  }, [expandedLines]);
-
-  const toggleLine = useCallback((line: NoteLine) => {
-    setExpandedLines(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(line.id)) {
-        newSet.delete(line.id);
+  const toggleLine = useCallback((lineId: string) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(lineId)) {
+        next.delete(lineId);
       } else {
-        newSet.add(line.id);
+        next.add(lineId);
       }
-      return newSet;
+      return next;
     });
   }, []);
 
   const expandAll = useCallback(() => {
-    setExpandedLines(new Set(lines.map(l => l.id)));
+    setExpandedIds(new Set(lines.map(l => l.id)));
   }, [lines]);
 
   const collapseAll = useCallback(() => {
-    setExpandedLines(new Set());
+    setExpandedIds(new Set());
   }, []);
 
-  // Determine if a line is visible based on parent expansion
-  const isLineVisible = useCallback((line: NoteLine, index: number) => {
-    if (line.indent === 0) return true;
+  useEffect(() => {
+    if (highlightLine === null) return;
     
-    // Check if all parent lines are expanded
-    let parentIndent = line.indent - 1;
-    for (let i = index - 1; i >= 0; i--) {
-      const prevLine = lines[i];
-      if (prevLine.indent === parentIndent) {
-        if (!expandedLines.has(prevLine.id)) {
-          return false;
-        }
-        parentIndent--;
+    const targetIdx = lines.findIndex(l => l.lineNum === highlightLine);
+    if (targetIdx === -1) return;
+
+    const targetLine = lines[targetIdx];
+    const targetIndent = targetLine.indent;
+    
+    const toAdd: string[] = [];
+    let currentIndent = targetIndent - 1;
+    for (let i = targetIdx - 1; i >= 0; i--) {
+      const line = lines[i];
+      if (line.indent === currentIndent) {
+        toAdd.push(line.id);
+        currentIndent--;
       }
-      if (parentIndent < 0) break;
+      if (currentIndent < 0) break;
     }
-    return true;
-  }, [lines, expandedLines]);
+    toAdd.push(targetLine.id);
+
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      for (const id of toAdd) {
+        next.add(id);
+      }
+      return next;
+    });
+  }, [highlightLine, lines]);
 
   return {
-    isLineExpanded,
+    lineStates,
     toggleLine,
     expandAll,
-    collapseAll,
-    isLineVisible
+    collapseAll
   };
 }

@@ -8,7 +8,9 @@ export default defineConfig({
   site: 'https://functoreality.github.io',
   base: '/research-notes',
   integrations: [
-    react(),
+    react({
+      experimentalReactChildren: true,
+    }),
     tailwind()
   ],
   build: {

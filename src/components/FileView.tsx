@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NoteLineComponent } from './NoteLine';
 import { useFolding } from '../hooks/useFolding';
-import type { NoteLine, NoteFile, GlobalIndex } from '../types';
+import type { NoteFile, GlobalIndex } from '../types';
 
 interface FileViewProps {
   file: NoteFile;
@@ -19,13 +19,16 @@ export function FileView({
   searchHighlights
 }: FileViewProps) {
   const highlightedLineRef = useRef<HTMLDivElement>(null);
+  const globalIndexRef = useRef(globalIndex);
+  globalIndexRef.current = globalIndex;
+  const onLinkClickRef = useRef(onLinkClick);
+  onLinkClickRef.current = onLinkClick;
   
   const {
-    isLineExpanded,
+    lineStates,
     toggleLine,
     expandAll,
-    collapseAll,
-    isLineVisible
+    collapseAll
   } = useFolding(file.lines, highlightLine);
 
   useEffect(() => {
@@ -34,21 +37,12 @@ export function FileView({
     }
   }, [highlightLine]);
 
-  const handleLinkClick = useCallback((marker: string) => {
-    const target = globalIndex.markerToFile[marker];
+  const handleLinkClick = (marker: string) => {
+    const target = globalIndexRef.current.markerToFile[marker];
     if (target) {
-      onLinkClick(target.file, target.lineNum);
+      onLinkClickRef.current(target.file, target.lineNum);
     }
-  }, [globalIndex, onLinkClick]);
-
-  const handleToggle = useCallback((line: NoteLine) => () => {
-    toggleLine(line);
-  }, [toggleLine]);
-
-  const hasChildren = useCallback((index: number) => {
-    if (index >= file.lines.length - 1) return false;
-    return file.lines[index + 1].indent > file.lines[index].indent;
-  }, [file.lines]);
+  };
 
   return (
     <div className="font-mono text-sm">
@@ -72,25 +66,20 @@ export function FileView({
       
       <div className="py-2">
         {file.lines.map((line, index) => {
-          const isHighlighted = line.lineNum === highlightLine;
-          const isVisible = isLineVisible(line, index);
+          const state = lineStates[index];
+          if (!state) return null;
           
           return (
-            <div
+            <NoteLineComponent
               key={line.id}
-              ref={isHighlighted ? highlightedLineRef : undefined}
-            >
-              <NoteLineComponent
-                line={line}
-                isExpanded={isLineExpanded(line)}
-                isVisible={isVisible}
-                isHighlighted={isHighlighted}
-                hasChildren={hasChildren(index)}
-                onToggle={handleToggle(line)}
-                onLinkClick={handleLinkClick}
-                searchHighlights={searchHighlights?.get(line.id)}
-              />
-            </div>
+              line={line}
+              lineState={state}
+              isHighlighted={line.lineNum === highlightLine}
+              onToggle={() => toggleLine(line.id)}
+              onLinkClick={handleLinkClick}
+              searchHighlights={searchHighlights?.get(line.id)}
+              ref={line.lineNum === highlightLine ? highlightedLineRef : undefined}
+            />
           );
         })}
       </div>
