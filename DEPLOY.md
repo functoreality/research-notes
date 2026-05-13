@@ -8,7 +8,7 @@
 ## 二、推送代码
 
 ```bash
-cd notes-app
+cd research-notes
 
 # 初始化 git（如果还没有）
 git init

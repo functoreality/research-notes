@@ -1,6 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --color-ink: #1a1f2e;           /* Deep ink blue-black for header */
+  --color-ink-light: #2d3548;     /* Lighter ink for hover states */
+  --color-ink-muted: #4a5568;     /* Muted ink for secondary text */
+  
+  --color-paper: #faf9f7;         /* Warm paper background */
+  --color-paper-dark: #f3f1ed;    /* Slightly darker paper */
+  --color-paper-line: #e8e6e3;    /* Line/border color */
+  
+  --color-text: #2d3748;          /* Primary text */
+  --color-text-muted: #718096;    /* Muted text */
+  --color-text-light: #a0aec0;    /* Light text */
+  
+  /* Accent Colors */
+  --color-link: #0d9488;          /* Teal for links */
+  --color-link-hover: #0f766e;    /* Darker teal on hover */
+  --color-highlight: #fef3c7;     /* Warm amber highlight */
+  --color-highlight-ring: #f59e0b; /* Amber ring */
+  --color-code: #be185d;          /* Deep pink for code */
+  --color-accent: #c2410c;        /* Burnt orange accent */
+  
+  /* Indent Colors - Refined palette */
+  --indent-0: #0d9488;            /* Teal */
+  --indent-1: #059669;            /* Emerald */
+  --indent-2: #0284c7;            /* Sky */
+  --indent-3: #7c3aed;            /* Violet */
+  --indent-4: #db2777;            /* Pink */
+  --indent-5: #ea580c;            /* Orange */
+  --indent-6: #ca8a04;            /* Yellow */
+  --indent-7: #16a34a;            /* Green */
+  --indent-8: #dc2626;            /* Red */
+  --indent-9: #0891b2;            /* Cyan */
+  
+  /* Typography Scale */
+  --font-display: 'JetBrains Mono', monospace;
+  --font-body: 'IBM Plex Mono', monospace;
+  
+  /* Spacing Scale (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  
+  /* Header Height */
+  --header-height: 38px;
+  
+  /* Border Radius */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+}
 
 html, body, #root {
   height: 100%;
@@ -9,27 +69,382 @@ html, body, #root {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-body);
+  background-color: var(--color-paper);
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* Scrollbar Styling */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--color-paper-dark);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
+  background: var(--color-text-light);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+  background: var(--color-text-muted);
 }
 
+/* KaTeX */
 .katex {
   font-size: 1em;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-highlight);
+  color: var(--color-text);
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+}
+
+/* Link base style */
+a, .link {
+  color: var(--color-link);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover, .link:hover {
+  color: var(--color-link-hover);
+  text-decoration: underline;
+}
+
+/* Code inline */
+code {
+  font-family: var(--font-body);
+  background-color: var(--color-paper-dark);
+  color: var(--color-code);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9em;
+}
+
+/* Utility classes */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* Header bar styles */
+.header-bar {
+  height: var(--header-height);
+  background-color: var(--color-ink);
+  color: var(--color-paper-line);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+  gap: var(--space-2);
+}
+
+/* Tab styles */
+.tab {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  height: 100%;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-text-light);
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--color-paper);
+  background-color: var(--color-ink-light);
+}
+
+.tab.active {
+  color: var(--color-paper);
+  border-bottom-color: var(--color-link);
+}
+
+.tab-close {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  font-size: 14px;
+  color: var(--color-text-light);
+}
+
+.tab:hover .tab-close {
+  opacity: 1;
+}
+
+.tab-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-paper);
+}
+
+/* Icon button */
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-light);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+  background: transparent;
+  font-size: 14px;
+}
+
+.icon-btn:hover {
+  background-color: var(--color-ink-light);
+  color: var(--color-paper);
+}
+
+/* File selector dropdown */
+.file-selector {
+  position: relative;
+}
+
+.file-selector-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-light);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-family: var(--font-display);
+}
+
+.file-selector-btn:hover {
+  background-color: var(--color-ink-light);
+  color: var(--color-paper);
+}
+
+.file-selector-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: var(--space-1);
+  background: var(--color-paper);
+  border: 1px solid var(--color-paper-line);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.file-selector-item {
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--color-text);
+  transition: background-color var(--transition-fast);
+}
+
+.file-selector-item:hover {
+  background-color: var(--color-paper-dark);
+}
+
+/* Note line styles */
+.note-line {
+  display: flex;
+  align-items: flex-start;
+  padding: 2px var(--space-2);
+  transition: background-color var(--transition-fast);
+}
+
+.note-line:hover {
+  background-color: var(--color-paper-dark);
+}
+
+.note-line.highlighted {
+  background-color: var(--color-highlight);
+  box-shadow: inset 0 0 0 2px var(--color-highlight-ring);
+}
+
+.note-line-number {
+  font-size: 10px;
+  color: var(--color-text-light);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+  min-width: 28px;
+  text-align: right;
+  padding-right: var(--space-2);
+  flex-shrink: 0;
+}
+
+.note-line:hover .note-line-number {
+  opacity: 1;
+}
+
+.note-bullet {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+  font-size: 10px;
+}
+
+.note-bullet:hover {
+  background-color: var(--color-paper-line);
+}
+
+.note-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.note-marker {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  background-color: var(--color-paper-dark);
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+  margin-left: var(--space-1);
+}
+
+.note-descendants {
+  font-size: 10px;
+  color: var(--color-text-light);
+  margin-left: var(--space-1);
+}
+
+/* Search panel */
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(26, 31, 46, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 15vh;
+}
+
+.search-panel {
+  background: var(--color-paper);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 600px;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-paper-line);
+  gap: var(--space-2);
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  font-family: var(--font-body);
+  background: transparent;
+  color: var(--color-text);
+}
+
+.search-input::placeholder {
+  color: var(--color-text-light);
+}
+
+.search-results {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.search-result-item {
+  width: 100%;
+  text-align: left;
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--color-paper-line);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  background: transparent;
+  border-left: 3px solid transparent;
+}
+
+.search-result-item:hover {
+  background-color: var(--color-paper-dark);
+  border-left-color: var(--color-link);
+}
+
+.search-result-meta {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+  font-family: var(--font-display);
+}
+
+.search-result-content {
+  font-size: 13px;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-highlight {
+  background-color: var(--color-highlight);
+  color: var(--color-text);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.search-empty {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.search-count {
+  padding: var(--space-2) var(--space-4);
+  font-size: 12px;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-paper-line);
 }

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import type { SearchResult } from '../types';
 
 interface SearchPanelProps {
@@ -29,52 +29,68 @@ export function SearchPanel({
   if (!isActive) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/30 z-50 flex items-start justify-center pt-20">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[70vh] flex flex-col">
-        <div className="flex items-center p-4 border-b">
+    <div className="search-overlay" onClick={onClose}>
+      <div className="search-panel" onClick={(e) => e.stopPropagation()}>
+        <div className="search-input-wrapper">
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '18px' }}>⌕</span>
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => onQueryChange(e.target.value)}
             placeholder="搜索关键词..."
-            className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="search-input"
           />
           <button
             onClick={onClose}
-            className="ml-2 px-3 py-2 text-gray-500 hover:text-gray-700"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--color-text-muted)',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontFamily: 'var(--font-display)',
+              padding: '4px 8px',
+              borderRadius: 'var(--radius-sm)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--color-paper-dark)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
-            取消
+            ESC
           </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto">
+        <div className="search-results">
           {query && (
-            <div className="p-4 text-sm text-gray-500">
+            <div className="search-count">
               找到 {results.length} 个结果
             </div>
           )}
           
-          {results.map((result, idx) => (
+          {results.map((result) => (
             <button
               key={result.line.id}
               onClick={() => {
                 onResultClick(result.line.file, result.line.lineNum);
                 onClose();
               }}
-              className="w-full text-left px-4 py-2 hover:bg-blue-50 border-b last:border-b-0"
+              className="search-result-item"
             >
-              <div className="text-xs text-gray-400 mb-1">
+              <div className="search-result-meta">
                 {result.line.file}.md :{result.line.lineNum}
               </div>
-              <div className="text-sm truncate">
+              <div className="search-result-content">
                 {highlightText(result.line.content, result.highlights)}
               </div>
             </button>
           ))}
           
           {query && results.length === 0 && (
-            <div className="p-8 text-center text-gray-400">
+            <div className="search-empty">
               未找到匹配结果
             </div>
           )}
@@ -93,7 +109,9 @@ function highlightText(text: string, highlights: [number, number][]) {
       parts.push(text.slice(lastIndex, start));
     }
     parts.push(
-      <mark key={start} className="bg-yellow-200">{text.slice(start, end)}</mark>
+      <mark key={start} className="search-highlight">
+        {text.slice(start, end)}
+      </mark>
     );
     lastIndex = end;
   }

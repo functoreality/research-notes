@@ -1,9 +1,9 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { FileView } from './FileView';
-import { TabSystem } from './TabSystem';
 import { SearchPanel } from './SearchPanel';
 import { useTabs } from '../hooks/useTabs';
 import { useSearch } from '../hooks/useSearch';
+import { useFolding } from '../hooks/useFolding';
 import type { NotesData } from '../types';
 
 interface AppProps {
@@ -15,9 +15,15 @@ export function App({ initialFile, initialLine }: AppProps) {
   const [data, setData] = useState<NotesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showFileSelector, setShowFileSelector] = useState(false);
   
   const { tabs, activeTab, activeTabId, openTab, closeTab, switchTab } = useTabs();
   const [highlightLine, setHighlightLine] = useState<number | null>(null);
+  const fileSelectorRef = useRef<HTMLDivElement>(null);
+  
+  const activeFile = activeTab ? data?.files[activeTab.file] : null;
+  
+  const folding = useFolding(activeFile?.lines || [], highlightLine);
   
   useEffect(() => {
     const base = import.meta.env.BASE_URL || '/';
@@ -72,14 +78,32 @@ export function App({ initialFile, initialLine }: AppProps) {
         e.preventDefault();
         startSearch();
       }
-      if (e.key === 'Escape' && isSearching) {
-        clearSearch();
+      if (e.key === 'Escape') {
+        if (isSearching) {
+          clearSearch();
+        }
+        if (showFileSelector) {
+          setShowFileSelector(false);
+        }
       }
     };
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSearching, startSearch, clearSearch]);
+  }, [isSearching, startSearch, clearSearch, showFileSelector]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (fileSelectorRef.current && !fileSelectorRef.current.contains(e.target as Node)) {
+        setShowFileSelector(false);
+      }
+    };
+    
+    if (showFileSelector) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showFileSelector]);
 
   const handleLinkClick = useCallback((file: string, lineNum: number) => {
     openTab(file, lineNum);
@@ -94,6 +118,7 @@ export function App({ initialFile, initialLine }: AppProps) {
   const handleOpenFile = useCallback((file: string) => {
     openTab(file, null);
     setHighlightLine(null);
+    setShowFileSelector(false);
     
     const url = new URL(window.location.href);
     url.searchParams.set('file', file);
@@ -106,12 +131,23 @@ export function App({ initialFile, initialLine }: AppProps) {
     setHighlightLine(lineNum);
   }, [openTab]);
 
+  const handleTabClose = useCallback((tabId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    closeTab(tabId);
+  }, [closeTab]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin text-4xl mb-4">⏳</div>
-          <p className="text-gray-500">加载笔记数据中...</p>
+      <div style={{ 
+        minHeight: '100vh', 
+        backgroundColor: 'var(--color-paper)', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center' 
+      }}>
+        <div style={{ textAlign: 'center', fontFamily: 'var(--font-body)' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.5 }}>⋯</div>
+          <p style={{ color: 'var(--color-text-muted)' }}>加载中</p>
         </div>
       </div>
     );
@@ -119,10 +155,16 @@ export function App({ initialFile, initialLine }: AppProps) {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">❌</div>
-          <p className="text-red-500">加载失败: {error}</p>
+      <div style={{ 
+        minHeight: '100vh', 
+        backgroundColor: 'var(--color-paper)', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center' 
+      }}>
+        <div style={{ textAlign: 'center', fontFamily: 'var(--font-body)' }}>
+          <div style={{ fontSize: '2rem', marginBottom: '1rem', color: 'var(--color-code)' }}>✕</div>
+          <p style={{ color: 'var(--color-code)' }}>加载失败: {error}</p>
         </div>
       </div>
     );
@@ -130,48 +172,142 @@ export function App({ initialFile, initialLine }: AppProps) {
 
   if (!data) return null;
 
-  const activeFile = activeTab ? data.files[activeTab.file] : null;
   const fileList = Object.keys(data.files).sort();
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <header className="bg-blue-600 text-white px-4 py-3 shadow-md">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <h1 className="text-xl font-semibold">Research Notes</h1>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={startSearch}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded hover:bg-white/20 text-sm"
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: 'var(--color-paper)', 
+      display: 'flex', 
+      flexDirection: 'column' 
+    }}>
+      <header className="header-bar">
+        <div style={{ 
+          fontFamily: 'var(--font-display)', 
+          fontWeight: 600, 
+          fontSize: '15px',
+          letterSpacing: '-0.02em',
+          color: 'var(--color-paper)',
+          marginRight: 'var(--space-4)',
+          flexShrink: 0
+        }}>
+          Notes
+        </div>
+        
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          flex: 1, 
+          overflow: 'hidden',
+          gap: '1px'
+        }}>
+          {tabs.map(tab => (
+            <div
+              key={tab.id}
+              className={`tab ${tab.id === activeTabId ? 'active' : ''}`}
+              onClick={() => switchTab(tab.id)}
             >
-              <span>🔍 搜索</span>
-              <kbd className="px-1.5 py-0.5 bg-white/20 rounded text-xs">⌘K</kbd>
+              <span style={{ 
+                maxWidth: '120px', 
+                overflow: 'hidden', 
+                textOverflow: 'ellipsis',
+                fontFamily: 'var(--font-display)'
+              }}>
+                {tab.label}
+              </span>
+              <button
+                className="tab-close"
+                onClick={(e) => handleTabClose(tab.id, e)}
+                aria-label="关闭标签"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+        
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 'var(--space-1)',
+          flexShrink: 0
+        }}>
+          <button 
+            className="icon-btn" 
+            onClick={folding.expandAll}
+            title="展开全部"
+            aria-label="展开全部"
+          >
+            ↓
+          </button>
+          
+          <button 
+            className="icon-btn" 
+            onClick={folding.collapseAll}
+            title="折叠全部"
+            aria-label="折叠全部"
+          >
+            ↑
+          </button>
+          
+          <button 
+            className="icon-btn" 
+            onClick={startSearch}
+            title="搜索 (⌘K)"
+            aria-label="搜索"
+          >
+            ⌕
+          </button>
+          
+          <div className="file-selector" ref={fileSelectorRef}>
+            <button 
+              className="file-selector-btn"
+              onClick={() => setShowFileSelector(!showFileSelector)}
+              aria-label="打开文件"
+              aria-expanded={showFileSelector}
+            >
+              <span>+</span>
             </button>
+            
+            {showFileSelector && (
+              <div className="file-selector-dropdown">
+                {fileList.map(f => (
+                  <div
+                    key={f}
+                    className="file-selector-item"
+                    onClick={() => handleOpenFile(f)}
+                  >
+                    {f}.md
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </header>
       
-      <TabSystem
-        tabs={tabs}
-        activeTabId={activeTabId}
-        onSwitchTab={switchTab}
-        onCloseTab={closeTab}
-        onOpenFile={handleOpenFile}
-        files={fileList}
-      />
-      
-      <main className="flex-1 overflow-y-auto">
+      <main style={{ flex: 1, overflow: 'auto' }}>
         {activeFile ? (
           <FileView
             file={activeFile}
             highlightLine={highlightLine}
             globalIndex={data.index}
             onLinkClick={handleLinkClick}
+            lineStates={folding.lineStates}
+            toggleLine={folding.toggleLine}
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            <div className="text-center">
-              <div className="text-4xl mb-4">📄</div>
-              <p>选择一个文件开始阅读</p>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            height: '100%',
+            color: 'var(--color-text-muted)',
+            fontFamily: 'var(--font-body)'
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.3 }}>○</div>
+              <p>选择文件开始阅读</p>
             </div>
           </div>
         )}
