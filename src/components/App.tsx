@@ -20,7 +20,8 @@ export function App({ initialFile, initialLine }: AppProps) {
   const [highlightLine, setHighlightLine] = useState<number | null>(null);
   
   useEffect(() => {
-    const basePath = import.meta.env.BASE_URL || '/';
+    const base = import.meta.env.BASE_URL || '/';
+    const basePath = base.endsWith('/') ? base : base + '/';
     fetch(`${basePath}data/notes.json`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);

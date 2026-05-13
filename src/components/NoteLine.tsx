@@ -69,10 +69,11 @@ function renderContent(
   
   mergedElements.sort((a, b) => a.start - b.start);
   
-  const key = 0;
+  let key = 0;
   for (const el of mergedElements) {
     if (el.start > lastIndex) {
       parts.push(<span key={`text-${key}`}>{content.slice(lastIndex, el.start)}</span>);
+      key++;
     }
     
     switch (el.type) {
@@ -109,6 +110,7 @@ function renderContent(
         );
         break;
     }
+    key++;
     
     lastIndex = el.end;
   }
