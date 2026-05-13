@@ -1,0 +1,32 @@
+---
+import { App } from '../components/App';
+import notesData from '../data/notes.json';
+
+const { file: initialFile, line: initialLine } = Astro.url.searchParams;
+const initialFileStr = initialFile?.toString() || undefined;
+const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : undefined;
+---
+
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="generator" content={Astro.generator} />
+		<title>Research Notes</title>
+		<meta name="description" content="Personal research notes with hierarchical folding and interlinking" />
+	</head>
+	<body>
+		<div id="root"></div>
+		<App 
+			client:load 
+			data={notesData} 
+			initialFile={initialFileStr}
+			initialLine={initialLineNum}
+		/>
+	</body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>
