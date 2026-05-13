@@ -1,152 +1,98 @@
-# Research Notes 博客部署指南
+# 部署指南
 
-## 项目概述
+## 一、创建 GitHub 仓库
 
-本项目是一个基于 Astro + React + Tailwind 的静态博客网站，用于展示层级折叠式 Markdown 笔记。
+1. 在 GitHub 创建新仓库，名称任意（如 `research-notes`）
+2. 不要勾选 README、.gitignore 等（项目已有）
 
-## 项目结构
-
-```
-notes-app/                     # 整个目录作为 Git 仓库
-├── raw/                       # 原始 Markdown 笔记（git 追踪）
-│   ├── PINN.md
-│   ├── ML.md
-│   └── ...（41个笔记文件）
-├── public/data/
-│   └── notes.json             # 解析后的结构化数据（git 追踪）
-├── dist/                      # 构建产物（git 忽略）
-├── src/                       # 源码（git 追踪）
-└── scripts/                   # 解析脚本（git 追踪）
-```
-
-**Git 追踪策略**：
-- ✅ 追踪：`raw/`（原始笔记）、`public/data/notes.json`（解析数据）、源码
-- ❌ 忽略：`dist/`（构建产物）、`node_modules/`
-
-这样每次更新笔记，只有 `notes.json` 会有增量 diff，而不是整个 HTML 文件被替换。
-
-## 本地开发
+## 二、推送代码
 
 ```bash
-# 安装依赖
-npm install
-
-# 解析笔记（生成 public/data/notes.json）
-npm run parse
-
-# 启动开发服务器
-npm run dev
-# 访问 http://localhost:4321/research-notes
-
-# 构建生产版本
-npm run build
-
-# 预览构建结果
-npm run preview
-```
-
-## 部署到 GitHub Pages
-
-### 方式一：手动部署到 username.github.io 子目录
-
-如果你的 GitHub Pages 仓库是 `username.github.io`：
-
-```bash
-# 1. 构建项目
 cd notes-app
-npm run parse
-npm run build
 
-# 2. 复制构建产物到 Pages 仓库
-cd ~/Documents/projects/username.github.io
-rm -rf research-notes
-cp -r ~/Documents/projects/research-notes/notes-app/dist research-notes
+# 初始化 git（如果还没有）
+git init
 
-# 3. 提交并推送
-git add research-notes
-git commit -m "Update research notes"
-git push
+# 添加所有文件
+git add .
+
+# 首次提交
+git commit -m "Initial commit"
+
+# 添加远程仓库（替换 YOUR_USERNAME 和 YOUR_REPO）
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+
+# 推送到 main 分支
+git branch -M main
+git push -u origin main
 ```
 
-访问 `https://username.github.io/research-notes/`
+## 三、启用 GitHub Pages
 
-### 方式二：GitHub Actions 自动部署
+1. 进入仓库页面 → **Settings** → **Pages**
+2. **Source** 选择 **GitHub Actions**（不是 Deploy from a branch）
+3. 保存
 
-1. 创建 `.github/workflows/deploy.yml`：
+## 四、自动部署
 
-```yaml
-name: Deploy to GitHub Pages
+推送代码后，GitHub Actions 会自动运行：
 
-on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+1. 解析 `raw/` 下的 Markdown 文件
+2. 生成 `public/data/notes.json`
+3. 构建静态站点到 `dist/`
+4. 部署到 GitHub Pages
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+访问地址：`https://YOUR_USERNAME.github.io/YOUR_REPO/`
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Parse notes
-        run: npm run parse
-      
-      - name: Build
-        run: npm run build
-      
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
+## 五、修改 astro.config.mjs 中的 base
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+**重要**：如果仓库名不是 `research-notes`，需要修改 `astro.config.mjs`：
+
+```javascript
+export default defineConfig({
+  site: 'https://YOUR_USERNAME.github.io',
+  base: '/YOUR_REPO_NAME',  // 改成你的仓库名
+  // ...
+});
 ```
 
-2. 在 GitHub 仓库设置中启用 GitHub Actions 作为 Pages 源
+当前配置：
+- site: `https://functoreality.github.io`
+- base: `/research-notes`
 
-## 更新笔记流程
+如果你要用其他用户名或仓库名，请修改这两个值。
+
+## 六、更新笔记流程
 
 ```bash
-# 1. 编辑 raw/ 目录下的 Markdown 文件
+# 1. 编辑 raw/ 下的 Markdown 文件
 vim raw/ML.md
 
-# 2. 重新解析
+# 2. 本地测试（可选）
 npm run parse
+npm run dev
 
-# 3. 提交源文件和数据
-git add raw/ public/data/notes.json
+# 3. 提交并推送
+git add raw/
 git commit -m "Update notes"
+git push
 
-# 4. 构建并部署
-npm run build
-# 然后按上述部署方式操作
+# GitHub Actions 会自动重新构建和部署
 ```
 
-## URL 参数
+## 常见问题
 
-- 打开文件：`?file=filename`
-- 定位到行：`?file=filename&line=123`
+### Q: 页面显示空白或 404？
 
-示例：`https://username.github.io/research-notes/?file=PINN&line=100`
+检查：
+1. `astro.config.mjs` 中的 `base` 是否与仓库名匹配
+2. GitHub Pages 是否已启用（Settings → Pages → Source: GitHub Actions）
+3. Actions 是否运行成功（仓库 → Actions 标签页）
+
+### Q: 如何查看部署状态？
+
+仓库页面 → **Actions** 标签页 → 查看最新的 workflow 运行状态
+
+### Q: 如何手动触发部署？
+
+仓库页面 → **Actions** → **Deploy to GitHub Pages** → **Run workflow**

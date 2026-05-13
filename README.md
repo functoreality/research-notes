@@ -1,43 +1,36 @@
-# Astro Starter Kit: Minimal
+# Research Notes 博客
 
-```sh
-npm create astro@latest -- --template minimal
+个人研究笔记的网页展示应用，支持层级折叠、链接跳转和全文搜索。
+
+## 项目结构
+
+```
+notes-app/
+├── raw/                       # 原始 Markdown 笔记
+├── public/data/notes.json     # 解析后的数据
+├── src/                       # React/Astro 源码
+├── scripts/                   # 解析脚本
+├── .github/workflows/         # GitHub Actions 配置
+└── dist/                      # 构建产物（不提交）
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## 本地开发
 
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```bash
+npm install
+npm run parse    # 解析笔记
+npm run dev      # 启动开发服务器
+npm run build    # 构建生产版本
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## 功能
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+- 层级折叠（支持键盘操作）
+- `((pattern))` 链接跳转
+- 页面内子标签页
+- 全局搜索（⌘K）
+- URL 参数定位
 
-Any static assets, like images, can be placed in the `public/` directory.
+## 部署
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+详见 [DEPLOY.md](./DEPLOY.md)
