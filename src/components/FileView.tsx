@@ -13,6 +13,7 @@ interface FileViewProps {
   highlightLine: number | null;
   globalIndex: GlobalIndex;
   onLinkClick: (file: string, lineNum: number) => void;
+  onLinkNotFound: (marker: string) => void;
   searchHighlights?: Map<string, [number, number][]>;
   lineStates: LineState[];
   toggleLine: (lineId: string) => void;
@@ -23,6 +24,7 @@ export function FileView({
   highlightLine,
   globalIndex,
   onLinkClick,
+  onLinkNotFound,
   searchHighlights,
   lineStates,
   toggleLine
@@ -32,6 +34,8 @@ export function FileView({
   globalIndexRef.current = globalIndex;
   const onLinkClickRef = useRef(onLinkClick);
   onLinkClickRef.current = onLinkClick;
+  const onLinkNotFoundRef = useRef(onLinkNotFound);
+  onLinkNotFoundRef.current = onLinkNotFound;
 
   useEffect(() => {
     if (highlightLine !== null && highlightedLineRef.current) {
@@ -43,6 +47,8 @@ export function FileView({
     const target = globalIndexRef.current.markerToFile[marker];
     if (target) {
       onLinkClickRef.current(target.file, target.lineNum);
+    } else {
+      onLinkNotFoundRef.current(marker);
     }
   };
 

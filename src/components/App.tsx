@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { FileView } from './FileView';
 import { SearchPanel } from './SearchPanel';
+import { Toast } from './Toast';
 import { useTabs } from '../hooks/useTabs';
 import { useSearch } from '../hooks/useSearch';
 import { useFolding } from '../hooks/useFolding';
@@ -36,6 +37,7 @@ export function App({ initialFile, initialLine }: AppProps) {
   const [showFileSelector, setShowFileSelector] = useState(false);
   const [theme, setTheme] = useState<Theme>('system');
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   const { tabs, activeTab, activeTabId, openTab, closeTab, switchTab } = useTabs();
   const [highlightLine, setHighlightLine] = useState<number | null>(null);
@@ -169,6 +171,10 @@ export function App({ initialFile, initialLine }: AppProps) {
     url.searchParams.set('line', String(lineNum));
     window.history.pushState({}, '', url.toString());
   }, [openTab]);
+
+  const handleLinkNotFound = useCallback((marker: string) => {
+    setToastMessage(`噢！${marker} 这条笔记好像没有公开`);
+  }, []);
 
   const handleOpenFile = useCallback((file: string) => {
     openTab(file, null);
@@ -361,6 +367,7 @@ export function App({ initialFile, initialLine }: AppProps) {
             highlightLine={highlightLine}
             globalIndex={data.index}
             onLinkClick={handleLinkClick}
+            onLinkNotFound={handleLinkNotFound}
             lineStates={folding.lineStates}
             toggleLine={folding.toggleLine}
           />
@@ -389,6 +396,13 @@ export function App({ initialFile, initialLine }: AppProps) {
         onResultClick={handleSearchResultClick}
         onClose={clearSearch}
       />
+      
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
     </div>
   );
 }
