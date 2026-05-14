@@ -3,6 +3,7 @@ import { FileView } from './FileView';
 import { SearchPanel } from './SearchPanel';
 import { Toast } from './Toast';
 import { BacklinkPanel } from './BacklinkPanel';
+import { HomePage } from './HomePage';
 import { useTabs } from '../hooks/useTabs';
 import { useSearch } from '../hooks/useSearch';
 import { useFolding } from '../hooks/useFolding';
@@ -130,16 +131,13 @@ export function App({ initialFile, initialLine }: AppProps) {
       if (initialLine) {
         setHighlightLine(initialLine);
       }
-    } else if (Object.keys(data.files).length > 0 && tabs.length === 0) {
-      const firstFile = Object.keys(data.files)[0];
-      openTab(firstFile, null);
     }
     
     // Focus main element after initial load
     setTimeout(() => {
       mainRef.current?.focus();
     }, 100);
-  }, [initialFile, initialLine, openTab, data, tabs.length]);
+  }, [initialFile, initialLine, openTab, data]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -408,19 +406,7 @@ export function App({ initialFile, initialLine }: AppProps) {
             toggleLine={folding.toggleLine}
           />
         ) : (
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            height: '100%',
-            color: 'var(--color-text-muted)',
-            fontFamily: 'var(--font-body)'
-          }}>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.3 }}>○</div>
-              <p>选择文件开始阅读</p>
-            </div>
-          </div>
+          <HomePage data={data} onOpenFile={handleOpenFile} />
         )}
       </main>
       

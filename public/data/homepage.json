@@ -1,0 +1,40 @@
+{
+  "title": "科研笔记索引",
+  "description": "欢迎来到我的科研笔记。这里是我作为 AI (for PDEs) 算法研究者积累的研究笔记，采用大纲式组织，支持层级折叠和跨文件链接。",
+  "batches": [
+    {
+      "title": "第一批笔记标题（请修改）",
+      "description": "第一批笔记的统一描述。请在这里填写这批笔记的主要内容、时间范围或主题等。",
+      "files": [
+        {
+          "name": "aisc1",
+          "summary": "文件简介（请填写）"
+        },
+        {
+          "name": "data",
+          "summary": "文件简介（请填写）"
+        }
+      ]
+    },
+    {
+      "title": "第二批笔记标题（请修改）",
+      "description": "第二批笔记的统一描述。请在 `public/data/homepage.json` 文件中修改这里的配置。",
+      "files": [
+        {
+          "name": "PINN",
+          "summary": "文件简介（请填写）"
+        },
+        {
+          "name": "NOarch",
+          "summary": "文件简介（请填写）"
+        }
+      ]
+    },
+    {
+      "title": "更多笔记",
+      "description": "继续添加更多分批...",
+      "files": []
+    }
+  ],
+  "footer": "笔记持续更新中。如需引用或讨论，请联系我。"
+}
