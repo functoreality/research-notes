@@ -26,6 +26,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "marked": "^15.0.12",
+    "playwright-core": "^1.60.0",
     "typescript": "^5.8.3"
   }
 }

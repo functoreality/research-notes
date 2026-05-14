@@ -41,6 +41,7 @@ export function App({ initialFile, initialLine }: AppProps) {
   const [highlightLine, setHighlightLine] = useState<number | null>(null);
   const fileSelectorRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
+  const mainRef = useRef<HTMLElement>(null);
   
   const activeFile = activeTab ? data?.files[activeTab.file] : null;
   
@@ -119,6 +120,11 @@ export function App({ initialFile, initialLine }: AppProps) {
       const firstFile = Object.keys(data.files)[0];
       openTab(firstFile, null);
     }
+    
+    // Focus main element after initial load
+    setTimeout(() => {
+      mainRef.current?.focus();
+    }, 100);
   }, [initialFile, initialLine, openTab, data, tabs.length]);
 
   useEffect(() => {
@@ -277,7 +283,7 @@ export function App({ initialFile, initialLine }: AppProps) {
           <button 
             className="icon-btn" 
             onClick={folding.expandAll}
-            title="展开全部"
+            title="展开全部 (可用于页面内搜索)"
             aria-label="展开全部"
           >
             ↓
@@ -305,6 +311,7 @@ export function App({ initialFile, initialLine }: AppProps) {
             <button 
               className="file-selector-btn"
               onClick={() => setShowFileSelector(!showFileSelector)}
+              title="打开文件"
               aria-label="打开文件"
               aria-expanded={showFileSelector}
             >
@@ -337,12 +344,17 @@ export function App({ initialFile, initialLine }: AppProps) {
         </div>
       </header>
       
-      <main style={{ 
-        flex: 1, 
-        overflow: 'auto', 
-        marginTop: 'var(--header-height)',
-        minHeight: 0
-      }}>
+      <main 
+        ref={mainRef}
+        tabIndex={0}
+        style={{ 
+          flex: 1, 
+          overflow: 'auto', 
+          marginTop: 'var(--header-height)',
+          minHeight: 0,
+          outline: 'none'
+        }}
+      >
         {activeFile ? (
           <FileView
             file={activeFile}
