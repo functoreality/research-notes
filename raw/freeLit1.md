@@ -156,7 +156,7 @@
 	* $\mathcal{K}$ 作用于函数而不是点，此时算子才是线性的；但是 DMD, EDMD 可以给出 $x$ 演化结果，通过线性方式得到，EDMD 通过升维得到了线性动力学
 	* 以下讨论 $F$ 确定性情形；$F$ 随机时，由 $\mathcal{K}$ 定义，这种方式给出的是 $\operatorname*{\mathbb{E}}_FF(x)$
 		* $\mathcal{K}=C(-)[F]=\mathsf{Top}(-,\R)[F]\in\mathsf{Top}(C(X))$ ($F\in\mathsf{Top}(X)$)
-	<!-- * 大意：从函数空间看是线性，和升维后动力学（近似）线性，这两者其实是一致的 -->
+	* （旧）大意：从函数空间看是线性，和升维后动力学（近似）线性，这两者其实是一致的
 	* 不是用 $x\leftrightarrow\delta_x$ 以给出 $X\hookrightarrow C(X)\to X$！
 	* 对 $\mathcal{K}$ 进行有限维近似；但是不是要求在整个 $C(X)$ 上近似，而是在给定 dictionary $\chi\in C(X)\otimes V$ 情形下，局限于 $\R\{\chi_i\}=\mathrm{Im}(\chi:V^\vee\to C(X))\cong V^\vee$ 子空间上要求近似（这通常不是不变子空间）（同构假定了 $\chi$ 非退化）
 		> 在考虑如何优化 dictionary 时才考虑在全空间 $C(X)$ 上近似，如 VAMP-2 score 用一种类似 SVD 的方法给出确定 $\chi$ 的标准，不过只在 $F$ 随机时才有可能用这种方式得到较好的全空间近似；

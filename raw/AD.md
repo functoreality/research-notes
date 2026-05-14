@@ -26,7 +26,7 @@
 		* 对于 $z$ 的 SGD 优化也许未必对应对于 $\omega$ 的 SGD 优化，从而这种 meta-optimization 也许不完全算 gradient-based 框架下的？
 		* 得到的 $\omega$ 可以继续 fine-tune，在 DeepSDF 的设定里即对 $\theta$ fine-tune，类似 MAML 等；效果提升的主要贡献应该还是来源于对 $z$ 的优化；此时要求可以放宽为 $\{\omega_\lambda\}$ 位于一个低维流形附近（例如概率分布）
 		* i.e. 结合 MAML 的方式：1. 对 $z$ 给出先验，此时 $\theta$ 还是需要逼近 $\{\omega_\lambda\}$ 本身；2. 对 $(z,\theta)$ 给出先验，此时训练得到的 $\theta$ 只需要与 $\{\omega_\lambda\}$ 距离上接近即可
-		<!-- * 对于 PINN 的 design 问题（真正优化对象为 $\lambda$），可以得到 PINN 参数 $\omega$ 即方程解的形式后，再反推方程的参数 -->
+		* （旧）对于 PINN 的 design 问题（真正优化对象为 $\lambda$），可以得到 PINN 参数 $\omega$ 即方程解的形式后，再反推方程的参数
 	* 训练为给定 $\{\lambda_i\}$，优化对象 $\{z_i\},\theta$（得到最优的 $\theta$ 后各个 $\{z_i\}$ 不再被需要）
 	* 一般的 AE 思路其实是 $z_i=z_\phi(\omega_i)$ 由生成器给出而不是直接分别训练，能够体现不同 $\lambda_i$ 下 $z_i$ 的关系（如对 $\phi$ 正则化），但需要求解各个 $\omega_i$；
 	* 这里把求解 $\omega_i$ 的优化和对 AE 参数的优化合并为一个优化，优化目标为 $\sum L_i$，不需要给出 $\omega_i$ 的明确表达

@@ -1,4 +1,4 @@
-> 若暂无关键词，可考虑全文搜索
+> 若本文件中搜索不到关键词，可考虑全文搜索
 集成（ensemble）：((n8qk4m))
 ELM（extreme learning machine）：((n2q94e))
 RNN 循环网络：((n2s979))

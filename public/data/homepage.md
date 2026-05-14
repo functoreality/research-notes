@@ -1,8 +1,10 @@
+## 一个 AI 算法研究者的科研笔记
+
 欢迎来看我的科研笔记！
 
 我是一个 AI for PDEs 的研究者。在业余时间，我也喜欢研究笔记与知识管理的方法论。
 
-三年以前，我想清楚了 [自己的笔记方法](https://functoreality.github.io/blog-pkm/contents/%E5%A4%A7%E7%BA%B2%E8%AF%AD%E5%A2%83%E7%AC%94%E8%AE%B0%E6%B3%95/)。
+三年以前，我想清楚了[自己的笔记方法](https://functoreality.github.io/blog-pkm/contents/%E5%A4%A7%E7%BA%B2%E8%AF%AD%E5%A2%83%E7%AC%94%E8%AE%B0%E6%B3%95/)。
 你现在在这里看到的笔记，就是我按这种方法积累了三年的结果。
 
 不过，对方法论本身的理论叙述好像有些太过于抽象了。
@@ -21,10 +23,9 @@
 
 这些是我的核心主笔记，也是我绝大多数整理和思考发生的地方。
 
-在查找某些内容的时候，我也会根据笔记位置的印象，选择一个笔记文件打开。
+在查找某些内容的时候，我有时也会根据自己对笔记位置的印象，选择一个笔记文件打开。
 
-注意，虽然这些笔记的文件名整体上概括了它里面的主要内容，不过你也别把它太当回事——
-在我的笔记方法里，当我对一个话题做了很多轮次的展开以后，所得到的内容可能已经完全偏离最开始讨论的出发点了。
+注意：虽然这些笔记的文件名整体上概括了它里面的主要内容，不过你也别把它太当回事——在我的笔记方法里，当我对一个话题做了很多轮次的展开以后，所得到的内容可能已经完全偏离最开始讨论的出发点了。
 
 * INRarch NOarch PINN aisc1 dynamics numeric paramPDE
 * ML NNarch data generative optim triz4ml
@@ -37,8 +38,8 @@
 
 * AISClit9 AISClit8 AISClit7 AISClit6 AISClit5 AISClit4 AISClit2 AISClit1
 * NOlit dynSysLit ROMlit
-* TfLit TfLit2
-* freeLit1 freeLit2 freeLit3 freeLit4
+* TfLit2 TfLit
+* freeLit4 freeLit3 freeLit2 freeLit1
 
 ## 旧笔记
 
@@ -46,9 +47,9 @@
 
 我的笔记方法也不是一开始就想清楚的。在那以前，我已经创建了下面的这些笔记。
 
-后来的我其实也做了一些修改和补救。不过，细心的你或许仍然能看出，它们所采用的结构和逻辑，比起前面的笔记多少有一点区别。
+后来的我其实也做了一些修改和补救。不过，细心的你或许仍然能够看出，它们所采用的结构和逻辑，比起前面的笔记多少有一点区别。
 
-我把它们原封不动地呈现在这里。它们记录着我来时的路。
+我把它们原封不动地呈现在这里。某种意义上，它们记录着我来时的路。
 
 * AD widths MR MR2
 * GNN RL largeNN
