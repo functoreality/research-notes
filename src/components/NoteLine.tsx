@@ -1,5 +1,6 @@
 import React, { forwardRef } from 'react';
 import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import type { NoteLine as NoteLineType } from '../types';
 
 interface LineState {
