@@ -221,7 +221,10 @@ export function App({ initialFile, initialLine }: AppProps) {
 
   if (!data) return null;
 
-  const fileList = Object.keys(data.files).sort();
+  // const fileList = Object.keys(data.files).sort();
+  const fileList = Object.keys(data.files).sort((a, b) => 
+    a.localeCompare(b, undefined, { sensitivity: 'base' })
+  );
 
   return (
     <div style={{ 
