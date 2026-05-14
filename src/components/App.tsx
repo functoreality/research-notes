@@ -2,10 +2,12 @@ import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { FileView } from './FileView';
 import { SearchPanel } from './SearchPanel';
 import { Toast } from './Toast';
+import { BacklinkPanel } from './BacklinkPanel';
 import { useTabs } from '../hooks/useTabs';
 import { useSearch } from '../hooks/useSearch';
 import { useFolding } from '../hooks/useFolding';
-import type { NotesData } from '../types';
+import { useBacklinks } from '../hooks/useBacklinks';
+import type { NotesData, BacklinkResult } from '../types';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -109,6 +111,16 @@ export function App({ initialFile, initialLine }: AppProps) {
     startSearch
   } = useSearch(allLines);
 
+  const { getBacklinks, isUniqueBacklink } = useBacklinks(allLines);
+
+  const [backlinkMarker, setBacklinkMarker] = useState<string | null>(null);
+  const [backlinkResults, setBacklinkResults] = useState<BacklinkResult[]>([]);
+
+  const closeBacklinkPanel = useCallback(() => {
+    setBacklinkMarker(null);
+    setBacklinkResults([]);
+  }, []);
+
   useEffect(() => {
     if (!data || initializedRef.current) return;
     initializedRef.current = true;
@@ -138,6 +150,8 @@ export function App({ initialFile, initialLine }: AppProps) {
       if (e.key === 'Escape') {
         if (isSearching) {
           clearSearch();
+        } else if (backlinkMarker) {
+          closeBacklinkPanel();
         }
         if (showFileSelector) {
           setShowFileSelector(false);
@@ -147,7 +161,7 @@ export function App({ initialFile, initialLine }: AppProps) {
     
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSearching, startSearch, clearSearch, showFileSelector]);
+  }, [isSearching, startSearch, clearSearch, showFileSelector, backlinkMarker, closeBacklinkPanel]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -190,6 +204,27 @@ export function App({ initialFile, initialLine }: AppProps) {
   const handleSearchResultClick = useCallback((file: string, lineNum: number) => {
     openTab(file, lineNum);
     setHighlightLine(lineNum);
+  }, [openTab]);
+
+  const handleMarkerClick = useCallback((marker: string) => {
+    const strippedMarker = marker.replace(/^\{|\}$/g, '');
+    const backlinks = getBacklinks(strippedMarker);
+    
+    if (strippedMarker.startsWith('_') && backlinks.length === 1) {
+      const target = backlinks[0];
+      openTab(target.line.file, target.line.lineNum);
+      setHighlightLine(target.line.lineNum);
+    } else {
+      setBacklinkMarker(strippedMarker);
+      setBacklinkResults(backlinks);
+    }
+  }, [getBacklinks, openTab]);
+
+  const handleBacklinkClick = useCallback((file: string, lineNum: number) => {
+    openTab(file, lineNum);
+    setHighlightLine(lineNum);
+    setBacklinkMarker(null);
+    setBacklinkResults([]);
   }, [openTab]);
 
   const handleTabClose = useCallback((tabId: string, e: React.MouseEvent) => {
@@ -368,6 +403,7 @@ export function App({ initialFile, initialLine }: AppProps) {
             globalIndex={data.index}
             onLinkClick={handleLinkClick}
             onLinkNotFound={handleLinkNotFound}
+            onMarkerClick={handleMarkerClick}
             lineStates={folding.lineStates}
             toggleLine={folding.toggleLine}
           />
@@ -396,6 +432,15 @@ export function App({ initialFile, initialLine }: AppProps) {
         onResultClick={handleSearchResultClick}
         onClose={clearSearch}
       />
+      
+      {backlinkMarker && (
+        <BacklinkPanel
+          marker={backlinkMarker}
+          results={backlinkResults}
+          onResultClick={handleBacklinkClick}
+          onClose={closeBacklinkPanel}
+        />
+      )}
       
       {toastMessage && (
         <Toast

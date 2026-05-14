@@ -15,6 +15,7 @@ interface NoteLineProps {
   isHighlighted: boolean;
   onToggle: () => void;
   onLinkClick: (marker: string) => void;
+  onMarkerClick: (marker: string) => void;
   searchHighlights?: [number, number][];
 }
 
@@ -34,6 +35,50 @@ const INDENT_COLORS = [
   'var(--indent-8)',
   'var(--indent-9)',
 ];
+
+function renderMarker(
+  marker: string,
+  onMarkerClick: (marker: string) => void
+): React.ReactNode {
+  const strippedMarker = marker.replace(/^\{|\}$/g, '');
+  const isLiterature = strippedMarker.startsWith('_');
+  const tooltip = isLiterature 
+    ? '点击跳转到唯一引用' 
+    : '点击搜索所有引用';
+  
+  return (
+    <button
+      className="note-marker"
+      onClick={(e) => {
+        e.stopPropagation();
+        onMarkerClick(strippedMarker);
+      }}
+      title={tooltip}
+      style={{
+        cursor: 'pointer',
+        border: 'none',
+        background: 'var(--color-paper-dark)',
+        padding: '1px 4px',
+        borderRadius: 'var(--radius-sm)',
+        marginLeft: 'var(--space-1)',
+        font: 'inherit',
+        fontSize: '10px',
+        color: 'var(--color-text-muted)',
+        transition: 'all var(--transition-fast)'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = 'var(--color-link)';
+        e.currentTarget.style.color = 'var(--color-paper)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = 'var(--color-paper-dark)';
+        e.currentTarget.style.color = 'var(--color-text-muted)';
+      }}
+    >
+      {marker}
+    </button>
+  );
+}
 
 function renderLatex(latex: string): string {
   try {
@@ -150,7 +195,7 @@ function renderContent(
 }
 
 export const NoteLineComponent = forwardRef<HTMLDivElement, NoteLineProps>(
-  function NoteLineComponent({ line, lineState, isHighlighted, onToggle, onLinkClick, searchHighlights }, ref) {
+  function NoteLineComponent({ line, lineState, isHighlighted, onToggle, onLinkClick, onMarkerClick, searchHighlights }, ref) {
     const { isExpanded, isVisible, hasChildren } = lineState;
     
     if (!isVisible) return null;
@@ -174,7 +219,7 @@ export const NoteLineComponent = forwardRef<HTMLDivElement, NoteLineProps>(
       const headingContent = (
         <>
           {content}
-          {line.marker && <span className="note-marker">{line.marker}</span>}
+          {line.marker && renderMarker(line.marker, onMarkerClick)}
         </>
       );
 
@@ -242,7 +287,7 @@ export const NoteLineComponent = forwardRef<HTMLDivElement, NoteLineProps>(
               fontStyle: 'italic'
             }}>
               {content}
-              {line.marker && <span className="note-marker">{line.marker}</span>}
+              {line.marker && renderMarker(line.marker, onMarkerClick)}
               {hasChildren && !isExpanded && line.descendantCount > 0 && 
                 <span className="note-descendants">({line.descendantCount})</span>}
             </span>
@@ -281,7 +326,7 @@ export const NoteLineComponent = forwardRef<HTMLDivElement, NoteLineProps>(
           </button>
           <span className="note-content">
             {content}
-            {line.marker && <span className="note-marker">{line.marker}</span>}
+            {line.marker && renderMarker(line.marker, onMarkerClick)}
             {hasChildren && !isExpanded && line.descendantCount > 0 && 
               <span className="note-descendants">({line.descendantCount})</span>}
           </span>

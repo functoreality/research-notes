@@ -44,3 +44,8 @@ export interface SearchResult {
   line: NoteLine;
   highlights: [number, number][];
 }
+
+export interface BacklinkResult {
+  line: NoteLine;
+  pattern: string;
+}
