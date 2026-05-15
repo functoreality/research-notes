@@ -35,6 +35,12 @@ jobs:
       
       - name: Build
         run: npm run build
+
+      - name: Compress static assets
+        run: |
+          # 为大型 JSON 文件生成 gzip 压缩版本
+          # GitHub Pages 会自动选择压缩版本传输给支持 gzip 的浏览器
+          find dist -name "*.json" -size +100k -exec gzip -k {} \;
       
       - name: Setup Pages
         uses: actions/configure-pages@v4

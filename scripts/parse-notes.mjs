@@ -64,7 +64,7 @@ function parseLine(line, lineNum, fileName) {
     lineNum,
     indent,
     content: content.trim(),
-    originalLine: line,
+    // originalLine: line,  // COMMENTED OUT: 字段未被前端使用，移除以减小 JSON 体积
     marker,
     links,
     isHeading,
