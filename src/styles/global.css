@@ -57,9 +57,9 @@
 }
 
 [data-theme="dark"] {
-  --color-ink: #0d1117;
+  /* --color-ink: #0d1117;
   --color-ink-light: #161b22;
-  --color-ink-muted: #30363d;
+  --color-ink-muted: #30363d; */
   
   --color-paper: #0d1117;
   --color-paper-dark: #161b22;

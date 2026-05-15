@@ -28,7 +28,7 @@ export function Toast({ message, duration = 3000, onClose }: ToastProps) {
         opacity: visible ? 1 : 0,
         transition: 'all 300ms ease',
         backgroundColor: 'var(--color-ink)',
-        color: 'var(--color-paper)',
+        color: 'var(--color-tab-hover)',
         padding: 'var(--space-3) var(--space-4)',
         borderRadius: 'var(--radius-md)',
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
