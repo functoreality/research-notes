@@ -67,7 +67,6 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 		</style>
 	</head>
 	<body>
-		<!-- 初始加载提示 - 在 React 加载前显示，避免黑屏 -->
 		<div id="initial-loading">
 			<div id="initial-loading-content">
 				<div id="initial-loading-spinner">⋯</div>
@@ -77,7 +76,7 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 		</div>
 		<div id="root"></div>
 		<App 
-			client:load 
+			client:only="react" 
 			initialFile={initialFileStr}
 			initialLine={initialLineNum}
 		/>

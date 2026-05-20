@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
 import { FileView } from './FileView';
 import { SearchPanel } from './SearchPanel';
 import { Toast } from './Toast';
@@ -84,11 +84,6 @@ export function App({ initialFile, initialLine }: AppProps) {
   useEffect(() => {
     const base = import.meta.env.BASE_URL || '/';
     const basePath = base.endsWith('/') ? base : base + '/';
-    
-    requestAnimationFrame(() => {
-      const initialLoading = document.getElementById('initial-loading');
-      if (initialLoading) initialLoading.classList.add('hidden');
-    });
     
     fetch(`${basePath}data/notes.json`)
       .then(res => {
@@ -267,6 +262,11 @@ export function App({ initialFile, initialLine }: AppProps) {
     e.stopPropagation();
     closeTab(tabId);
   }, [closeTab]);
+
+  useLayoutEffect(() => {
+    const initialLoadingEl = document.getElementById('initial-loading');
+    if (initialLoadingEl) initialLoadingEl.classList.add('hidden');
+  }, []);
 
   if (loading) {
     const { loaded, total } = downloadProgress;
