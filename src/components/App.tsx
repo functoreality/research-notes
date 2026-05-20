@@ -60,11 +60,6 @@ export function App({ initialFile, initialLine }: AppProps) {
   }, []);
   
   useEffect(() => {
-    const initialLoading = document.getElementById('initial-loading');
-    if (initialLoading) initialLoading.classList.add('hidden');
-  }, []);
-  
-  useEffect(() => {
     const resolved = theme === 'system' ? getSystemTheme() : theme;
     setResolvedTheme(resolved);
     document.documentElement.setAttribute('data-theme', resolved);
@@ -90,12 +85,19 @@ export function App({ initialFile, initialLine }: AppProps) {
     const base = import.meta.env.BASE_URL || '/';
     const basePath = base.endsWith('/') ? base : base + '/';
     
+    requestAnimationFrame(() => {
+      const initialLoading = document.getElementById('initial-loading');
+      if (initialLoading) initialLoading.classList.add('hidden');
+    });
+    
     fetch(`${basePath}data/notes.json`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         
         const contentLength = res.headers.get('content-length');
-        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        const contentEncoding = res.headers.get('content-encoding');
+        const isGzipped = contentEncoding === 'gzip';
+        const total = contentLength && !isGzipped ? parseInt(contentLength, 10) : 0;
         
         if (!res.body) {
           return res.json();
@@ -115,7 +117,7 @@ export function App({ initialFile, initialLine }: AppProps) {
             
             chunks.push(value as BlobPart);
             loaded += value.length;
-            setDownloadProgress({ loaded, total });
+            setDownloadProgress({ loaded, total: isGzipped ? -1 : total });
             return pump();
           });
         };
@@ -268,9 +270,10 @@ export function App({ initialFile, initialLine }: AppProps) {
 
   if (loading) {
     const { loaded, total } = downloadProgress;
+    const isGzipped = total === -1;
     const progressPercent = total > 0 ? Math.round((loaded / total) * 100) : 0;
     const loadedMB = (loaded / 1024 / 1024).toFixed(1);
-    const totalMB = (total / 1024 / 1024).toFixed(1);
+    const totalMB = total > 0 ? (total / 1024 / 1024).toFixed(1) : '';
     
     return (
       <div style={{ 
@@ -289,6 +292,30 @@ export function App({ initialFile, initialLine }: AppProps) {
               <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', lineHeight: 1.6 }}>
                 马上就好...
               </p>
+            </>
+          ) : isGzipped ? (
+            <>
+              <p style={{ color: 'var(--color-text)', marginBottom: '0.5rem' }}>
+                正在努力下载笔记数据
+              </p>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', lineHeight: 1.6 }}>
+                已下载 {loadedMB} MB
+              </p>
+              <div style={{
+                width: '100%',
+                height: '4px',
+                backgroundColor: 'var(--color-paper-line)',
+                borderRadius: '2px',
+                marginTop: '12px',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  width: '30%',
+                  height: '100%',
+                  backgroundColor: 'var(--color-link)',
+                  animation: 'pulse 1.5s ease-in-out infinite'
+                }} />
+              </div>
             </>
           ) : total > 0 ? (
             <>

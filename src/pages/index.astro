@@ -60,6 +60,10 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 					color: #8b949e;
 				}
 			}
+			@keyframes pulse {
+				0%, 100% { opacity: 0.4; transform: translateX(0); }
+				50% { opacity: 1; transform: translateX(100%); }
+			}
 		</style>
 	</head>
 	<body>
