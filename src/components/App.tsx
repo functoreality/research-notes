@@ -357,6 +357,20 @@ export function App({ initialFile, initialLine }: AppProps) {
       flexDirection: 'column' 
     }}>
       <header className="header-bar">
+        <div
+          className={`tab ${HOME_TAB_ID === activeTabId ? 'active' : ''}`}
+          onClick={() => switchTab(HOME_TAB_ID)}
+          style={{ flexShrink: 0 }}
+        >
+          <span style={{ 
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center'
+          }}>
+            ⌂
+          </span>
+        </div>
+        
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -366,45 +380,29 @@ export function App({ initialFile, initialLine }: AppProps) {
           gap: '1px',
           scrollbarWidth: 'none'
         }}>
-          {tabs.map(tab => {
-            const isHome = tab.id === HOME_TAB_ID;
-            
-            return (
-              <div
-                key={tab.id}
-                className={`tab ${tab.id === activeTabId ? 'active' : ''}`}
-                onClick={() => switchTab(tab.id)}
+          {tabs.filter(tab => tab.id !== HOME_TAB_ID).map(tab => (
+            <div
+              key={tab.id}
+              className={`tab ${tab.id === activeTabId ? 'active' : ''}`}
+              onClick={() => switchTab(tab.id)}
+            >
+              <span style={{ 
+                maxWidth: '120px', 
+                overflow: 'hidden', 
+                textOverflow: 'ellipsis',
+                fontFamily: 'var(--font-display)'
+              }}>
+                {tab.label}
+              </span>
+              <button
+                className="tab-close"
+                onClick={(e) => handleTabClose(tab.id, e)}
+                aria-label="关闭标签"
               >
-                {isHome ? (
-                  <span style={{ 
-                    fontSize: '14px',
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}>
-                    ⌂
-                  </span>
-                ) : (
-                  <>
-                    <span style={{ 
-                      maxWidth: '120px', 
-                      overflow: 'hidden', 
-                      textOverflow: 'ellipsis',
-                      fontFamily: 'var(--font-display)'
-                    }}>
-                      {tab.label}
-                    </span>
-                    <button
-                      className="tab-close"
-                      onClick={(e) => handleTabClose(tab.id, e)}
-                      aria-label="关闭标签"
-                    >
-                      ×
-                    </button>
-                  </>
-                )}
-              </div>
-            );
-          })}
+                ×
+              </button>
+            </div>
+          ))}
         </div>
         
         <div style={{ 
