@@ -239,9 +239,13 @@ export function App({ initialFile, initialLine }: AppProps) {
         alignItems: 'center', 
         justifyContent: 'center' 
       }}>
-        <div style={{ textAlign: 'center', fontFamily: 'var(--font-body)' }}>
+        <div style={{ textAlign: 'center', fontFamily: 'var(--font-body)', maxWidth: '320px' }}>
           <div style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.5 }}>⋯</div>
-          <p style={{ color: 'var(--color-text-muted)' }}>加载中</p>
+          <p style={{ color: 'var(--color-text)', marginBottom: '0.5rem' }}>正在努力加载笔记数据</p>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', lineHeight: 1.6 }}>
+            数据量大概 2MB，一分钟之内应该能完成加载<br/>
+            耐心等我一会儿啦——
+          </p>
         </div>
       </div>
     );
