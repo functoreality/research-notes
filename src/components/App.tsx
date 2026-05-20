@@ -60,6 +60,11 @@ export function App({ initialFile, initialLine }: AppProps) {
   }, []);
   
   useEffect(() => {
+    const initialLoading = document.getElementById('initial-loading');
+    if (initialLoading) initialLoading.classList.add('hidden');
+  }, []);
+  
+  useEffect(() => {
     const resolved = theme === 'system' ? getSystemTheme() : theme;
     setResolvedTheme(resolved);
     document.documentElement.setAttribute('data-theme', resolved);
@@ -121,8 +126,6 @@ export function App({ initialFile, initialLine }: AppProps) {
         const json = typeof textOrJson === 'string' ? JSON.parse(textOrJson) : textOrJson;
         setData(json as NotesData);
         setLoading(false);
-        const initialLoading = document.getElementById('initial-loading');
-        if (initialLoading) initialLoading.classList.add('hidden');
       })
       .catch(err => {
         setError(err.message);
