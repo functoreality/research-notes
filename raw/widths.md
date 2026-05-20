@@ -214,7 +214,7 @@
 * [cohenSlidesWidth](http://smai.emath.fr/cemracs/cemracs21/data/presentation-speakers/cohen.pdf)
 	* "approximation of multivariate functions : reduced modeling and recovery from uncomplete measurements"
 	* 训练 PDE 解算子、反问题等，数据采样可给定或 active sample（即自行选取采样点）
-	* p48/271 $-\nabla\cdot(a\nabla u)=f$，$a\in L^\infty$ 分片常数，解流形的 Kolmogorov n-width 满足（用多元泰勒多项式逼近）$d_n(K)_{H^1}=O(\exp(-ck))$，其中 $n=\binom{k+d}k$（$k\lessim n^{1/d}$）
+	* p48/271 $-\nabla\cdot(a\nabla u)=f$，$a\in L^\infty$ 分片常数，解流形的 Kolmogorov n-width 满足（用多元泰勒多项式逼近）$d_n(K)_{H^1}=O(\exp(-ck))$，其中 $n=\binom{k+d}k$（$k\lesssim n^{1/d}$）
 		> Darcy flow；2022-02-15 讨论，若变化的是 $f$ 和边界条件则会在有限 $n$ 衰减到 0，因为解用 Green 函数写后，解流形维数显然是有限的
 	* p70/271 线性降维不适用于参数化的双曲方程：$u_t+au_x=0$，$d_n(H)_{L^p}\sim n^{-1/p}$；{_o1mh6n}
 		> `1903.08488` 对波方程推导了衰减速率

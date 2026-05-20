@@ -161,8 +161,8 @@
 * `MSNN-2307.08934` boosting 提高 INR 拟合精度，讨论新加入网络求和权重、频率先验设置方式，PINN 有更多细节
 	* "Multi-stage Neural Networks: Function Approximator of Machine Precision", JCP
 		* Wang, Yongji; Lai, Ching-Yao; 
-		> 2024-05-03 lyp在知乎上推荐
-	> （lyp）idea是交替使用adam和lbfgs优化器，personal我自己做实验也觉得这个特别work，特别喜欢这种simple trick but works）{_o53h2k}
+		> 2024-05-03 陆一平在知乎上推荐
+	> （陆一平）idea是交替使用adam和lbfgs优化器，personal我自己做实验也觉得这个特别work，特别喜欢这种simple trick but works）{_o53h2k}
 		* fig1d 画的是（训练各阶段）先 Adam 后 LBFGS；从曲线图上看纯 Adam 会到平台期，纯 LBFGS 会提前终止迭代（似乎是满足了内置的停机准则）
 		* 如果考虑多阶段训练，确实是交替用两种优化器；不过各阶段被训练的网络不同
 		* （评）Adam 阶段的总迭代步数怎么选的？判断是否到平台期？未确认文章细节

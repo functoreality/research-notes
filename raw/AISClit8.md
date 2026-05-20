@@ -654,10 +654,10 @@
 		* 单连通情形：1. 2D 区域内随机采样 20 个控制点，2. 边界提取算法找 closed envelope（非凸），3. 提取出的边界点作为闭合 B-spline 的控制点，4. 离散到均匀网格；{_q26a91}
 			* figS1 示例；步骤 2 有参数 α∈(0,1) 控制 envelope 的 tightness，越大则区域越复杂（训练数据默认 α=0.8）
 		* secB.2 边界提取使用标准的 boundary tracing 算法
-* SCaSML-2504.16172 高维方程 PINN/DRM 得粗解，精解残差用 Monte Carlo 方法估计 by lyp
+* SCaSML-2504.16172 高维方程 PINN/DRM 得粗解，精解残差用 Monte Carlo 方法估计 by 陆一平
 	* "Physics-Informed Inference Time Scaling for Solving High-Dimensional PDE via Defect Correction"
 		* Fan, Zexi; Sun, Yan; Yang, Shihao; Lu, Yiping; 
-		> created on 2026-01-27，lyp票圈介绍的自己工作
+		> created on 2026-01-27，来自作者票圈介绍的自己工作
 	* fig1b,fig3a 求解流程，设方程形如 线性+非线性项 $Au+f(u)=0$；{_q1r87z}
 		* step1 训练得近似解 $v$ 满足 $Av+f(v)=\epsilon$（原文称为 surrogate model）
 		* step2 残差 $u-v$ 满足 semi-linear 方程，可用随机方法（Feynman-Kac）解

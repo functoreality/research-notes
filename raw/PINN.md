@@ -46,7 +46,7 @@
 	* 注：解正问题最早似乎是 `Lagaris1998ANN`，BC 靠惩罚项的 `Lagaris2000NNM`；另外 DGM 也比它早
 		* PINN 术语指代问题，`2022-09-16`(CSImeet2) 导师认为它只用来强调 PDE loss，不应用来指代 $x\mapsto y$ 形式的 PDE ansatz
 	* loss 可能性（通常无监督）：{n3bg3i}
-		* lyp学长 ICLR2022：低维不光滑函数用 PINN，高维光滑函数用 DRM；用非参统计理论可说明
+		* 陆一平 ICLR2022：低维不光滑函数用 PINN，高维光滑函数用 DRM；用非参统计理论可说明
 			* 前者还应结合 Sobolev training；若要在低维用 DRM，对 $|\nabla u|^2$ 采样应多于其他项；{o4gh1t}
 				* 相关：((o4gh1a))Sobolev 空间
 			* 之前在组会讲的 `2021-09-15`(dbGrpMeet) scaling law，DRM 差于 PINN 的理论分析，改进方案
