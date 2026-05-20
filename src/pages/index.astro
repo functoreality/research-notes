@@ -14,8 +14,63 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 		<meta name="generator" content={Astro.generator} />
 		<title>Research Notes</title>
 		<meta name="description" content="Personal research notes with hierarchical folding and interlinking" />
+		<style>
+			/* 初始加载提示样式 - 在 CSS 加载前显示 */
+			#initial-loading {
+				position: fixed;
+				inset: 0;
+				background-color: #faf9f7;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				z-index: 9999;
+			}
+			#initial-loading.hidden {
+				display: none;
+			}
+			#initial-loading-content {
+				text-align: center;
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+				max-width: 320px;
+				padding: 20px;
+			}
+			#initial-loading-spinner {
+				font-size: 2rem;
+				margin-bottom: 1rem;
+				opacity: 0.5;
+			}
+			#initial-loading-text {
+				color: #4a5568;
+				font-size: 14px;
+				margin-bottom: 0.5rem;
+			}
+			#initial-loading-hint {
+				color: #718096;
+				font-size: 13px;
+				line-height: 1.6;
+			}
+			@media (prefers-color-scheme: dark) {
+				#initial-loading {
+					background-color: #0d1117;
+				}
+				#initial-loading-text {
+					color: #c9d1d9;
+				}
+				#initial-loading-hint {
+					color: #8b949e;
+				}
+			}
+		</style>
 	</head>
 	<body>
+		<!-- 初始加载提示 - 在 React 加载前显示，避免黑屏 -->
+		<div id="initial-loading">
+			<div id="initial-loading-content">
+				<div id="initial-loading-spinner">⋯</div>
+				<p id="initial-loading-text">正在努力加载笔记数据</p>
+				<p id="initial-loading-hint">数据量大概 2MB，一分钟之内应该能加载好<br/>耐心等我一会儿啦——</p>
+			</div>
+		</div>
 		<div id="root"></div>
 		<App 
 			client:load 

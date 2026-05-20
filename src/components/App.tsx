@@ -37,6 +37,8 @@ export function App({ initialFile, initialLine }: AppProps) {
   const [data, setData] = useState<NotesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState({ loaded: 0, total: 0 });
+  const [isParsing, setIsParsing] = useState(false);
   const [showFileSelector, setShowFileSelector] = useState(false);
   const [theme, setTheme] = useState<Theme>('system');
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
@@ -82,14 +84,45 @@ export function App({ initialFile, initialLine }: AppProps) {
   useEffect(() => {
     const base = import.meta.env.BASE_URL || '/';
     const basePath = base.endsWith('/') ? base : base + '/';
+    
     fetch(`${basePath}data/notes.json`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
+        
+        const contentLength = res.headers.get('content-length');
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        
+        if (!res.body) {
+          return res.json();
+        }
+        
+        const reader = res.body.getReader();
+        const chunks: BlobPart[] = [];
+        let loaded = 0;
+        
+        const pump = (): Promise<unknown> => {
+          return reader.read().then(({ done, value }) => {
+            if (done) {
+              setIsParsing(true);
+              const blob = new Blob(chunks);
+              return blob.text();
+            }
+            
+            chunks.push(value as BlobPart);
+            loaded += value.length;
+            setDownloadProgress({ loaded, total });
+            return pump();
+          });
+        };
+        
+        return pump() as Promise<string>;
       })
-      .then(json => {
+      .then(textOrJson => {
+        const json = typeof textOrJson === 'string' ? JSON.parse(textOrJson) : textOrJson;
         setData(json as NotesData);
         setLoading(false);
+        const initialLoading = document.getElementById('initial-loading');
+        if (initialLoading) initialLoading.classList.add('hidden');
       })
       .catch(err => {
         setError(err.message);
@@ -231,6 +264,11 @@ export function App({ initialFile, initialLine }: AppProps) {
   }, [closeTab]);
 
   if (loading) {
+    const { loaded, total } = downloadProgress;
+    const progressPercent = total > 0 ? Math.round((loaded / total) * 100) : 0;
+    const loadedMB = (loaded / 1024 / 1024).toFixed(1);
+    const totalMB = (total / 1024 / 1024).toFixed(1);
+    
     return (
       <div style={{ 
         minHeight: '100vh', 
@@ -241,11 +279,47 @@ export function App({ initialFile, initialLine }: AppProps) {
       }}>
         <div style={{ textAlign: 'center', fontFamily: 'var(--font-body)', maxWidth: '320px' }}>
           <div style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.5 }}>⋯</div>
-          <p style={{ color: 'var(--color-text)', marginBottom: '0.5rem' }}>正在努力加载笔记数据</p>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', lineHeight: 1.6 }}>
-            数据量大概 2MB，一分钟之内应该能完成加载<br/>
-            耐心等我一会儿啦——
-          </p>
+          
+          {isParsing ? (
+            <>
+              <p style={{ color: 'var(--color-text)', marginBottom: '0.5rem' }}>正在努力解压数据</p>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', lineHeight: 1.6 }}>
+                马上就好...
+              </p>
+            </>
+          ) : total > 0 ? (
+            <>
+              <p style={{ color: 'var(--color-text)', marginBottom: '0.5rem' }}>
+                正在努力下载笔记数据
+              </p>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', lineHeight: 1.6 }}>
+                {progressPercent}% ({loadedMB} / {totalMB} MB)
+              </p>
+              <div style={{
+                width: '100%',
+                height: '4px',
+                backgroundColor: 'var(--color-paper-line)',
+                borderRadius: '2px',
+                marginTop: '12px',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  width: `${progressPercent}%`,
+                  height: '100%',
+                  backgroundColor: 'var(--color-link)',
+                  transition: 'width 0.2s ease'
+                }} />
+              </div>
+            </>
+          ) : (
+            <>
+              <p style={{ color: 'var(--color-text)', marginBottom: '0.5rem' }}>正在努力加载笔记数据</p>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', lineHeight: 1.6 }}>
+                数据量大概 2MB，一分钟之内应该能加载好<br/>
+                耐心等我一会儿啦——
+              </p>
+            </>
+          )}
         </div>
       </div>
     );
