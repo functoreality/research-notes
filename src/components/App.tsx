@@ -44,13 +44,13 @@ export function App({ initialFile, initialLine }: AppProps) {
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
-  const { tabs, activeTab, activeTabId, openTab, closeTab, switchTab } = useTabs();
+  const { tabs, activeTab, activeTabId, isHomeTab, openTab, closeTab, switchTab, HOME_TAB_ID } = useTabs();
   const [highlightLine, setHighlightLine] = useState<number | null>(null);
   const fileSelectorRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
   const mainRef = useRef<HTMLElement>(null);
   
-  const activeFile = activeTab ? data?.files[activeTab.file] : null;
+  const activeFile = isHomeTab ? null : (activeTab ? data?.files[activeTab.file] : null);
   
   const folding = useFolding(activeFile?.lines || [], highlightLine);
   
@@ -366,29 +366,45 @@ export function App({ initialFile, initialLine }: AppProps) {
           gap: '1px',
           scrollbarWidth: 'none'
         }}>
-          {tabs.map(tab => (
-            <div
-              key={tab.id}
-              className={`tab ${tab.id === activeTabId ? 'active' : ''}`}
-              onClick={() => switchTab(tab.id)}
-            >
-              <span style={{ 
-                maxWidth: '120px', 
-                overflow: 'hidden', 
-                textOverflow: 'ellipsis',
-                fontFamily: 'var(--font-display)'
-              }}>
-                {tab.label}
-              </span>
-              <button
-                className="tab-close"
-                onClick={(e) => handleTabClose(tab.id, e)}
-                aria-label="关闭标签"
+          {tabs.map(tab => {
+            const isHome = tab.id === HOME_TAB_ID;
+            
+            return (
+              <div
+                key={tab.id}
+                className={`tab ${tab.id === activeTabId ? 'active' : ''}`}
+                onClick={() => switchTab(tab.id)}
               >
-                ×
-              </button>
-            </div>
-          ))}
+                {isHome ? (
+                  <span style={{ 
+                    fontSize: '14px',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    ⌂
+                  </span>
+                ) : (
+                  <>
+                    <span style={{ 
+                      maxWidth: '120px', 
+                      overflow: 'hidden', 
+                      textOverflow: 'ellipsis',
+                      fontFamily: 'var(--font-display)'
+                    }}>
+                      {tab.label}
+                    </span>
+                    <button
+                      className="tab-close"
+                      onClick={(e) => handleTabClose(tab.id, e)}
+                      aria-label="关闭标签"
+                    >
+                      ×
+                    </button>
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
         
         <div style={{ 
@@ -397,23 +413,27 @@ export function App({ initialFile, initialLine }: AppProps) {
           gap: '2px',
           flexShrink: 0
         }}>
-          <button 
-            className="icon-btn" 
-            onClick={folding.expandAll}
-            title="展开全部 (可用于页面内搜索)"
-            aria-label="展开全部"
-          >
-            ↓
-          </button>
-          
-          <button 
-            className="icon-btn" 
-            onClick={folding.collapseAll}
-            title="折叠全部"
-            aria-label="折叠全部"
-          >
-            ↑
-          </button>
+          {!isHomeTab && (
+            <>
+              <button 
+                className="icon-btn" 
+                onClick={folding.expandAll}
+                title="展开全部 (可用于页面内搜索)"
+                aria-label="展开全部"
+              >
+                ↓
+              </button>
+              
+              <button 
+                className="icon-btn" 
+                onClick={folding.collapseAll}
+                title="折叠全部"
+                aria-label="折叠全部"
+              >
+                ↑
+              </button>
+            </>
+          )}
           
           <button 
             className="icon-btn" 

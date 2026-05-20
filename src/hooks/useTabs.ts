@@ -2,45 +2,51 @@ import { useState, useCallback, useEffect } from 'react';
 import type { Tab } from '../types';
 
 const STORAGE_KEY = 'notes-tabs';
+const HOME_TAB_ID = 'home';
+
+const HOME_TAB: Tab = {
+  id: HOME_TAB_ID,
+  file: '',
+  lineNum: null,
+  label: '首页'
+};
 
 export function useTabs() {
   const [tabs, setTabs] = useState<Tab[]>(() => {
-    // Initialize from localStorage
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
-          return JSON.parse(saved) as Tab[];
+          const savedTabs = JSON.parse(saved) as Tab[];
+          return [HOME_TAB, ...savedTabs];
         } catch {
           // Invalid data, ignore
         }
       }
     }
-    return [];
+    return [HOME_TAB];
   });
   
-  const [activeTabId, setActiveTabId] = useState<string | null>(() => {
-    if (tabs.length > 0) {
-      return tabs[0].id;
-    }
-    return null;
+  const [activeTabId, setActiveTabId] = useState<string>(() => {
+    return HOME_TAB_ID;
   });
 
-  // persist to localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tabs));
+      const tabsToSave = tabs.filter(t => t.id !== HOME_TAB_ID);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tabsToSave));
     }
   }, [tabs]);
 
   const activeTab = tabs.find(t => t.id === activeTabId) || null;
+  
+  const isHomeTab = activeTabId === HOME_TAB_ID;
 
   const openTab = useCallback((file: string, lineNum: number | null = null) => {
     const label = lineNum 
       ? `${file}:${lineNum}`
       : file;
     
-    // Check if tab already exists
     const existingTab = tabs.find(t => 
       t.file === file && t.lineNum === lineNum
     );
@@ -50,7 +56,6 @@ export function useTabs() {
       return existingTab;
     }
     
-    // Create new tab
     const newTab: Tab = {
       id: `${file}-${lineNum || 'full'}-${Date.now()}`,
       file,
@@ -64,16 +69,15 @@ export function useTabs() {
   }, [tabs]);
 
   const closeTab = useCallback((tabId: string) => {
+    if (tabId === HOME_TAB_ID) return;
+    
     setTabs(prev => {
       const newTabs = prev.filter(t => t.id !== tabId);
       
-      // If closing active tab, switch to another
-      if (activeTabId === tabId && newTabs.length > 0) {
+      if (activeTabId === tabId) {
         const closedIndex = prev.findIndex(t => t.id === tabId);
-        const newActiveIndex = Math.min(closedIndex, newTabs.length - 1);
-        setActiveTabId(newTabs[newActiveIndex].id);
-      } else if (newTabs.length === 0) {
-        setActiveTabId(null);
+        const newActiveIndex = Math.max(0, Math.min(closedIndex - 1, newTabs.length - 1));
+        setActiveTabId(newTabs[newActiveIndex]?.id || HOME_TAB_ID);
       }
       
       return newTabs;
@@ -84,12 +88,19 @@ export function useTabs() {
     setActiveTabId(tabId);
   }, []);
 
+  const openHome = useCallback(() => {
+    setActiveTabId(HOME_TAB_ID);
+  }, []);
+
   return {
     tabs,
     activeTab,
     activeTabId,
+    isHomeTab,
     openTab,
     closeTab,
-    switchTab
+    switchTab,
+    openHome,
+    HOME_TAB_ID
   };
 }
