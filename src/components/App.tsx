@@ -280,7 +280,8 @@ export function App({ initialFile, initialLine }: AppProps) {
     
     return (
       <div style={{ 
-        minHeight: '100vh', 
+        position: 'fixed',
+        inset: 0,
         backgroundColor: 'var(--color-paper)', 
         display: 'flex', 
         alignItems: 'center', 
@@ -361,7 +362,8 @@ export function App({ initialFile, initialLine }: AppProps) {
   if (error) {
     return (
       <div style={{ 
-        minHeight: '100vh', 
+        position: 'fixed',
+        inset: 0,
         backgroundColor: 'var(--color-paper)', 
         display: 'flex', 
         alignItems: 'center', 
