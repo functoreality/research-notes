@@ -264,9 +264,12 @@ export function App({ initialFile, initialLine }: AppProps) {
   }, [closeTab]);
 
   useLayoutEffect(() => {
-    const initialLoadingEl = document.getElementById('initial-loading');
-    if (initialLoadingEl) initialLoadingEl.classList.add('hidden');
-  }, []);
+    const { loaded } = downloadProgress;
+    if (loaded > 0) {
+      const initialLoadingEl = document.getElementById('initial-loading');
+      if (initialLoadingEl) initialLoadingEl.classList.add('hidden');
+    }
+  }, [downloadProgress.loaded]);
 
   if (loading) {
     const { loaded, total } = downloadProgress;
