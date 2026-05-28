@@ -159,6 +159,22 @@
 						* 或许包括((ncac02))CNN 的 DFF
 				* （不限于工作机理解释的）一般可视化：((n37n3t))loss landscape，((ncac0i))梯度图
 				* ((_ncn95g))训练前、训练中、训练后与推理阶段 需要的可视化方案有区别
+				* attention map，为((n7pe3p))attention score 计算结果的可视化
+					* attention sink；{q5ra8m}
+						* 研究话题：领域内((_q5rb8p))早期基本利用，中期机制理解，后期策略性消除
+						* 位置：((_q5rb6w))LLM 常 [BOS]，偶尔 强分隔符、换行、弱语义 token；ViT 背景 patch；扩散语言模型 moving sinks
+						* 危害
+							* ((_q5rb3y))低数值精度适配、训练不稳定、被攻击隐患、注意力错配（导致幻觉）
+							* ((_q5rb7t))也有观点认为 sink 作为归纳偏置有益
+							* 上下文外推适配差((_q5rf1t))，因 YaRN 等外推方案影响注意力计算、破坏模型已学出的 attn sink
+						* 解决方式
+							* 去除归一化要求：((n7pe44))softmax 换 softmax1
+							* 输出加门控：((_q5ra8x))Qwen gated attn
+							* 人为引入冗余 token，((_q5rb63))ViT 常用，LLM 相对不适用；{q5rb6k}
+								* 相关：((n4t96h))特殊 token
+							* ((_q5rb8a))可学 attn bias、训练过程干预
+					* 解读谨慎：注意力强未必表明有信息流动，前提为((q5rb2r))attn head 真正激活
+					* 规律不明显时可能考虑((_q5rb5i))消除 attn sink，可净化 attn map
 		* ((_o84f7p))认为重要的不是 NN 参数、结构，而是“等效交互”，不同结构网络殊途同归
 		* DL 中的可解释性（不限于 NN 架构）：{nca97g}
 			* RL 中((_ncaa5n))MBRL 可解释性好于 MFRL
@@ -420,9 +436,11 @@
 				* 内积变种：SWin V2 余弦注意力，((q15j8k))QK RMSNorm
 				* 注意力可加 dropout((o31f1s))
 				* attn-bias
+				* 这里讨论计算方式；计算结果分析见((q5ra8m))attn-map
 			* softmax
 				* ((_n7pe3s))softmax 改 softmax1（分母 +1），从而模型无需训出异常大权重值，提高权重可压缩性¹；{n7pe44}
 					* ¹相关：((n7pe48))模型压缩
+					* 也用于缓解((q5ra8m))attention sink
 				* Galerkin Transformer 去掉 softmax、所得模型可从数值分析解读，两种乘法结合方式下分别对应 Galerkin、Fourier
 			* 前后处理
 				* 注意力层的 LayerNorm 可((o3ll25))引入 modulation
@@ -461,6 +479,7 @@
 				* 相关，((p5kf7e))grid-based INR 中网格插值操作视为特殊的交叉注意力，可比较直接基于交叉注意力的 INR
 			* 非注意力的信息交互机制
 				* 利用 2D 网格结构，((n8hm0w))AFNO 将注意力换为 FFT（有全局性质）后对各点特征过 MLP
+			* 工作模式解读：各注意力头仅在少数情况真激活((_q5rb27))，其余情况是在找 ((q5ra8m))attn sink；{q5rb2r}
 		* 输入长度问题，原始注意力计算量太大；{n4pl5i}
 			* 相关：((o2sn4y))修改位置编码以扩大上下文窗口
 			* ((_n39f7h))展望：到万量级只需加显卡，十万 linear attention，百万可能需要 recursive encoding 和增加 long-term memory

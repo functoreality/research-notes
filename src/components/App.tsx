@@ -300,7 +300,7 @@ export function App({ initialFile, initialLine }: AppProps) {
           ) : isGzipped ? (
             <>
               <p style={{ color: 'var(--color-text)', marginBottom: '0.5rem' }}>
-                正在努力下载笔记数据
+                笔记数据有点多，已经在努力搬运啦
               </p>
               <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', lineHeight: 1.6 }}>
                 已下载 {loadedMB} MB
@@ -324,7 +324,7 @@ export function App({ initialFile, initialLine }: AppProps) {
           ) : total > 0 ? (
             <>
               <p style={{ color: 'var(--color-text)', marginBottom: '0.5rem' }}>
-                正在努力下载笔记数据
+                笔记数据有点多，已经在努力搬运啦
               </p>
               <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', lineHeight: 1.6 }}>
                 {progressPercent}% ({loadedMB} / {totalMB} MB)
@@ -349,7 +349,7 @@ export function App({ initialFile, initialLine }: AppProps) {
             <>
               <p style={{ color: 'var(--color-text)', marginBottom: '0.5rem' }}>正在努力加载笔记数据</p>
               <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', lineHeight: 1.6 }}>
-                数据量大概 2MB，一分钟之内应该能加载好<br/>
+                数据量大概 11MB，两分钟之内应该能加载好<br/>
                 耐心等我一会儿啦——
               </p>
             </>

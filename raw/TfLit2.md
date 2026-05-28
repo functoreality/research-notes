@@ -305,6 +305,89 @@
 		> 把词表里的 200064 个 token 随机分批，每批约 8000 个，构造一条对话样本 ——query 是打乱后的词列表加上「请重复以上内容」的指令，answer 是原样复制。{_q5am6c}
 		> 如此循环，总共只生成了约 500 条合成数据，占总 SFT 数据量约 1%，确保每个 token 至少作为生成目标出现 20 次。
 		> 这个设计就是在给每个 token 一个生成频率的下限，像是在 SFT 阶段给整个词表做一次「保底校准」：即便某些 token 在真实对话数据中极少出现，也不会完全失去作为输出目标的训练信号。
+* 2604.10098 attention sink 综述
+	* "Attention Sink in Transformers: A Survey on Utilization, Interpretation, and Mitigation"
+		* Su, Zunhai; Zhang, Hengyuan; Wu, Wei; Zhang, Yifan; Liu, Yaxiu; Xiao, He; Yang, Qingyao; Sun, Yuxuan; Yang, Rui; Zhang, Chao; Fan, Keyu; Ye, Weihao; Xiong, Jing; Shen, Hui; Tao, Chaofan; Wu, Taiqiang; Wan, Zhongwei; Qian, Yulei; Xie, Yuchen; Wong, Ngai; 
+		> created on 2026-05-27
+	* [公众号报道](https://mp.weixin.qq.com/s/lu8qvvJujGShtM7eHLeyBA)
+		> 初期（2023 年起）—— 基本利用：早期研究的重点是对 Attention Sink 的实证利用，关注如何利用其固有特性或应对其直接影响。这一阶段将 Attention Sink 视为可被利用的实际现象。{_q5rb8p}
+			> Sink Token 保留（Sink Token Preservation）：将 Sink 作为永久性的注意力锚点加以保留，在压缩中稳定注意力分布。
+			> 注意力重分配（Attention Redistribution）则更进一步，主动识别 Sink 并将其占用的权重转移到真正承载语义的 Token 上。
+			> 可学习前缀 token（Learnable Prefix Tokens）不再依赖自然形成的 Sink，而是在输入序列前端插入可训练的前缀，成为显式、可控的替代性 Sink。
+			> Sink Token 重利用（Sink Token Repurposing），则另辟蹊径，利用 Sink 稳定、高注意力的固有属性，完成原始注意力管理之外的专门任务，如攻击植入、防御检测等。
+			> 从策略逻辑看：Sink Token 保留采取被动方式；注意力重分配实施主动干预；可学习前缀 Token 采用更主动的构造策略；Sink Token 重利用则借助 Sink 的固有属性完成基础注意力管理之外的专门任务。
+		> 中期（2024 年起）—— 机制理解：随着实证应用成熟，研究重点开始深入探究 Attention Sink 背后的成因。这一阶段聚焦于可解释性，旨在精细理解驱动这一现象的内部机制。
+			> Softmax 限制与空操作理论（Softmax Limitations & No-Op Theory）：Softmax 求和为 1 的刚性约束，使得当查询与所有键都不相关时，模型没有「什么都不选」的选项。
+				> 于是被迫将注意力集中到语义无关的 Token 上，同时将这些 Token 的值向量学得极小，从而使注意力输出趋近于零，实现空操作。
+			> 异常值电路（Outlier Circuits）则揭示了模型内部存在系统性的离群值，它们相互关联，共同导致了 Sink 的产生。
+			> 隐式注意力偏置（Implicit Attention Bias）发现，Sink Token 对每个查询的贡献几乎恒定，本质上充当了固定偏置项。
+			> 几何锚点（Geometric Anchoring）进一步表明，Sink 在高维表示空间中充当稳定参考点，起到锚定和稳定表示空间的作用。
+			> Anti-Overmixing
+			> Active-Dormant Attention
+			> Mix-Compress-Refine 等
+		> 近期（2025 年起）—— 策略性消除：基于机理洞察，最新的研究重点转向直接的结构性消除。开发系统的消除框架已成为当前研究的前沿。{_q5rb8a}
+			> 门控注意力（Gated Attention）在注意力输出后添加可学习的门控单元，模型需要空操作时直接关门，无需制造极端 Logits 和 Sink Token。
+			> 改良 Softmax（Modified Softmax Functions）则直接修改 Softmax 函数，从根本上消除求和为 1 的约束。
+			> 可学习注意力偏置（Learnable Attention Bias）显式引入偏置参数，让模型用干净的显式偏置替代隐式 Sink。
+			> 预训练干预（Pre-training Interventions）不修改架构，而是在训练过程中施加干预，从训练抑制 Sink 的形成。
+			> 离群值驱动重缩放（Outlier-Driven Rescaling）
+			> 架构隔离（Architectural Isolation）
+			> 从策略类型看，这些消除方法可以归为两类。
+				> 第一类是提供显式替代品，使 Attention Sink 不再必要，包括门控注意力和可学习注意力偏置。
+				> 第二类是切断因果链，从根源消除 Attention Sink，包括改良 Softmax 和预训练干预。
+				* （评）第一类靠疏，第二类靠堵？
+	* [知乎解读](https://www.zhihu.com/question/2030991754187502541/answer/2039728164306474508)
+		* attention map 含义解读需谨慎，高注意力权重的未必是真信息流动
+			> 过去五年，”attention map 可视化”是 NLP 可解释性研究最广泛使用的工具之一。
+				> 无数 paper 在论证”模型在关注 X”或者”模型在做 Y 推理”的时候，都是把 attention 权重画出来，找哪个 token 权重高，然后说”看，模型 attend 到了这里”。
+			> 但 attention sink 的结论却是 模型权重最高的那个 token，可能恰恰是它’啥都不想 attend’的标志。
+				> 这件事 意味着大量基于 attention map 的可解释性工作的前提假设可能根本不成立。
+				> 当你看到一个 head 把 80% 注意力给了 <bos>，传统解读是”模型在关注开头”，但真实含义可能是”这个 head 在这一层就是个咸鱼，它根本没在工作”。
+			* 注意力头仅在少数情况被（特定输入）真正激活；{_q5rb27}
+				> 综述里 Active-Dormant Attention Heads（2024）把这件事讲得最清楚——
+				> 大量 head 在大部分时间里其实是 dormant 状态，只有少数时候会被某个特定输入”激活”。
+				> Dormant 状态下它们看起来在 attend sink token，实际是在打瞌睡。
+			> 所以NLP 可解释性领域至少有两件事需要重做：
+				> 第一，所有”attention rollout”、”attention flow”类的可视化方法，都需要先把 sink mass 剔除掉再看；
+				> 第二，”哪个 head 重要、哪个 head 可以剪”这件事，必须按 head 是否真正活跃来分类，不能按 attention 强度。
+		* 修正动机：低精度训推适配，梯度 sink，被攻击隐患，（注意力错配导致）幻觉；{_q5rb3y}
+			* 低精度训推 原因：模型为创造 attn sink 生成了过大激活值，导致不适配低数值精度
+			> 综述列的 Attention Sinks Induce Gradient Sinks 这篇是 2026 年的工作，
+				> 它告诉你 sink token 不仅吸 attention，还吸梯度——
+				> 也就是说反向传播过程中，大量梯度也会被压扁在 sink token 上，造成训练动力学的扭曲。
+				> 这个发现把 attention sink 从”推理时的小麻烦”上升到”训练时的根本性隐患”。
+				> 它解释了为什么有些超长上下文训练总是不稳定。{_q5rb4c}
+			> sink token 可以变成攻击入口。
+				> 前者利用 attention sink 诱发多模态幻觉攻击，
+				> 后者发现 prefix trigger 更容易和浅层 sink 位置对齐，从而恢复本应被 unlearning 抹掉的知识。
+				> 注意，这不是说攻击者随便戳一下 sink 激活就能开天眼；更准确地讲是 sink 提供了一条位置稳定、注意力集中的信息通道，攻击者可以顺着这条通道设计触发器。
+				> 这件事对正在跑 alignment 评测、做 RLHF 后训练、做 unlearning 合规的公司来说，是件不小的事了。
+			* 增强幻觉：注意力过多分配给 sink 而非关键信息，长上下文、多模态情形造成幻觉
+				> 长上下文+多模态的幻觉问题。
+				>  这个更加隐形，综述里多模态 LLM 那一节有不少工作都跟”通过重新分配 attention 来缓解幻觉”有关——VASparse、Vocabulary Fixation、See What You Are Told、Shallow Focus, Deep Fixes、Don’t Deceive Me。
+				> 这里不能粗暴地说”视觉幻觉 = 注意力被 sink 抢走”，幻觉的成因远比这复杂。
+				> 但至少有一类现象可以从 attention misallocation 解释：模型该看图的时候，没有把足够预算给图像相关 token，反而被低信息 token 或误导性文本 token 吸走。多模态厂商不可能容忍这件事一直拖下去。
+		* CV 里已有的应对方案：
+			> 在输入里直接加几个专门的 register token，告诉模型倒在固定的垃圾桶里。{_q5rb63}
+				> 然后 sink 行为就乖乖跑到 register 上了，patch token 不再被”借用”，整个attention map干净得像换了个模型。{_q5rb5i}
+				* 注：原文附图确实能看出 attn map 从随机变成了确实在关注图像中关键区域
+				> 这个思路后来被 DINOv3、Mamba-Reg、VGGT 等视觉或视觉相关架构继续吸收。
+				> 这倒也不是说”CV 圈已经全员默认带 register”，而是越来越多视觉/混合架构开始把 register 当成一种显式 sink 管理手段。
+			* NLP LLM 不易沿用：（不想重训外）[BOS] 本身已有特殊性，来自其注意力计算方式的额外元素
+				* （评）大致因果链：模型 sink 到 [BOS] 而非人为冗余 token← [BOS] 特殊性← 注意力计算方式涉及 causal mask、RoPE 等
+				> LLM 的 sink 机制和 causal mask、位置编码（特别是 RoPE）纠缠在一起。
+				> causal mask 先给了早期 token 全序列可见性的优势，RoPE 又引入距离相关的位置结构，两者共同让序列开头成为最稳定的 attention offloading 候选。
+				> 这就是为什么 LLM 里最稳定、最常见的 sink 往往落在第一个 token 或最早几个 token 上。
+				> 当然它不是唯一位置：强分隔符、换行、弱语义 token 也可能成为 sink；{_q5rb6w}
+					> 到了 ViT 是背景 patch，
+					> 到了 diffusion language model 甚至还会出现 moving sinks。
+				> 所以别把”首 token sink”误读成宇宙常数，它只是 decoder-only LLM 里最显眼的版本。
+				> CV 里的 ViT 没有 causal mask 这种”越靠前越全局可见”的硬优势，sink 可以落到背景 patch 或显式 register 上；
+		* 消除的必要性讨论
+			> 第二，对”attention sink 是不是真的需要被消除”这个根本问题，其实最后的结论有点模糊。
+			> 综述整体把 AS 当成”需要被理解和缓解的现象”来叙述，
+			> 但社区里其实有非常 nontrivial 的一派认为 AS 是有益的归纳偏置——它给模型提供了一个”注意力安全阀”，让某些 head 可以光荣下岗而不破坏归一化结构。{_q5rb7t}
+			> 如果把 sink 强行干掉，模型可能反而失去了”灵活注意力分配”的能力。
 
 ## 多模态
 * NExT-GPT-2309.05519，多模态的任意模态输入、任意模态输出，LLM 为核心

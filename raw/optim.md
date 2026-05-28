@@ -264,6 +264,7 @@
 		* 初始化问题见((n37g4c))
 		* 架构设计体现稳定性（被引于((n8kg86))NN架构设计）：
 			* DeepNet((_n8kh5m)) 将 Transformer 扩展到 1k 层，涉及 ((nbqf90))DeepNorm；{nbqf8s}
+		* attn sink 会破坏训练稳定性((_q5rb4c))
 	* ((n4kk8w))early-stop，((n7d931))progressive training
 * 理论解释算法表现：
 	* 策略梯度视为对分布的优化 ((n32e4v))polGradOpt

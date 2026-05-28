@@ -1,3 +1,20 @@
+* GeoTransolver-2512.20399 （备用）NVIDIA 在 Transolver 中结合 DoMINO 多尺度球查询
+	* "GeoTransolver: Learning Physics on Irregular Domains Using Multi-scale Geometry Aware Physics Attention Transformer" by NVIDIA
+		* Adams, Corey; Ranade, Rishikesh; Cherukuri, Ram; Choudhry, Sanjay; 
+		> created on 2026-05-28
+	* [公众号报道](https://mp.weixin.qq.com/s/ZXqkffB8wSwJvlQtHo6dZg)
+	> 二、核心创新：GALE 注意力，几何 + 物理双感知
+	> GeoTransolver 基于 Transolver 架构，但做了革命性改造：用GALE（Geometry-Aware Latent Embeddings） 替换标准注意力。
+	> 1. 两层几何注入
+		> 多尺度球查询（Multi-scale Ball Queries）小半径抓边界层细节，大半径抓全局拓扑，来自 DoMINO 精髓。
+		> 全局几何上下文投影几何 + 边界 + 工况参数编码成共享上下文，每一层都做 Cross-Attention。
+	> 2. 两层注意力机制
+		> 物理自注意力：在学习到的物理切片上做场耦合（压力 - 速度等）
+		> 几何交叉注意力：每一层都对齐几何结构，杜绝表征漂移
+		> 自适应门控：模型自动决定该信物理还是该信几何
+	> 3. 一句话看懂：GeoTransolver = Transolver 物理切片 + DoMINO 多尺度几何 +  persistent 全局上下文；物理学得准，几何记得牢，层层都对齐。
+* （备用）仿真的局限性，来自物理机理不完全清楚 or 计算资源不足只能简化方程
+	* [2026-05-25](https://www.zhihu.com/question/2012126664096777195/answer/2038678931407102110)
 * ComPhy PINN 解方程组时各方程网络独立，惩罚网络间 Sobolev 距离；好处如无散约束可用专门架构
 	* "ComPhy: Composing Physical Models with end-to-end Alignment", ICLR 2026
 		* Alessandro Trenta, Andrea Cossu, Davide Bacciu

@@ -1,9 +1,37 @@
-* （备用）Gated Attention 意义解读（NeurIPS 2025 best paper，Qwen 团队工作）
+* 2605.09825 fp4 训练不稳定 归因为“敏感梯度路径上产生结构性误差”
+	* "Pretraining large language models with MXFP4 on Native FP4 Hardware"
+		* Cim, Musa; Palangappa, Poovaiah; Hodak, Miro; Dwivedula, Ravi; Arunachalam, Meena; Kandemir, Mahmut Taylan; 
+		> created on 2026-05-27
+	* [公众号报道](https://mp.weixin.qq.com/s/ljY5ORd36n9CrN-K-22rZQ)
+	> FP4 训练的不稳定性的来源不是随机性不足，是结构性微缩放误差沿敏感梯度路径累积放大。
+	* MXFP4 数据格式：分组存缩放指数
+		> 传统的整数量化通常对整个张量使用一个缩放因子。
+		> MXFP4 的核心设计叫「微缩放」（Micro-scaling）：把一个张量切成小块（比如每 32 个元素一组），为每个小块分配一个共享指数（E8M0 格式），块内的每个元素用 4 比特浮点数表示。{_q5rf33}
+		> 微缩放的好处在于：每个小块有自己的动态范围，不会被全局异常值「绑架」。
+		> 这让 4 比特浮点数的表示质量比朴素的全局量化好很多。
+	* 受控实验，训练不稳定性源于 ∇_W 计算过程
+		> 一次完整的 Transformer 线性层计算，涉及三个通用矩阵乘法操作：
+		> Fprop（前向传播）：计算 Y = XW^T，产出激活值
+		> Dgrad（激活梯度）：计算 ∇X = ∇Y · W，将梯度回传给输入
+		> Wgrad（权重梯度）：计算 ∇W = （∇Y）^T · X，产出用于更新权重的梯度
+		> 研究团队保持其他所有因素不变，逐步把这三个操作从 FP8 替换成 MXFP4，观察每一步对收敛的影响。
+		> 前两步只带来了温和的额外 token 开销，但一旦把 Wgrad 也换成 MXFP4，开销直接跳到 26-27%。{_q5rf9y}
+	> 业界此前的主流直觉是：FP4 量化误差本质上是噪声问题，因此可以通过注入随机性来「平滑」误差分布。
+		> 两种常见策略是：
+			> 随机舍入（Stochastic Rounding）：在量化时引入随机性，使舍入误差的期望值为零；{_q5rg04}
+			> 随机 Hadamard 旋转（Randomized Hadamard）：在量化前用带随机符号翻转的 Hadamard 变换打散数据分布
+		> 当 Wgrad 被量化后，两种随机性策略不仅没有稳定训练，反而直接导致了不收敛。
+			> 随机性非但没有帮忙，还在关键的梯度路径上引入了更多有效量化误差。
+		> 相比之下，确定性 Hadamard 旋转一把将全流程 token 开销从 26-27% 压回到 8-9%，训练轨迹紧密跟踪 FP8 基线。{_q5rg0r}
+	> FP4 训练的不稳定性，是由 MXFP4 微缩放在敏感梯度路径上产生的结构性误差驱动的。
+		> 随机性策略失败是因为它们在每一步引入了不同的误差模式（pattern），而这些变化的误差模式沿梯度路径累积，反而放大了不稳定性。
+		> 确定性旋转之所以有效，恰恰因为它在每一步施加相同的变换，让误差模式保持一致，避免了误差累积。
+* Gated Attention 意义解读（NeurIPS 2025 best paper，Qwen 团队工作）
 	* [2025-12-03](https://www.zhihu.com/question/1977370700328166444/answer/1978179919344338830)
 	> 就这么一个element-wise的乘法，参数量增加不到2%，但带来了三个层面的改进：
 	> 在连续线性变换中引入非线性
 	> 让模型获得了"选择性沉默"的能力
-	> 消除了困扰LLM多年的Attention Sink现象
+	> 消除了困扰LLM多年的Attention Sink现象；{_q5ra8x}
 	> Qwen的实验发现加了门控之后，loss spike几乎消失了。{_q16e9j}
 		> 而且模型能承受更大的学习率。论文里做了一个极端实验：把学习率调得很高，baseline模型直接发散了，但带门控的模型居然还能正常收敛。
 		> 我的理解是门控相当于给梯度回传加了一个"缓冲阀"。
@@ -13,7 +41,7 @@
 		> 之前的研究认为 Massive Activations 是导致 BF16 训练不稳定的元凶之一。
 		> Gating 通过稀疏化输出，天然抑制了这些异常值，解释了为什么训练稳定性得到了巨大提升。
 	* 增强上下文外推能力，由于消除 Attention Sink
-		> 原因是传统的 RoPE 扩展方法（如 YaRN）会改变位置编码的分布，依赖 Attention Sink 的模型对此非常敏感（因为 Sink 也是一种特定分布的 Bias）。
+		> 原因是传统的 RoPE 扩展方法（如 YaRN）会改变位置编码的分布，依赖 Attention Sink 的模型对此非常敏感（因为 Sink 也是一种特定分布的 Bias）。{_q5rf1t}
 * （备用）字节量子化学类科学计算研究工作，Nature 子刊
 	* [2025-11-30](https://mp.weixin.qq.com/s/RaCFfqSyP7N7R6Ir1JPgXw)
 * SVI-2510.09212 自回归视频生成应对推理阶段误差累积方案，训练时即学会处理自己的预测误差

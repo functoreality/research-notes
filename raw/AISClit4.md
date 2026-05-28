@@ -211,7 +211,7 @@
 		* 分辨率外推（测试所用分辨率高于训练）精度结果类似
 	* p8:2 考虑 Fourier mode 高频部分在半精度下引入的相对（除掉幅度）误差更大，为人造数据实验结果；{_o2gb2v}
 		* 下方评论认为真实数据主要为低频成分，故用半精度合理
-* `2401.16645` （备用）PINN、DeepONet 用混合精度训练，最后一作似为陆路
+* `2401.16645` （备用）PINN、DeepONet 用混合精度训练，最后一作陆路
 	* "Speeding up and reducing memory usage for scientific machine learning via mixed precision"
 		* Hayford, Joel; Goldman-Wetzler, Jacob; Wang, Eric; Lu, Lu; 
 		> created on 2024-02-14
