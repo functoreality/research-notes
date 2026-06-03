@@ -99,6 +99,13 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 			<span id="busuanzi_container_page_pv" style="display:none">
 				这份科研笔记是第 <span id="busuanzi_value_page_pv"></span> 次有人来看啦
 			</span>
+			<!-- 隐藏的 site 级计数器，供 ?stats 统计面板读取 -->
+			<span id="busuanzi_container_site_pv" style="display:none;opacity:0">
+				<span id="busuanzi_value_site_pv"></span>
+			</span>
+			<span id="busuanzi_container_site_uv" style="display:none;opacity:0">
+				<span id="busuanzi_value_site_uv"></span>
+			</span>
 		</div>
 
 		<!-- 所有页面展示模式（默认注释，需要时取消） -->

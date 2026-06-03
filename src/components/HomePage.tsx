@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import type { NotesData } from '../types';
 
 interface HomePageProps {
@@ -7,8 +7,29 @@ interface HomePageProps {
   visitorCount?: string | null;
 }
 
+interface StatsData {
+  pagePv: string;
+  sitePv: string;
+  siteUv: string;
+}
+
+function readStats(): StatsData | null {
+  const pagePv = document.getElementById('busuanzi_value_page_pv')?.textContent?.trim();
+  const sitePv = document.getElementById('busuanzi_value_site_pv')?.textContent?.trim();
+  const siteUv = document.getElementById('busuanzi_value_site_uv')?.textContent?.trim();
+  if (pagePv && /^\d+$/.test(pagePv)) {
+    return { pagePv, sitePv: sitePv || '-', siteUv: siteUv || '-' };
+  }
+  return null;
+}
+
 export function HomePage({ data, onOpenFile, visitorCount }: HomePageProps) {
   const [content, setContent] = useState<string>('');
+  const [stats, setStats] = useState<StatsData | null>(null);
+  const statsPollRef = useRef(0);
+
+  // 客户端检测 URL 查询参数，避免 Astro 静态模式下 Astro.url 不包含 query string
+  const showStats = typeof window !== 'undefined' && window.location.search.includes('stats');
 
   useEffect(() => {
     const base = import.meta.env.BASE_URL || '/';
@@ -23,6 +44,18 @@ export function HomePage({ data, onOpenFile, visitorCount }: HomePageProps) {
         console.error('Failed to load homepage:', err);
       });
   }, []);
+
+  // 统计模式：轮询读取 Vercount DOM 数据（Vercount 脚本异步填充）
+  useEffect(() => {
+    if (!showStats) return;
+    const poll = () => {
+      const data = readStats();
+      if (data) { setStats(data); clearInterval(statsPollRef.current); }
+    };
+    poll();
+    statsPollRef.current = window.setInterval(poll, 500);
+    return () => clearInterval(statsPollRef.current);
+  }, [showStats]);
 
   if (!content) {
     return (
@@ -50,18 +83,36 @@ export function HomePage({ data, onOpenFile, visitorCount }: HomePageProps) {
     }}>
       {renderMarkdown(content, existingFiles, onOpenFile)}
 
-      {/* visitorCount && (
+      {/* 如需显示简单的访问计数，取消下方注释，并将 "X" 替换为 "{visitorCount}" */}
+      {/* <div style={{ textAlign:'left', padding:'.5rem .5rem', color:'var(--color-text-muted)', fontSize:'.85rem', borderTop:'1px solid var(--color-paper-line)' }}>
+        这份科研笔记是第 X 次有人来看啦
+      </div> */}
+
+      {showStats && stats && (
         <div style={{
-          textAlign: 'left',
           padding: '.5rem .5rem',
           color: 'var(--color-text-muted)',
           fontSize: '.85rem',
           borderTop: '1px solid var(--color-paper-line)',
-          marginTop: '0rem'
+          marginTop: '2rem',
         }}>
-          这份科研笔记是第 {visitorCount} 次有人来看啦
+          <div style={{ marginBottom: '.8rem', fontWeight: 600, color: 'var(--color-text)' }}>
+            恭喜你！这个统计面板只在 ?stats 时显示，被你发现啦！
+          </div>
+          <div style={{ marginBottom: '.4rem' }}>
+            本页访问量（仅 research-notes）：<b>{stats.pagePv}</b>
+            <span style={{ fontSize: '.7rem', opacity: .6, marginLeft: '.3rem' }}>page_pv</span>
+          </div>
+          <div style={{ marginBottom: '.4rem' }}>
+            站点总访问量：<b>{stats.sitePv}</b>
+            <span style={{ fontSize: '.7rem', opacity: .6, marginLeft: '.3rem' }}>site_pv</span>
+          </div>
+          <div>
+            站点总访客数：<b>{stats.siteUv}</b>
+            <span style={{ fontSize: '.7rem', opacity: .6, marginLeft: '.3rem' }}>site_uv</span>
+          </div>
         </div>
-      ) */}
+      )}
     </div>
   );
 }
