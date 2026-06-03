@@ -43,12 +43,28 @@ export function App({ initialFile, initialLine }: AppProps) {
   const [theme, setTheme] = useState<Theme>('system');
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [visitorCount, setVisitorCount] = useState<string | null>(null);
+  const [showVisitorTooltip, setShowVisitorTooltip] = useState(false);
   
   const { tabs, activeTab, activeTabId, isHomeTab, openTab, closeTab, switchTab, HOME_TAB_ID } = useTabs();
   const [highlightLine, setHighlightLine] = useState<number | null>(null);
   const fileSelectorRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
   const mainRef = useRef<HTMLElement>(null);
+
+  // 监听 Vercount 计数器元素的值变化
+  useEffect(() => {
+    const el = document.getElementById('busuanzi_value_page_pv');
+    if (!el) return;
+    const update = () => {
+      const text = el.textContent?.trim();
+      if (text && /^\d+$/.test(text)) setVisitorCount(text);
+    };
+    update();
+    const obs = new MutationObserver(update);
+    obs.observe(el, { childList: true, characterData: true, subtree: true });
+    return () => obs.disconnect();
+  }, []);
   
   const activeFile = isHomeTab ? null : (activeTab ? data?.files[activeTab.file] : null);
   
@@ -467,6 +483,33 @@ export function App({ initialFile, initialLine }: AppProps) {
               </button>
             </>
           )}
+          
+          {/* isHomeTab && (
+            <div
+              style={{ position: 'relative', display: 'inline-flex' }}
+              onMouseEnter={() => setShowVisitorTooltip(true)}
+              onMouseLeave={() => setShowVisitorTooltip(false)}
+            >
+              <button className="icon-btn" aria-label="访客统计">ℹ</button>
+              {showVisitorTooltip && visitorCount && (
+                <div style={{
+                  position: 'absolute',
+                  top: '110%',
+                  right: -60,
+                  background: 'var(--color-ink)',
+                  color: 'var(--color-tab-hover)',
+                  padding: '6px 10px',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  whiteSpace: 'nowrap',
+                  zIndex: 100,
+                  fontFamily: 'var(--font-body)',
+                }}>
+                  这份科研笔记是第 {visitorCount} 次有人来看啦
+                </div>
+              )}
+            </div>
+          ) */}
           
           <button 
             className="icon-btn" 
