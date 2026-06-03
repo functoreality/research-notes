@@ -74,6 +74,24 @@
       font-size: 1rem;
       font-weight: 400;
     }
+    .stat-primary .stat-value { font-size: 2.8rem; }
+    .stat-secondary .stat-value { font-size: 1.5rem; font-weight: 600; }
+    .stat-secondary { margin-bottom: .75rem; }
+    .stat-note {
+      font-size: .65rem;
+      color: var(--text-muted);
+      margin-top: .2rem;
+      opacity: .7;
+    }
+    .stat-group {
+      margin: .5rem 0;
+    }
+    .stat-group-label {
+      font-size: .7rem;
+      color: var(--text-muted);
+      margin-bottom: .75rem;
+      opacity: .6;
+    }
     .divider {
       border: none;
       border-top: 1px solid var(--border);
@@ -93,18 +111,35 @@
 <body>
   <div class="card">
     <h1>Research Notes 站点统计</h1>
-    <div class="stat">
-      <div class="stat-label">总访问量</div>
-      <div class="stat-value" id="busuanzi_value_site_pv">
+
+    <div class="stat stat-primary">
+      <div class="stat-label">本页访问量（仅 research-notes）</div>
+      <div class="stat-value" id="busuanzi_value_page_pv">
         <span class="loading">--</span>
       </div>
+      <div class="stat-note">page_pv，按路径独立计数</div>
     </div>
-    <div class="stat">
-      <div class="stat-label">总访客数</div>
-      <div class="stat-value" id="busuanzi_value_site_uv">
-        <span class="loading">--</span>
+
+    <hr class="divider" />
+
+    <div class="stat-group">
+      <div class="stat-group-label">以下指标为 functoreality.github.io 全域名合计：</div>
+      <div class="stat stat-secondary">
+        <div class="stat-label">站点总访问量</div>
+        <div class="stat-value" id="busuanzi_value_site_pv">
+          <span class="loading">--</span>
+        </div>
+        <div class="stat-note">site_pv，所有项目合计</div>
+      </div>
+      <div class="stat stat-secondary">
+        <div class="stat-label">站点总访客数</div>
+        <div class="stat-value" id="busuanzi_value_site_uv">
+          <span class="loading">--</span>
+        </div>
+        <div class="stat-note">site_uv，所有项目合计</div>
       </div>
     </div>
+
     <hr class="divider" />
     <div class="footer">
       数据来源 <a href="https://vercount.one" target="_blank" rel="noopener">Vercount</a>

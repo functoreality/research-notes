@@ -87,12 +87,9 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 			访客计数展示 - 如需在主页底部显示统计数据，取消下方注释即可
 			数据来源：Vercount (vercount.one)，兼容所有主流浏览器
 			═══════════════════════════════════════════════════════
-			<div style="text-align:center;padding:1.5rem 1rem;color:#718096;font-size:.85rem;border-top:1px solid #e2e8f0;margin-top:3rem;max-width:800px;margin-left:auto;margin-right:auto">
-				<span id="busuanzi_container_site_pv" style="display:none">
-					本站总访问量 <span id="busuanzi_value_site_pv"></span> 次
-				</span>
-				<span id="busuanzi_container_site_uv" style="display:none">
-					，访客数 <span id="busuanzi_value_site_uv"></span> 人
+			<div style="text-align:center;padding:0rem 0rem;color:#718096;font-size:.85rem;border-top:0px solid #e2e8f0;margin-top:0rem;max-width:800px;margin-left:auto;margin-right:auto">
+				<span id="busuanzi_container_page_pv" style="display:none">
+					这份科研笔记是第 <span id="busuanzi_value_page_pv"></span> 次有人来看啦
 				</span>
 			</div>
 		-->
@@ -100,5 +97,5 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 </html>
 
 <style is:global>
-  @import '../styles/global.css';
+	@import '../styles/global.css';
 </style>
