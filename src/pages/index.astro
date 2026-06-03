@@ -82,17 +82,51 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 			initialFile={initialFileStr}
 			initialLine={initialLineNum}
 		/>
+
 		<!--
 			═══════════════════════════════════════════════════════
-			访客计数展示 - 如需在主页底部显示统计数据，取消下方注释即可
-			数据来源：Vercount (vercount.one)，兼容所有主流浏览器
+			访客计数展示
+			数据来源：Vercount，使用 page_pv（按路径独立计数）
+
+			展示模式：默认仅首页展示。如需所有页面展示：
+			  1. 注释掉下方 MutationObserver 的 script
+			  2. 取消注释 "所有页面展示" 那行 script
 			═══════════════════════════════════════════════════════
-			<div style="text-align:center;padding:0rem 0rem;color:#718096;font-size:.85rem;border-top:0px solid #e2e8f0;margin-top:0rem;max-width:800px;margin-left:auto;margin-right:auto">
-				<span id="busuanzi_container_page_pv" style="display:none">
-					这份科研笔记是第 <span id="busuanzi_value_page_pv"></span> 次有人来看啦
-				</span>
-			</div>
 		-->
+
+		<!-- 静态计数器元素：position:fixed 固定在视口底部，不依赖页面滚动 -->
+		<div id="visitor-counter" style="position:fixed;bottom:0;left:0;right:0;text-align:left;padding:0rem 0rem;color:var(--color-text-muted);font-size:.8rem;border-top:1px solid var(--color-paper-line);background:var(--color-paper);z-index:50;display:none">
+			<span id="busuanzi_container_page_pv" style="display:none">
+				这份科研笔记是第 <span id="busuanzi_value_page_pv"></span> 次有人来看啦
+			</span>
+		</div>
+
+		<!-- 所有页面展示模式（默认注释，需要时取消） -->
+		<!-- <script>document.getElementById('visitor-counter').style.display='block'</script> -->
+
+		<!-- 仅首页展示模式（默认启用，通过检测当前激活标签页判断） -->
+		<!-- <script>
+			(function() {
+				var c = document.getElementById('visitor-counter');
+				if (!c) return;
+				var check = function() {
+					var active = document.querySelector('.tab.active');
+					c.style.display = (active && active.textContent.trim() === '⌂') ? 'block' : 'none';
+				};
+				// 轮询等待 React 渲染完成（最多等 5 秒），然后挂载观察器
+				var tries = 0;
+				var init = function() {
+					var bar = document.querySelector('.header-bar');
+					if (bar) {
+						check();
+						new MutationObserver(check).observe(bar, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+					} else if (tries++ < 250) {
+						setTimeout(init, 20);
+					}
+				};
+				init();
+			})();
+		</script> -->
 	</body>
 </html>
 
