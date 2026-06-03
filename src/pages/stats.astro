@@ -1,0 +1,125 @@
+---
+// 隐藏的访客统计页面
+// 访问地址：functoreality.github.io/research-notes/stats
+// 本页面不通过任何导航链接暴露，仅收藏链接可访问
+---
+
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>站点统计 · Research Notes</title>
+  <script defer src="https://cn.vercount.one/js"></script>
+  <style>
+    :root {
+      --bg: #faf9f7;
+      --text: #2d3748;
+      --text-muted: #718096;
+      --accent: #0d9488;
+      --border: #e8e6e3;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --text: #c9d1d9;
+        --text-muted: #8b949e;
+        --accent: #2dd4bf;
+        --border: #30363d;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s, color .2s;
+    }
+    .card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2.5rem 3rem;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+    }
+    h1 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 2rem;
+      letter-spacing: .02em;
+    }
+    .stat {
+      margin-bottom: 1.25rem;
+    }
+    .stat-label {
+      font-size: .8rem;
+      color: var(--text-muted);
+      margin-bottom: .3rem;
+    }
+    .stat-value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text);
+    }
+    .stat-value.loading {
+      color: var(--text-muted);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 1.5rem 0;
+    }
+    .footer {
+      font-size: .75rem;
+      color: var(--text-muted);
+      margin-top: 1.5rem;
+    }
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Research Notes 站点统计</h1>
+    <div class="stat">
+      <div class="stat-label">总访问量</div>
+      <div class="stat-value" id="busuanzi_value_site_pv">
+        <span class="loading">--</span>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">总访客数</div>
+      <div class="stat-value" id="busuanzi_value_site_uv">
+        <span class="loading">--</span>
+      </div>
+    </div>
+    <hr class="divider" />
+    <div class="footer">
+      数据来源 <a href="https://vercount.one" target="_blank" rel="noopener">Vercount</a>
+    </div>
+  </div>
+
+  <script>
+    // 如果 Vercount 脚本加载失败或加载缓慢（5s 超时），显示加载失败提示
+    setTimeout(() => {
+      document.querySelectorAll('.stat-value').forEach(el => {
+        if (el.textContent.trim() === '' || el.querySelector('.loading')) {
+          el.innerHTML = '<span class="loading">加载失败</span>';
+        }
+      });
+    }, 5000);
+  </script>
+</body>
+</html>

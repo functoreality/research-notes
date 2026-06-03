@@ -14,6 +14,8 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 		<meta name="generator" content={Astro.generator} />
 		<title>Research Notes</title>
 		<meta name="description" content="Personal research notes with hierarchical folding and interlinking" />
+		<!-- 访客计数：Vercount 脚本，仅后台统计，前端无可见元素 -->
+		<script defer src="https://cn.vercount.one/js"></script>
 		<style>
 			/* 初始加载提示样式 - 在 CSS 加载前显示 */
 			#initial-loading {
@@ -80,6 +82,20 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 			initialFile={initialFileStr}
 			initialLine={initialLineNum}
 		/>
+		<!--
+			═══════════════════════════════════════════════════════
+			访客计数展示 - 如需在主页底部显示统计数据，取消下方注释即可
+			数据来源：Vercount (vercount.one)，兼容所有主流浏览器
+			═══════════════════════════════════════════════════════
+			<div style="text-align:center;padding:1.5rem 1rem;color:#718096;font-size:.85rem;border-top:1px solid #e2e8f0;margin-top:3rem;max-width:800px;margin-left:auto;margin-right:auto">
+				<span id="busuanzi_container_site_pv" style="display:none">
+					本站总访问量 <span id="busuanzi_value_site_pv"></span> 次
+				</span>
+				<span id="busuanzi_container_site_uv" style="display:none">
+					，访客数 <span id="busuanzi_value_site_uv"></span> 人
+				</span>
+			</div>
+		-->
 	</body>
 </html>
 
