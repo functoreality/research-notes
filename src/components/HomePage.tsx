@@ -4,9 +4,10 @@ import type { NotesData } from '../types';
 interface HomePageProps {
   data: NotesData;
   onOpenFile: (file: string) => void;
+  visitorCount?: string | null;
 }
 
-export function HomePage({ data, onOpenFile }: HomePageProps) {
+export function HomePage({ data, onOpenFile, visitorCount }: HomePageProps) {
   const [content, setContent] = useState<string>('');
 
   useEffect(() => {
@@ -48,6 +49,19 @@ export function HomePage({ data, onOpenFile }: HomePageProps) {
       lineHeight: 1.7
     }}>
       {renderMarkdown(content, existingFiles, onOpenFile)}
+
+      {/* visitorCount && (
+        <div style={{
+          textAlign: 'left',
+          padding: '.5rem .5rem',
+          color: 'var(--color-text-muted)',
+          fontSize: '.85rem',
+          borderTop: '1px solid var(--color-paper-line)',
+          marginTop: '0rem'
+        }}>
+          这份科研笔记是第 {visitorCount} 次有人来看啦
+        </div>
+      ) */}
     </div>
   );
 }

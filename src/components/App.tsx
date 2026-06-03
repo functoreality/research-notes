@@ -580,7 +580,7 @@ export function App({ initialFile, initialLine }: AppProps) {
             toggleLine={folding.toggleLine}
           />
         ) : (
-          <HomePage data={data} onOpenFile={handleOpenFile} />
+          <HomePage data={data} onOpenFile={handleOpenFile} visitorCount={visitorCount} />
         )}
       </main>
       
