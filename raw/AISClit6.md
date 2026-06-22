@@ -359,7 +359,7 @@
 	* （评）原文没给示意图
 	* p3:l 文本输入，自然语言描述 PDE 名称，及输入、输出场的统计分布；{_p8hb06}
 		> This is a <dataset name> PDE sample. The input coefficient field has mean µ_a , std σ_a , min a_min , and max a_max . The output solution field has mean µ_u , std σ_u , range [u_min , u_max ], and gradient magnitude mean µ_∇u with std σ_∇u .
-* 2507.09733 （纯备用，不排除作者不了解科学计算相关文献）
+* 2507.09733 （纯备用，未复核是否涵盖了作者对科学计算相关文献的了解）
 	* "Universal Physics Simulation: A Foundational Diffusion Approach"
 		* Camburn, Bradley; 
 		> created on 2025-08-17

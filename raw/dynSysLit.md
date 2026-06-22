@@ -388,7 +388,7 @@
 		* 由于用加权 MSE loss，长期预测已模糊，而传统算法（确定性那类）会给高分辨率但可能不准确的预测
 		* 其他：受限于数据网格，只能预测 0.25° 经纬度分辨率，而传统算法可 0.1°；可能的未来方向
 			* （评）机理数据融合？
-	* 注：当天讨论，导师觉得比 FNO（FourCastNet）还黑箱，居然还能 work，看起来是大力出奇迹；不过设计倒是更加简洁
+	* 注：当天讨论，导师觉得架构上比 AFNO（FourCastNet）还黑箱，居然还能 work，看起来是大力出奇迹；不过设计倒是更加简洁
 * `DINo-2209.14855` 含时 PDE 用 AD 约简为隐空间动力学，架构 FourierNet、modulation
 	* "Continuous PDE Dynamics Forecasting with Implicit Neural Representations", ICLR2023
 		* Yuan Yin, Matthieu Kirchmeyer, Jean-Yves Franceschi, Alain Rakotomamonjy, Patrick Gallinari
@@ -426,7 +426,7 @@
 		> created on 2023-09-09
 	* 设定：NO 做动力学时间推进预测
 	* sec2:-1 动力学长期预测不稳定，因为用的 MSE 误差，不考虑不同频率分开处理；{_n99f53}
-		* KS 方程例子，非线性项导致所有频率相互作用，高频误差传播到低频
+		* KS 方程例子，非线性项导致所有频率相互作用，高频误差传播到低频；{_q64m2h}
 		* 认为应给高频部分更高的优先级，而低频也不应忽略
 	* sec3.0:1 模型预测结果又作为自身输入，允许其迭代改进自身预测
 		* 输入 3 部分：前一个时间步 $u(t-\Delta t)$，refine 步骤角标 $k\in\{0,\dots,K\}$，模型的当前预测 $\hat u^k(t)$（其中初始预测 $\hat u^0(t)=0$）
@@ -551,7 +551,7 @@
 			* fig6 分布内（浅水波）数据的结果，fig5 分布外 zero-shot 数据的结果
 		* sec5.3.4 针对反问题 fine-tune，仿照 MPP 考察流场 forcing term/浮力恢复问题
 	* 注：据生态方对接人说其中只考虑了单步 inference 的误差，因此精度看起来高
-	* （评）文中 baseline 的 U-Net 精度也不太行，和 ICLR PDEformer 结果差不多
+	* （评）文中 baseline 的 U-Net 精度也不太行，和 ICLR PDEformer 结果差不多，因此应该不是我们自己实现的 U-Net 有问题
 	* secB DL 框架，主要开发与实验用 PyTorch，部分推理用 MindSpore
 	* v2 版本，昇思公众号报道，[2024-12-17](https://mp.weixin.qq.com/s/FUTJlONwaKYIyVy0zDDrQA)
 		* 123D 物理场使用统一的编码解码器，基于 Fourier（> 之前版本好像是 CNN）截断前几个 modes，可对分辨率泛化；{_pbhb0x}

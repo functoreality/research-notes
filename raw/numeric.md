@@ -73,7 +73,7 @@
 					* ((_q2mg2h))10k 数据对，背景类 GRF 声速下高频解
 				* 数据生成
 					* 当时 MAD 实验时我用的 MATLAB k-wave 包，先算含时波方程解到稳态，再做时域 FT 得 Helmholtz 解
-					* [MUMPS](https://github.com/MIA123MIA321/MUMPS-Install)，from 2024-03-17 导师“清华的史作强老师他们用的是mumps，说2D 512x512的分辨率算一个只需要几秒钟。”
+					* [MUMPS](https://github.com/MIA123MIA321/MUMPS-Install)，from 2024-03-17 导师“清华的UiZoQl老师他们用的是mumps，说2D 512x512的分辨率算一个只需要几秒钟。”
 				* 相应反问题((n7ul5d))散射波反演，根据边界观测算子推断内部系数场
 			* 弹性力学波方程？
 			* Euler-Bernoulli beam equation 涉及空间 4 阶导数；{o6tf0t}
@@ -199,6 +199,7 @@
 				* 物理场来源：已有数据集的解；自然图片；AI 生成图片（GAN 可能就够了）
 				* 区间可随机生成
 				* 若担心区域形状过于复杂，可考虑后处理光滑化操作
+		* 自由边界（区域形变方式待求解）可用数据集((_q5tg2h))
 	* 网格生成
 		* 另见((n6tg3i))变区域 PDE
 * PDE 正问题数值方法；{nclm4c}
@@ -303,6 +304,21 @@
 				* ((o8fe6k))NO 输入层先上采样，以避免 aliasing
 				* ViT NO 输入层 patchify 降分辨率引起 alias，((q1mc9j))事先随机短距平移以使网络能应对
 				* 传统谱方法需要 dealias，结合 NO 的方法不需要((p34e4l))
+			* 资源：patch 结构；{q68m4l}
+				* 取单个 patch
+					* 用途—作输入，((n4sj7z))GAN判别器降计算量
+					* 用途—作输出，INR 的微观有网格变种，((oam965))输出为 patch 而非单点值；{oam96b}
+					* 划分方式，边界移动 连续or离散（即切分为若干不重叠 patch）
+						* COIN++ step1 训练 patch manifold 的参化映射时 patch 连续移动，step2 对各 patch 找其对应参数时 patch 离散移动((_p59b7r))
+				* patch 集合
+					* 用途：((n4rm8d))tokenize（包括((n37m6i))ViT）
+						* patch size 可变，见((oapa1r))空间分辨率压缩-压缩率可变
+					* 处理方式—((n7a92o))视为 graph、按 feature vec kNN 连边
+					* 处理方式—((n5bf17))patch manifold，边界移动可连续or离散
+					* 对所有固定大小 patch 编码：可认为((n8hj6h))CNN 卷积操作完成了这点，patch 切分情形可通过在卷积中设定 stride 达到
+				* 对象变种：((n98h1e))点云局部聚合也称为某种 patch
+				* 对象变种：((o33a2v))在隐空间打 patch
+				* 对象变种：连续物理场（未离散），((n5bf17))patch manifold
 		* 形变均匀网格（四边形、六面体）
 			* 非等距，如 谱方法非周期 BC 所用正交多项式的离散点（Dedalus 等）
 			* 变形网格，如 2D 机翼 C 形网格，有时还有 O 形；原方程变换到形变域上可视为满足新方程

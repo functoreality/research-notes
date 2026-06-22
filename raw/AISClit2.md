@@ -139,7 +139,7 @@
 		* eqn(9) 训练数据为 $(x,y)$ 样本对
 		> 如果只要找出某个 $y$ 对应的 $x$，训练对所有 $y$ 都精确的 $f$ 是否低效了一点；
 		> 不过本文优势似乎在改变设计目标时，1,3 步无需重做，从而高效
-		* 导师：这种做法似乎有点简单粗暴；另一篇 "Learning the aerodynamic design of supercritical airfoils through deep reinforcement learning" 只针对这一步，但用了 RL，更精细
+		* 导师：这种做法某种意义上有一些简单粗暴；另一篇 "Learning the aerodynamic design of supercritical airfoils through deep reinforcement learning" 只针对这一步，但用了 RL，更精细
 	* sec4.2 过往经验表明，多目标优化可通过限制 CP feature $y$ 来隐式达到
 * `DeepGreen-2101.07206` 非线性方程 AE 变换为线性方程，Green 函数表达的解在离散化下为矩阵乘法
 	* #NO, #Green_func
@@ -648,7 +648,7 @@
 		> `2022-09-07`(AISCmeet2)
 	* 传统迭代处理低频慢，在 Helmholtz 上甚至发散；DeepONet 迭代算子参与部分迭代可缓解
 		* 实验结果为收敛速度提升一个数量级
-	* （评）导师觉得用 DeepONet 非本质，NN 低频优势应是由于它用梯度训练，DeepONet 应可替换为由 NN 改进的梯度流
+	* （评）导师推测用 DeepONet 可能非本质，NN 低频优势应是由于它用梯度训练，DeepONet 应可替换为由 NN 改进的梯度流
 	* （评）`Rizutti2019LearnedIS` 做法类似，若干步 Krylov 子空间迭代中插入一步 U-Net 修正，不过那里似乎考虑的不是高频低频问题（Helmholtz 似乎也不好这么解读？），且每次用的 U-Net 不同（从而总迭代步数固定）
 	* [2024-10-24 公众号报道](https://mp.weixin.qq.com/s/-wXxIyhvxxevuygSaaBiAQ)
 * `2010.15761` Helmholtz（PML 边界）方程求解迭代视为序列决策 RL，迭代用有记忆 U-Net，其训练用多步累积 PDE loss
@@ -721,10 +721,11 @@
 	* sec4 总结
 		* TBPTT 可能导致状态表示漂移等，可考虑通过 Q-learning 等方式缓解；{_n2sm2f}
 	* 2023-03-01 AISC 讨论
-		* 导师：感觉对他来说没什么新东西，想法在之前 RL WENO 的工作已经有了；不过感觉这几年的都没什么新东西
-		* SyQi：内部 c 突变边界处的边界条件设置问题，直接写 Helmholtz 方程是过于简化了；{_n31e3n}
-			* 对解所在的空间影响大，比如椭圆方程不引入这个边界则解 $H^2$，引入的话 $H^{1+\epsilon}$，光滑性差很多，用当前这种设定来测试算法不太合理
-		* SyQi：可解释性不如 MG，并且所有东西都让 NN 学也没有必要，只学传统算法搞不好的低频部分就够了；{_n31e4p}
+		* 导师：整体思路本身对他自己来说不那么新，想法在之前 RL WENO 的工作已经有了
+			* 对他来说，这个领域里他这几年都没有看到什么足够本质性的新东西
+		* SyQi：内部 c 突变边界处的边界条件设置问题，直接写 Helmholtz 方程（对于真实应用场景）是过于简化了；{_n31e3n}
+			* 对解所在的空间影响大，比如椭圆方程不引入这个边界则解 $H^2$，引入的话 $H^{1+\epsilon}$，光滑性差很多，用当前这种设定来测试算法有可能不太合理
+		* SyQi：可解释性不如 MG，并且所有东西都让 NN 学似乎没有必要，（他个人认为）只学传统算法搞不好的低频部分就够了；{_n31e4p}
 * `Rizutti2019LearnedIS` 解 Helmholtz 方程，网格离散得线性方程组，若干 Krylov 子空间迭代中插入一步 U-Net 迭代，固定总迭代步数、每次所用 U-Net 不同
 	* "Learned iterative solvers for the Helmholtz equation"
 		* 记录主要依据相应 [slides](https://www.researchgate.net/publication/333662516) 

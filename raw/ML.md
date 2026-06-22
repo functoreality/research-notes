@@ -1,4 +1,19 @@
 * ML
+* 目标功能，预期映射形态
+	* 表示特定映射 $x\mapsto y$
+		* 训练方式：((n3bg39))有监督，所需资源为配对数据 $(x,y)$
+			* 可能涉及((n32b4n))数据量不足的解决
+		* 训练方式：分布距离刻画，y vs. f(x) 二分布距离作为 loss
+			* 分布形态：条件分布 y|x、联合分布 (y,x) 均可
+			* 支持((n31m83))半监督学习，因可利用无标签样本
+			* 距离度量—GAN 判别器((n4sj8e))，判断一个 y 是数据集的真实标签还是模型预测的；{n2bf31}
+				* 早期内容见 `2021-12-15` 组会
+				* eg. image translation，((n6se8y))Pix2Pix 中形如 $D(x,G(x))$
+			* 距离度量—((_p2be9n))惩罚 y|E(x), f(x)|E(x) 距离，E 提取图片表征；{p2bf0c}
+		* 问题转换：仍按条件生成模型来训，即使输出分布退化到确定性单点
+			* AlphaFold3 涉及？
+			* 适用范围，对 NO 类((_q69b64))数据稀疏的病态反问题相对适用，对数据密集的正问题 不如 有监督+对抗 loss
+	* 输出满足特定分布，包括条件分布 $(c,z)\mapsto y$：架构参考((n3bg65))随机输出的函数，训练方式见((n32b3o))生成模型
 * 学习类型，有无监督、RL 等
 	* 监督学习；{n3bg39}
 		* 有监督任务（SL）可以用无监督（极大似然，MLL）框架的方法完成：{n32e03}
@@ -13,9 +28,7 @@
 				* 这种额外信息有时有用，例如 `metaModelUniv:`(metaL) 中用 argmin 描述的 $g:D^s\mapsto p\mapsto h$ 映射类比直接 $D^s\mapsto h$ 更广
 		* 元学习从理论上也可采用有监督形式((n3gd6h))，此时架构通常为 hypernet
 	* 半监督学习；{n31m83}
-		* 惩罚条件分布距离，y|x vs. f(x)|x
-			* 距离度量—GAN 判别器判断一个 $y$ 是数据集的真实标签还是模型预测的；见 `2021-12-15` 组会；{n2bf31}
-			* 距离度量—((_p2be9n))惩罚 y|E(x), f(x)|E(x) 距离，E 提取图片表征；{p2bf0c}
+		* 惩罚条件分布距离((n2bf31))，y|x vs. f(x)|x
 		* 利用无标注数据的分布信息
 			* AlphaFold2 用大量氨基酸序列的变异信息，涉及生物学原理
 		* `Diff-ResNet-2105.03155` 网络前传过程中引入扩散项，可用于半监督学习，用已知的标签推断未知的
@@ -112,16 +125,8 @@
 			* patch/slice manifold：单个场本为函数空间中一点，通过限制产生一系列（定义域较小的）场；{n5bf17}
 				* 相关：((n5bf11))单任务hypernet（patch 对应分类、slice 对应回归）
 				* patch manifold 参数化，可导出((n4ta1s))INR-区域分解-各区域仅维护独立隐向量
-					* 打 patch 还可涉及：((n4rm8d))tokenize，((n37m6i))ViT
 					* 参数化映射架构，输入为（无结构）隐向量的 decoder 一般均可，如（无网格）INR、（有网格）CNN、ViT（直向量 reshape 为 2D grid）
-					* patch 集合的另一处理方式：((n7a92o))视为 graph、按 feature vec kNN 连边
-					* 区分 patch 边界连续移动、离散移动（即切分为若干不重叠 patch）
-						* COIN++ step1 训练 patch manifold 的参化映射时 patch 连续移动，step2 对各 patch 找其对应参数时 patch 离散移动((_p59b7r))
-					* 对所有固定大小 patch 编码：可认为((n8hj6h))CNN 卷积操作完成了这点，patch 切分情形可通过在卷积中设定 stride 达到
-					* patch size 可变，见((oapa1r))空间分辨率压缩-压缩率可变
-					* 相关：((n98h1e))点云局部聚合也称为某种 patch
-					* 在隐空间打 patch((o33a2v))
-					* INR 的微观有网格变种，((oam965))输出为 patch 而非单点值；{oam96b}
+					* patch 一般讨论见((q68m4l))
 				* slice manifold 的特例：时间 slice，含时 PDE 不同时间步 snapshot 组成流形；{n5bf2t}
 					* 如((n2h89q))动力学 snapshot 用 AD 表达
 					* 此时该流形上有动力学结构（不再视为纯集合）
@@ -131,14 +136,7 @@
 	* 引入辅助网络联合训练；{n2ek9h}
 		* 对抗训练；{n2bg0w}
 			* 注：现在的东西似乎有点杂，对抗训练不限于使用额外网络来引入？
-			* GAN((n4sj8e)) 的判别器，这里主要讨论不特定于生成模型的用法；{p98k83}
-				* WGAN 限制判别器梯度，增强训练稳定性；{p2se3g}
-					* NO 中也可用 1-Lip 对抗网络来((p2se3f))近似估计最优传输 Wasserstein 距离
-				* 可考虑数据的特殊结构，如((n4sj7z))对图像用 patch-based 版本
-				* 例如((_n4sj88))作为 AE 训练的额外 loss 项，((n2bf31))用于半监督学习
-				* ((_n4sn61))VG-GAN 的对抗 loss 用的是 hinge loss
-				* ((n6se8y))Pix2Pix 中形如 $D(x,G(x))$ 用于 image translation 训练
-				* 相关框架：((p98k7x))网络输出质量评估-辅助网络给出-学其与真输出差异，包括用于 loss
+			* GAN((n4sj8e))
 			* NN robustness，见((n1bl8p))；{n1bl8t}
 			* PINN 采样点选取 `2021-10-20a`(AISCmeet)
 			* WAN（PDE NN ansatz）

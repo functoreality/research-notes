@@ -1,3 +1,110 @@
+* 2605.06152 loss spike 源于 fp32 下溢，正确类梯度长期消失后突然恢复，被 Adam 放大
+	* "Grokking or Glitching? How Low-Precision Drives Slingshot Loss Spikes"
+		* Hanqing, Liu; Cao, Jianjun; Li, Yuanze; Zhou, Zijian; 
+		> created on 2026-06-20
+	* [公众号报道](https://mp.weixin.qq.com/s/LS2zK_mD68e653_ao2QeZg)
+	> loss下降到极低，然后突然飙升，再缓慢恢复，周而复始，像有节律的心跳。
+		> 这就是所谓的Slingshot机制，多年来被当作优化动力学里的神秘现象来研究。
+	> 模型训练久了，进入一个高置信阶段，正确类别的logit比其他类别大出很多。
+		> 当这个差距超过float32的精度阈值（由23位mantissa决定），PyTorch计算log-sum-exp时就会发生"吸收误差"：{_q6kg3a}
+		> 正确类的softmax梯度被精确地舍入为零，而其他类的梯度仍然非零。
+		> 这个现象叫Softmax Collapse（SC）。
+		* （评）自行推导可看出吸收误差
+			* 输出 $p_j=softmax(s)_j$，末层投影 $s_j=w_j\cdot v$
+			* 设正确类 i，交叉熵 loss $l=-\log p_i=-s_i+\log(\sum\exp(s_j))$
+			* 梯度 $\nabla_wl=-\nabla_ws_i+\sum softmax(s)_j\nabla_ws_j$
+			* $w_i$ 梯度 $=(-1+softmax(s)_i)v$，softmax 结果接近 1，尾数不足导致（尾数下溢）得 0
+			* $w_j$ 梯度 $=softmax(s)_jv$ 尚未触发指数下溢
+			* 前层权重梯度类似，$\nabla_ws_i$ 贡献被清零
+	> SC本身早有人发现，但这篇文章揭示了它更深的连锁反应。
+		> 在精确算术里，cross-entropy对所有类的梯度之和恒为零（零和约束），所以权重的均值（或者说重心）也是恒定的。
+			* （评）梯度和为 0 不代表更新量和为 0 吧？除非用的是 SGD 而非 Adam
+		> SC发生后，正确类梯度消失，这个约束被打破。
+			> classifier的权重均值WG开始偏移，并且是沿着feature均值µG的反方向漂移（这个能算出来）。
+			> 然后这个漂移又会反过来影响feature本身，两者互相放大，形成正反馈。
+			> WG和µG越来越反平行（因为µG越来越指向-WG），模长指数增长。
+		> 论文把这套机制叫做Numerical Feature Inflation（NFI）。
+	> NFI的指数增长最终会让某些训练样本的logit跌回到SC阈值以下，
+	* （评）logit 回落机制我没搞清楚；末层线性投影权重尽管 $w_i$ 未更新，但其他 $w_j$ 的更新方向也是向着使分类结果 logit 更正确的方向走的，因为是在降低错误类的预测概率？
+		* 以下为 DeepSeek V4 Pro 读原文后解释的 logit 回落机制（未用更可靠的 GPT 核验）
+		* 大意：分类头权重巨大→ 反传到前层的该项梯度分量巨大→ 前层特征结构退化→ 区分类别能力降低
+		> 经过严格推导，我得出结论：**在论文的数学框架内（`W_G` 与分类子空间正交），NFI 本身确实不会直接降低 margin。**
+		> 论文 3.3 节真正的论据不是「NFI 降低 margin」，而是另一个机制：
+		> ### 被淹没的分类信号
+			> NFI 发生后，特征梯度中 `εW_G` 分量随 `W_G` 指数增长。
+			> 反向传播到更早的网络层时，这个分量**淹没了**分类子空间的梯度信号。后果是：
+			> - 网络的前层不再有效地学习类别区分性特征
+			> - 分类子空间中的特征结构逐渐退化（`h*` 变得嘈杂、萎缩）
+			> - 类内方差增大，部分 outlier 样本的分类 margin 跌破阈值
+			> 论文 3.3 节的原话其实暗示了这一点：
+			> > After this exponential growth continues for some time, **the intra-class variance can become comparable to the inter-class variance**.
+			> 关键不是单个样本跨过决策边界，而是**整体分类结构在 NFI 主导的训练中被「挤掉」了**。
+		> （论文）给人的印象是「`W_G` 漂移 → margin 下降」，
+			> 但实际机制是「`W_G` 漂移 → 梯度被 NFI 方向主导 → 分类子空间退化 → margin 下降」。
+			> 这是一个间接的、通过梯度竞争实现的退化过程，而非直接的几何效应。
+			> 论文的数学推导（Theorem 3.4、Proposition 3.6）只证明了 NFI 的存在和增长，
+			> 但 margin 退化的因果链路更多依赖实验观察（Fig 2b 等）而非严格推导。
+		> 这篇论文的核心贡献在于**识别出 NFI 这个数值精度导致的反馈循环**，
+			> 以及**NFI 为 Slingshot spike 准备了巨大的有效学习率**。
+			> 至于 NFI 如何精确导致 margin 退化，这一环的论证相对薄弱。
+	> 这时候正确类梯度突然回来了。
+		> 但在此期间，由于梯度一直接近零，Adam积累的有效学习率已被放大到极限，相当于η/ε_Adam这个量级。
+		> 梯度一旦复活，Adam用这个超大的有效步长一刀切下去，参数更新幅度比正常大约50倍。
+		> loss直接被打飞到接近随机猜测的水平。
+	* 验证实验，多方案均可抑制；{_q6kg94}
+		> 最直接的验证实验是，只要在计算logit/loss时把精度切换到float64（参数仍用float32存储），Slingshot就完全消失。
+		> 或者把Adam的ε从默认的1e-8调到1e-5，尖峰同样消失。
+		> 在classifier之前加BatchNorm也有效，因为BN隐式地强制了特征均值为零，阻断了NFI的反馈回路。
+	> 其实这篇文章并不否认Slingshot和grokking的联系。
+		> 论文认为这些尖峰充当了隐式扰动。
+		> 让训练在不同区域重新探索，最终落入更平坦、更泛化的解。
+	* （评）试完整因果链分析
+		* 正向线性因果机制：预测结果准→ $w_i$ 梯度 0（SC）→ 权重更新方向有偏→ 预测结果略不够准→ $w_i$ 梯度非零→ Adam 对 $w_i$ 更新量巨大→ 预测结果极不准→ loss spike；{_q6kg2m}
+		* 初始缺点：loss 上升
+		* ← 模型预测结果很差
+		* ← 模型权重变化大（“权重”范围以下默认“针对正确类输出”，即 $w_i$）
+		* ← Adam 更新量大（前步；以下默认继承该条件）
+			* 学习率大（本问题不考虑）
+			* 累积动量大
+				* 历史动量大（不合实际）
+				* 当前梯度大
+					* 反传梯度系数非零
+					* ← softmax 与 1 距离大于浮点数舍入误差
+					* ← 正确类预测概率（softmax）偏小
+					* ← 网络权重不准
+					* ← Adam 更新方向有偏（再前步；以下默认继承该条件）
+					* ← 反传计算所得梯度有偏
+					* ← $w_i$ 梯度计算结果为 0
+					* ← $w_i$ 梯度算式中 1 - softmax(s)ᵢ 浮点计算结果为 0
+						* softmax(s)ᵢ 与 1 过于接近
+							* 正确类预测概率足够准
+								* 网络训练总时间长
+								* 网络拟合能力足够强
+						* fp32 尾数精度不足
+				* 动量记忆 $\beta_1$ 小
+			* 累积二阶矩小
+				* 历史二阶矩小
+					* 历史梯度长期为 0（见上方已分析：$w_i$ 梯度计算结果为 0）
+				* 当前梯度小（不合实际）
+				* 二阶矩记忆 $\beta_2$ 大
+			* 数值稳定常数 $\epsilon$ 小
+				* 方案—1e-8 增大至 1e-5 可解决
+* TWEO-2511.23225 fp8 训练异常大幅激活值抑制，靠训练惩罚项抑制
+	* "TWEO: Transformers Without Extreme Outliers Enables FP8 Training And Quantization For Dummies", CVPR 2026
+		* Liang, Guang; Shao, Jie; Tang, Ningyuan; Liu, Xinyao; Wu, Jianxin; 
+		> created on 2026-06-19
+	* [公众号报道](https://mp.weixin.qq.com/s/OVwFCaR1vvPTZx7d8LqlVQ)
+	* 大幅激活值归因：权重（而非输入）取值，源于训练，时机为 MLP 二投影主奇异方向+输入共线；{_q6j881}
+		> Qwen2.5-0.5B上做三组对比：真实输入+预训练权重、真实输入+随机权重、随机输入+预训练权重。
+		> 这组三联图的关键，是把“输入”和“权重”拆开看：只换输入，异常值还在；只换成随机权重，异常值就弱下去。
+		> 也就是说，输入内容可能影响异常值出现的位置和强弱，但它不是根因；真正持续制造极端异常值的，是预训练后 Transformer block内部形成的权重结构。
+		> 直观地说，训练会让MLP里某些方向逐渐变成“放大器”。
+		> 当down-projection 的某一行与up-projection的主奇异方向共线，且输入也投到这个方向上时，原本普通的激活会被连续放大，最后在某个维度上突然冲成极端值。
+	> 因此，论文把问题从“清洗输入数据”转向“约束训练中形成的激活结构”：如果异常值是在训练过程中被模型自己放大的，就需要在训练阶段从源头压住它。
+	* TWEO 正则化项，惩罚激活值 lp 范数的期望；{_q6j887}
+		> TWEO不改Transformer结构，只是在原有任务损失外加入异常值抑制项。
+		> 正常激活基本不受影响，极端激活试图冲高时会被压回可控范围。
+	* 实验 4，推理阶段对量化也有益
 * FD-loss-2604.28190
 	* "Representation Fréchet Loss for Visual Generation"
 		* Yang, Jiawei; Geng, Zhengyang; Ju, Xuan; Tian, Yonglong; Wang, Yue; 

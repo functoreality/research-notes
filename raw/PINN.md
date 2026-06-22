@@ -340,7 +340,7 @@
 		* PDE loss 的其他版本（Ritz 等）未讨论网格离散情形
 		* PDE loss 边界条件部分，参化表征的见 `PINN%`“边界处理”，未整理网格离散表征情形
 			* `PINO-2111.03794` 非齐次 Dirichlet 边值按普通惩罚项给出，`MaxwellNet-2107.06164` PML
-	* 主要在场用参化表征（INR）时涉及的内容
+	* 对象特化—主要在场用参化表征（INR）时涉及的内容
 		* 低维情形，求空间导数也可用有限差分 FD，而非自动微分 BP；{n79i86}
 			* 训练稳定性、精度 有可能提高；gradient masking 相关？
 				* ((_p4jk78))用有限差分替代 BP，避免高阶自动微分，训练更鲁棒
@@ -379,7 +379,7 @@
 			* 采样相关：((n8ql6d))从给定概率分布中采样
 		* INR boosting 情形((o8uh9u))新旧网络可用不同 loss
 		* 其他：有时给网络加额外 loss 以避免过拟合，一般讨论见((n3891i))过拟合
-	* 主要在场用非参化表征（如网格、散点离散）时涉及的内容
+	* 对象特化—主要在场用非参化表征（如网格、散点离散）时涉及的内容
 		* 场用非参化表征，求空间导数：{n2o879}
 			* 相关，其他求导场景：((o1sa81))一般映射求导-科学计算，((n23j97))PDE identification-用散点观测算导数
 			* 网格离散情形 有限差分
@@ -399,22 +399,30 @@
 			* 应用：((n8jk1b))NO 训练用 PDE loss
 		* 若为 PDE loss，可避开强形式、用((n3pa77))积分式弱形式
 		* 在小波域求 loss，可对各级系数自行选择权重 `2022-05-13`(CSImeet2)；Fourier 域同理
-		* 图像特有 loss，需考虑视觉相似度：{n4sj30}
+		* 目的特化—图像特有 loss，需考虑视觉相似度：{n4sj30}
 			* 传统的：L2，PSNR/SSIM，不过易导致图片模糊；据说 L1 用得比 L2 多
-			* GAN 判别器，见((n2bg0w))对抗训练
-				* 考虑图像结构，可使用((_n4sj7r))patch-based 的版本，各 patch 分别判别；{n4sj7z}
+			* 可能性：Wasserstein 距离，(位置,颜色)组成的像素点平移到目标图像
+			* 方式特化—常用((p98k7x))辅助网络给出 loss
+			* GAN 判别器((n4sj8e))，衡量二图像集（而非单纯二图）相似度
 			* ((_n4sj5c))perceptual loss，二图像分别输入（预训练好的）CNN、提取深层 feature，对 feature 求 loss；{n4sj5i}
 				* 其目的为((nckf3f))避免预测模糊化（naive L1/L2 loss 导致）
 				* 相关：((p98a8j))算法输出好坏评估-辅助网络，((n4sj3s))loss由辅助网络定义
 				* 风格迁移用的 loss，content 相似度用 CNN 深层 feature 的 L2 距离，style 相似度用浅层 L1
+				* 可用的 CNN：物理场情形((_q64m7p))2D用VGG-19前5层，3D用Med3D的ResNet10前3层
 				* 相关，浅层、深层的 feature 均视为输入图像的((oaff40))特征表示
-			* Wasserstein 距离可能性？
 			* 另有孪生网络的 contrastive loss
+			* 输入变种，利用图像的 ((q68m4l))patch 结构，仅依据 patch 判别；{n4sj7z}
+				* 作用：辅助网络((p98k7x)) 调用成本较高，改用 patch 减少计算量
+				* 如((_n4sj7r))Stable Diffusion VAE 训练引入 patched GAN loss
+				* 如((_q64m98))3D 物理场，完整输入 GAN 判别器会显存不足；patch 连续移动
+		* 网格情形，继承其 patch 资源，得((n4sj7z))patched loss
 	* loss 计算位置，((_nckb6b))NeuralGCM 气象模型在等压面、等 σ 面计算（具体含义未确认）
 	* 单点 loss 关于 error $u-u_0$ 依赖关系不再用 L2，以提精度、加快训练；包括自适应加权、$L^\infty$；{n3pj4s}
 		* 如：PINN 用 L2 loss 可能不对应真解，尤其高维、非线性方程((n29g6n))
-		* MSE 有时换为 MAE，以及原点附近平滑的 smooth-l1
-			* `DeepM&Mnet-2009.12935` 提到 MAPE 在输出 $u$ 取值范围大（如多尺度）时效果好于 MSE
+		* MAE，L1 替代 MSE；{q64m7c}
+			* 优势—处理大尺度输出：`DeepM&Mnet-2009.12935` 提到 MAPE 在输出 $u$ 取值范围大（如多尺度）时效果好于 MSE
+			* 优势—((nckf3f))避免预测结果模糊化
+			* 变种—smooth-l1，原点附近平滑
 		* 自适应加权（相关：((n9hg32))数据加权）
 			* 注意若有监督、权重形如 $|u-u_0|^r$ 则等价于 L2 loss 替换为 $L^p$ loss
 				* 权重是否 stop-gradient 有差异，一阶梯度仅差常数，Hessian 等高阶导会有区别
@@ -440,8 +448,8 @@
 		* 元学习找更优的单点 loss 替代 $L^p$ `metaPINN-2107.05544`，使 L2 loss 下降最快
 			* 可能单点 loss 关于 error 大小不是递增关系，也不一定偶函数
 			* 注：看原文实验，训练（元测试）用 SGD 时最优 loss 与 L2 差异较大，但用 Adam 时差别不大
-		* DeepSDF 原文，在 L1 的基础上引入 clamping 使训练稳定？
-		* 可使用复合型 error 而非单 error，如((n4r91r))$L^2+L^\infty$；{n56d99}
+		* 引入 clamping 使训练稳定？DeepSDF 中基于 L1 clamp
+		* 多 error 联用，如((n4r91r))$L^2+L^\infty$；{n56d99}
 			* 相关：不排除对 ((n55m69))对偶泛函 也可使用
 		* 混合精度下((_o2el3m))nRMSE 比 MSE 好
 		* 相关：有的约束形如 某个场等于 0，((n3pj0c))需考虑等式在哪个函数空间中成立，包括范数选取，另也可为无范数的那类函数空间（无法直接用 loss）
@@ -451,6 +459,7 @@
 			* li+1学长做的 Boltzmann NN ansatz 对 PDE error 再惩罚梯度、时间导数等（来自预答辩演习）
 			* PINN 有用这种办法的改版((n29g62))
 			* FNO 文献有用 $H^1$ 范数((_o2ga6c))，包括李宗宜的工作；{o2ga6g}
+				* 一般的 $H^s$ 范数惩罚高频误差，或可解决((q64m2a))NO 高频学习效果不佳问题
 			* 变种，((_p2sb7v))梯度范数计算时强化某方向上幅值，用于强各向异性情形
 		* 作用：((o8ui03))提高间断拟合精度；用于正则化，((oc2a6s))提升物理场光滑程度
 			* ((p9ub7g))使残差在配点附近也较小，而非仅配点位置小的尖峰解
@@ -486,13 +495,22 @@
 		* ((o1lb8e))NO-半监督，同时用 PDE loss、有监督 loss
 	* 间断问题（激波，图像边缘），促进or避免
 		* 使边缘清晰（L2 loss 易模糊化）：{nckf3f}
-			* MSE loss 易导致模糊化的解释：((_nckf2n))“双重惩罚”问题
+			* 归因—MSE loss 易导致模糊化的解释：((_nckf2n))“双重惩罚”问题
+			* 模糊化结果
+				* 统计指标：((_q69b8l))Q-R联合分布 和 能谱分析
+				* 网络表现（质料归因，直接原因）：((_q69b7m))U-Net 架构下卷积核呈现为低通滤波，换合适 loss 后则有高频响应能力
+			* 改用 ((q64m7c))L1 loss 容忍边界移动，如((_q64m6a))
 			* Laplacian pyramid loss 汇总多尺度信息、容忍边界移动 `GLO-1707.05776`；{nckf4u}
 				* 多尺度 loss 还可通过在频域计算 loss 体现，((_nckf2s))气象预报模型训练 使各波长分量能量预测准确，以避免模糊化；{nckf36}
 				* 相关：((nckf33))coordLoss-非逐点 loss 求和，((nckf50))多尺度
 			* 算 loss 前先过滤（不太可能预测准的）高频分量((_nckf3n))；{nckf3s}
-				* 用 H-1 范数，相当于降低高频分量权重((_p33j3y))，不过是用于 PDE residual（类似 PINO）
-			* CV 中 perceptual loss((n4sj5i))，用预训练 CNN 提取深层 feature 再算 loss
+				* 用 $H^{-1}$ 范数，相当于降低高频分量权重((_p33j3y))，不过是用于 PDE residual（类似 PINO）
+			* 基于((n4sj30))视觉相似度
+				* CV 中 perceptual loss((n4sj5i))，用预训练 CNN 提取深层 feature 再算 loss
+				* GAN 判别器((n2bg0w)) 引导结果形态，其输入仅预测结果、不含 label，label 仅用于其训练
+			* 多 loss 联用，如((_q64m2w))L1 + perceptual + GAN判别器
+				* Stable Diffusion VAE 好像是 MSE + perceptual + GAN判别器
+			* 反向缺点：L2 loss 对高频误差惩罚不足，导致((q64m2a))高频预测不准
 		* 使间断（如激波）位置准确：{o8ui03}
 			* 按梯度大小加权 $\int|\nabla u_0|^2(u-u_0)^2dx$ `2022-05-13`(CSImeet2)
 			* 惩罚梯度误差 $|\nabla u-\nabla u_0|^2$，见((n29g64))Sobolev loss

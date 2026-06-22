@@ -39,7 +39,7 @@
 		* Park, David Keetae; Luo, Xihaier; Zhao, Guang; Lee, Seungjun; Oprescu, Miruna; Yoo, Shinjae; 
 		> created on 2025-05-20
 	* fig2 架构示意图
-		* （评）编码解码部分感觉和 LSM C latent tokens/Transolver 物理注意力相似，尽管本文没有引用
+		* （评）编码解码部分感觉和 LSM C latent tokens/Transolver 物理注意力相似？不过本文预印本版本似乎没看到有引用，不排除是我没细看其中的区别
 		* 无网格编码器，输入散点（应该是），输出 M 个隐向量
 			* 输入散点编码：线性投影，concat t,x 的 Fourier 特征编码
 			* 再过 context embedding network，涉及稀疏注意力层（> 细节未看）
