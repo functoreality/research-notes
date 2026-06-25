@@ -165,8 +165,8 @@
 				* 有随机版本，此时相当于随机输出 $0,x$，概率与 $x$ 取值有关；相当于 dropout((n37g82)) 与激活函数的融合；{n9nn4c}
 			* GLU（gated linear unit），常用于 ((o3ll7n))Transformer-FFN；{o3198n}
 				* ((_o3198m))据说 self-gating 加上都涨点，基本形式 $\sigmoid(Wx)x$；变体有 context gating 和 SE 模块等
-				* LLaMA SwiGLU，Grok-1 据说 GeGLU
-				* 相关：gating 在 activation 层面执行，softmax((o31a0d)) 在 instance 层面执行
+				* 使用案例：LLaMA SwiGLU，Grok-1 据说 GeGLU
+				* 对象（激活神经元）一般化 见((o31a0d))加权求和
 			* 激活函数引入了高频信息((ncqf1p))
 			* 针对半精度的 pre-activation 将数值限制到有限区间，((o2ga7u))用于 FNO
 	* 位置编码引入高频信息，可能使输入升维；{n3t97n}

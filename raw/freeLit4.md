@@ -1,3 +1,14 @@
+* 2308.02287 分类模型输出引入冗余类可提效果
+	* "Frustratingly Easy Model Generalization by Dummy Risk Minimization"
+		* Wang, Juncheng; Wang, Jindong; Hu, Xixu; Wang, Shujun; Xie, Xing; 
+		> created on 2026-06-23
+	* [知乎介绍](https://www.zhihu.com/question/715950129/answer/2049801878226067753)
+	> 多出来的 dummy class 虽然永远不是正确答案，却仍然进入 softmax 的归一化项。{_q6nl1m}
+	> 模型不仅要把猫和狗、车和飞机分开，还要把每个真实样本从几个没有语义的“虚空类别”旁边拉开。
+		> 从梯度角度看，这件是就不是简单的加几个空白选项了。
+		> 换句话说，每一个训练样本会与这些 dummy class 产生排斥关系。dummy class 改变了整个表示空间的受力方式。
+		> 原来模型只需要在 10 个真实类别之间找到分割方式；现在它要在一个更大的输出空间里找到分割方式。
+		> 这个额外空间没有提供新知识，却改变了 loss landscape，也改变了梯度下降走到哪里的概率。
 * 2605.06152 loss spike 源于 fp32 下溢，正确类梯度长期消失后突然恢复，被 Adam 放大
 	* "Grokking or Glitching? How Low-Precision Drives Slingshot Loss Spikes"
 		* Hanqing, Liu; Cao, Jianjun; Li, Yuanze; Zhou, Zijian; 
