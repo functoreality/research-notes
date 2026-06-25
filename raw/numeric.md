@@ -73,7 +73,7 @@
 					* ((_q2mg2h))10k 数据对，背景类 GRF 声速下高频解
 				* 数据生成
 					* 当时 MAD 实验时我用的 MATLAB k-wave 包，先算含时波方程解到稳态，再做时域 FT 得 Helmholtz 解
-					* [MUMPS](https://github.com/MIA123MIA321/MUMPS-Install)，from 2024-03-17 导师“清华的UiZoQl老师他们用的是mumps，说2D 512x512的分辨率算一个只需要几秒钟。”
+					* [MUMPS](https://github.com/MIA123MIA321/MUMPS-Install)，from 2024-03-17 导师“清华的uzq老师他们用的是mumps，说2D 512x512的分辨率算一个只需要几秒钟。”
 				* 相应反问题((n7ul5d))散射波反演，根据边界观测算子推断内部系数场
 			* 弹性力学波方程？
 			* Euler-Bernoulli beam equation 涉及空间 4 阶导数；{o6tf0t}

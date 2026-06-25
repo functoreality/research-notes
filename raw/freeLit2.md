@@ -775,7 +775,7 @@
 	* "Superpixel-informed Implicit Neural Representation for Multi-Dimensional Data"
 		* Li, Jiayi; Zhao, Xile; Wang, Jianli; Wang, Chao; Wang, Min; 
 		> created on 2024-11-23
-	* 注：作者非来自国内好高校，且目前没看到文章中有意思部分
+	* 注：目前暂时没看到文章中对我来说有意思的部分
 	* 摘要摘录
 		* 目的：利用数据中的语义先验
 		* 超像素信息INR（S-INR）

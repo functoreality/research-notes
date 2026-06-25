@@ -139,7 +139,7 @@
 		* eqn(9) 训练数据为 $(x,y)$ 样本对
 		> 如果只要找出某个 $y$ 对应的 $x$，训练对所有 $y$ 都精确的 $f$ 是否低效了一点；
 		> 不过本文优势似乎在改变设计目标时，1,3 步无需重做，从而高效
-		* 导师：这种做法某种意义上有一些简单粗暴；另一篇 "Learning the aerodynamic design of supercritical airfoils through deep reinforcement learning" 只针对这一步，但用了 RL，更精细
+		* 导师：这种做法某种意义上似乎有一些简单粗暴；另一篇 "Learning the aerodynamic design of supercritical airfoils through deep reinforcement learning" 只针对这一步，但用了 RL，更精细
 	* sec4.2 过往经验表明，多目标优化可通过限制 CP feature $y$ 来隐式达到
 * `DeepGreen-2101.07206` 非线性方程 AE 变换为线性方程，Green 函数表达的解在离散化下为矩阵乘法
 	* #NO, #Green_func
@@ -572,8 +572,8 @@
 	* 反向设计算例：fig4b 希望在透镜光轴后 8nm 处电场强度达到最大
 		* （评）生成的透镜截面有点像双曲线；几何光学用费马原理能推双曲面聚焦，这里按波动光学算（原文说问题线度为 $10\lambda$）出类似结果
 * `2206.00711` PDE 反问题，GNN NO 前接 AD 生成系数场，从而只考虑低维优化问题、用先验避免不良局部最优；实现时允许微调 AD 网络参数从而近似低维
-	* "Learning to Solve PDE-constrained Inverse Problems with Graph Networks"
-		> `2022-06-10`(CSImeet2), ICML2022 导师为 meta-reviewer，另在 `2022-11-02`(dbGrpMeet2) 讨论
+	* "Learning to Solve PDE-constrained Inverse Problems with Graph Networks", ICML2022
+		> `2022-06-10`(CSImeet2)，另在 `2022-11-02`(dbGrpMeet2) 讨论
 	* 预训练 1：解算子 NO，架构 `MeshGraphNets-2010.03409` GNN；用 FEM 生成数据（GRF 初值）
 	* 预训练 2：AD 给出系数场降维表达（“先验”），允许在任意点求值以输入 GNN
 		* 原文描述为“深度生成模型”，隐向量映射到材料参数、初值的低维子空间，其中包含反问题合理解
@@ -911,7 +911,7 @@
 * `Lagaris1998ANN` 最早的 PINN，已考虑网络构造自动满足 BC（针对简单区域，包括 (D,N) 混合 BC）
 	* "Artificial neural networks for solving ordinary and partial differential equations", I.E. Lagaris, A. Likas, D.I. Fotiadis, IEEE transactions on neural networks, 9 (1998) 9871000.
 		* 以下依据版本 arXiv:physics/9705023
-		> created on 2023-01-06，信源为审稿的 CMAME 投稿文章
+		> created on 2023-01-06，信源为某篇审稿的 CMAME 投稿文章引用
 	* 方程形式 $G(x,\Psi(x),\nabla\Psi(x),\nabla^2\Psi(x))=0$ 在 $D$ 内，改写为在离散点 $x_i$ 上成立，$\min\sum_iG(x_i)^2$
 	* 为满足 BC，ansatz $\Psi(x)=A(x)+F(x,N(x,\theta))$，$A$ 构造成满足 BC，$F$ 构造使其对 BC 无贡献
 		* （评）这个框架写得比较一般，不限于 (D)

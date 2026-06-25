@@ -366,7 +366,7 @@
 		* 时间、空间复杂度 $O(N+L)$（时间复杂度可能还有 log 因子）
 	* DeepS4：现在设输入 $u$ 有多维（多通道）；每通道 S4、全连接混合不同通道信息，如此叠多层
 	* 注：实验、相关讨论仍见 `2022-08-31`(AISCmeet2)，未整理
-		* `2022-09-30`(CSImeet2) FEDformer 也试图处理长数据，不过很少机理、怀疑动机不明
+		* `2022-09-30`(CSImeet2) FEDformer 也试图处理长数据，不过很少机理，不排除动机不明
 * `GraphCast-2212.12794` 全球天气预报，球面 multi-mesh GNN，编解码器转化方形经纬网格数据
 	* "GraphCast: Learning skillful medium-range global weather forecasting" by DeepMind
 		> `2022-12-30`(CSImeet3)
@@ -550,7 +550,8 @@
 			* 模型无需显式输入时间步长，可自动推断出
 			* fig6 分布内（浅水波）数据的结果，fig5 分布外 zero-shot 数据的结果
 		* sec5.3.4 针对反问题 fine-tune，仿照 MPP 考察流场 forcing term/浮力恢复问题
-	* 注：据生态方对接人说其中只考虑了单步 inference 的误差，因此精度看起来高
+	* 注：有听过他们报告的对接人说其中只考虑了单步 inference 的误差，因此精度看起来高
+		* 不过有可能仅针对早期版本，本文后续更新可能有变化，未确认
 	* （评）文中 baseline 的 U-Net 精度也不太行，和 ICLR PDEformer 结果差不多，因此应该不是我们自己实现的 U-Net 有问题
 	* secB DL 框架，主要开发与实验用 PyTorch，部分推理用 MindSpore
 	* v2 版本，昇思公众号报道，[2024-12-17](https://mp.weixin.qq.com/s/FUTJlONwaKYIyVy0zDDrQA)

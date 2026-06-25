@@ -237,8 +237,8 @@
 		* p10:1 对于 one-sided detection，较深处对 $\eta$ 的恢复是病态的反问题，two-sided detection 则正常工作
 		* p12:1 noise 添加到 $\mu$ 上
 	* > date: 2021-01-23
-		* 导师认为 $(K^\mathrm{T}K+\epsilon I)^{-1}$ 使用 CNN 是本文最值得商榷的地方之一，如果是他就使用 $K^\mathrm{T}+K^\mathrm{T}KK^\mathrm{T}+K^\mathrm{T}KK^\mathrm{T}KK^\mathrm{T}+\cdots$ 类似的展开，即继续使用机理指导网络设计
-		* 要表达 $K^\mathrm{T}$，重新训练了一个架构相同的网络，“$K,K^\mathrm{T}$ 具有类似网络形式”对于 $K$ 非线性的（即不进行摄动近似）情形不再成立，BCR-Net 的非线性表达能力没有用在有合适理论的地方，如果是导师则会使用定义 $\min\|\langle K\eta,\mu\rangle-\langle\eta,K^\mathrm{T}\mu\rangle\|^2$ 来训练 $K^\mathrm{T}$
+		* 导师认为 $(K^\mathrm{T}K+\epsilon I)^{-1}$ 使用 CNN 是本文最值得三思的地方之一，如果是他就使用 $K^\mathrm{T}+K^\mathrm{T}KK^\mathrm{T}+K^\mathrm{T}KK^\mathrm{T}KK^\mathrm{T}+\cdots$ 类似的展开，即继续使用机理指导网络设计
+		* 要表达 $K^\mathrm{T}$，重新训练了一个架构相同的网络，“$K,K^\mathrm{T}$ 具有类似网络形式”对于 $K$ 非线性的（即不进行摄动近似）情形不再成立，BCR-Net 的非线性表达能力没有用在有合适理论的地方，如果是导师自己则会使用定义 $\min\|\langle K\eta,\mu\rangle-\langle\eta,K^\mathrm{T}\mu\rangle\|^2$ 来训练 $K^\mathrm{T}$
 		* 估计他们的思路其实是倒过来的，先考察优化问题 $\min_\eta\|K\eta-\lambda\|+\epsilon\|\eta\|$，改写为 $(K^\mathrm{T}K+\epsilon I)^{-1}K^\mathrm{T}\lambda$ 形式，难点在于 $K^\mathrm{T}$ 的网络结构设计，因此理论推导 $K$ 网络应该具有的形式，进而线性算子转置的网络形式应该类似
 		* Lexing 他们的风格喜欢这种 theory-guided 的架构，试图把原来的多尺度等的理论给出 NN 的版本
 	* 相关：`2022-12-07`(dbGrpMeet2) 用 VAE 来解此反问题，并提出数据集构建方法（用 CT 数据处理获得）

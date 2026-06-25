@@ -560,7 +560,7 @@
 		* AFNO（`2021-12-10`(CSImeet2)，adaptive FNO）用于处理图像
 		* `F-FNO-2111.13802`（factorized FNO，`2021-12-17`(CSImeet2)；不是 FNO 的组做的）Fourier 变换改为 tensor product 版本，用全连接补偿精度损失，可省内存（尤其高维）
 		* 可作为 ViT 内部替换注意力机制的架构 `FourCastNet-2202.11214`
-		* `2022-03-16`(dbGrpMeet2) 鄂维南老师觉得其设计基于 Green 函数，未必适用于非线性方程
+		* `2022-03-16`(dbGrpMeet2) 鄂老师觉得其设计基于 Green 函数，未必适用于非线性方程
 		* `FNOvsDpONet-2111.05512` 2022-08-15 MSML 会议 LuLu 提到对有间断问题表现不如 DeepONet（Fourier 变换性质）
 * `DeepONet-1910.03193`: #PDE, #NO
 	* "DeepONet: Learning nonlinear operators based on the universal approximation theorem of operators"
