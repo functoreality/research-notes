@@ -869,7 +869,7 @@
 	* 据先验机理：已知算子可表达为特定形式（针对特定任务，常通过理论分析），据此设计架构；{nclm6b}
 		* 针对多层复合形式算子 ansatz，引入类 DenseNet 结构，见((_n86k2l))IAE-Net
 		* `[Ying]-EIT-DL`, `[EIT/DOT用数学结构设计NO]`
-		* `OneShotNO-2104.05512`，PDE-Net，((nclk75))可降低数据量需求
+		* `OneShotNO-2104.05512`，PDE-Net，((nclk76))可降低数据量需求
 	* 一般意义上的全局、局部、单点 ansatz 相关；{o9aa14}
 		* ((n7de8p))图位置编码、结构编码，用于 graph Transformer
 	* 多类型层组合交替使用；{q5d901}

@@ -139,7 +139,7 @@
 		* eqn(9) 训练数据为 $(x,y)$ 样本对
 		> 如果只要找出某个 $y$ 对应的 $x$，训练对所有 $y$ 都精确的 $f$ 是否低效了一点；
 		> 不过本文优势似乎在改变设计目标时，1,3 步无需重做，从而高效
-		* 导师：这种做法某种意义上似乎有一些简单粗暴；另一篇 "Learning the aerodynamic design of supercritical airfoils through deep reinforcement learning" 只针对这一步，但用了 RL，更精细
+		* 导师：这种做法某种意义上似乎有一些简单直接；另一篇 "Learning the aerodynamic design of supercritical airfoils through deep reinforcement learning" 只针对这一步，但用了 RL，更精细
 	* sec4.2 过往经验表明，多目标优化可通过限制 CP feature $y$ 来隐式达到
 * `DeepGreen-2101.07206` 非线性方程 AE 变换为线性方程，Green 函数表达的解在离散化下为矩阵乘法
 	* #NO, #Green_func

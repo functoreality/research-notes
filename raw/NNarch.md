@@ -109,7 +109,7 @@
 		* 相关：((n3ag7c))引入硬先验（一般，不限于通过 NN 架构引入）
 		* 相关：这算 phy in NN，另见((nckl0b))NN in phy，((nckf92))二者关系讨论
 		* NO 架构，传统数值格式作为特殊的机理，numeric in NN((ncbn67))
-	* 引入软先验，常可降低数据需求；{nclk75}
+	* 引入软先验，常可降低数据需求；{nclk76}
 		* 如 `OneShotNO-2104.05512`，PDE-Net 相较 NO 数据需求小
 			* 又见((nclm6b))NO 用于特定任务，据理论推导得算子形式、用于设计 NO 架构
 			* 相应汇总 ((nckl08))phy+MLpersp；
