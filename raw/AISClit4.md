@@ -547,7 +547,7 @@
 * `2307.05432` （备用）对 PDE 解用自监督学习，在下游任务上表现好于有监督，by LeCun
 	* "Self-Supervised Learning with Lie Symmetries for Partial Differential Equations"
 		* Mialon, Grégoire; Garrido, Quentin; Lawrence, Hannah; Rehman, Danyal; LeCun, Yann; Kiani, Bobak T.; 
-		> 2023-07-15 MAD 讨论群推荐，当时认为处理的问题 trivial
+		> 2023-07-15 MAD 讨论群推荐，当时认为处理的问题（对我们这些专门做 PDE 的人来说）有些 trivial
 	* p4:-1 似乎是使数据 3 通道：$(t,x,u)$（不完全确定）；{_n7fc08}
 	* 数据增广方式：crop，Lie group 对解变换；{_n8ve3d}
 		* 附录各表给出了 Burgers，KdV，KS，NS 方程的 Lie 对称群生成元
@@ -666,13 +666,13 @@
 * pi-FNO-2308.07051 针对守恒型双曲方程，FNO 训练同时用数据和（积分形式）PDE loss，训练用初边值分布为简单阶跃，该选取好于 GRF 等
 	* "Fourier neural operator for learning solutions to macroscopic traffic flow models: Application to the forward and inverse problems"
 		* Thodi, Bilal Thonnam; Ambadipudi, Sai Venkata Ramana; Jabari, Saif Eddin; 
-	* 以下笔记针对审稿版本
+	* 以下针对早期版本
 	* "Fourier neural operator for learning weak solutions of nonlinear scalar hyperbolic PDEs: Numerical experiments and generalization results"
 		> created on 2023-04-15
 	* 考虑 1D 交通流问题（> 像流体 Euler 方程），守恒律形式，有稀疏波、激波
 		* BC 含时（红绿灯），从而激波（堵车开始处）位置可前后移动
 	* FNO 架构：只输入 IC,BC,内部已知值（对反问题）；取值未知的部分放 -1，故完全按普通网格数据输入；{_n4fe42}
-		* （评）-1 代替的可行性可能由于正常数据取值都非负
+		* （评）-1 代替的可行性可能由于问题特性，其中正常数据取值都非负
 	* FNO 训练 loss：数据 loss 基础上加 PDE loss，由于有间断故使用积分形式，类似有限体积；{_n4fe7i}
 		* 实验，sec5.5 无 PDE loss 的纯 FNO 解较差：
 			* 长时间预测性能不佳，所得解在长时间后被平均了；{_n4fe63}

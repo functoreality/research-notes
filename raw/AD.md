@@ -12,7 +12,7 @@
 	* SDF 可以视为 Eikonel（？）方程的解，也可以直接计算逐点取值，从而可以 fine-tune
 	> 这里待训练的 $z$ 其实按照这种 decoder 的写法是有一个概率分布，取最大似然则成为一个确定的东西，可以优化算法找到
 * 没有阅读原文；以下均为我的思考（来源：2021-03-10 组会 PPT，知乎）
-	* `/home/yzh/nutstoreFiles/research/slides/mine/others/20210311-DeepSDF-meeting.tex` 为 PINN 等一般元学习框架的笔记
+	* `~/nutstoreFiles/research/slides/mine/others/20210311-DeepSDF-meeting.tex` 为 PINN 等一般元学习框架的笔记
 * 按照 meta-learning hypernet 方式的理解，如果把 $z$ 看作 meta-task input：$(x,z)\mapsto s$ 相当于 $z\mapsto(x\mapsto s)$，后者的映射使用 NN 表达（PINN）时相当于 $z\mapsto\omega$ ($s=s_\omega(x)$) 这样的 hypernet；
 	* 原有的 $s_\theta(x;z)$ 形式下，相当于 hypernet 只影响 regular-net $s_\omega(x)$ 的第一层，hypernet $z\mapsto\omega$ 参数为 $s_\theta(x;z)$ 的输入层、第一隐藏层之间的权重，输出相当于 $s_\omega(x)$ 第一隐藏层的 bias
 		> MetaSDF secA 写下了这一点

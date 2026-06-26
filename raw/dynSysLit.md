@@ -550,7 +550,7 @@
 			* 模型无需显式输入时间步长，可自动推断出
 			* fig6 分布内（浅水波）数据的结果，fig5 分布外 zero-shot 数据的结果
 		* sec5.3.4 针对反问题 fine-tune，仿照 MPP 考察流场 forcing term/浮力恢复问题
-	* 注：有听过他们报告的对接人说其中只考虑了单步 inference 的误差，因此精度看起来高
+	* 注：有听过他们报告的对接人说其中只考虑了单步 inference 的误差，因此报告的精度相对高
 		* 不过有可能仅针对早期版本，本文后续更新可能有变化，未确认
 	* （评）文中 baseline 的 U-Net 精度也不太行，和 ICLR PDEformer 结果差不多，因此应该不是我们自己实现的 U-Net 有问题
 	* secB DL 框架，主要开发与实验用 PyTorch，部分推理用 MindSpore

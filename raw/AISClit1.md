@@ -406,7 +406,7 @@
 	* eqn(3.5) idea of MG 
 		* V-cycle
 	* （mine）代码实现的可能细节：
-		> 我已经有实现（FDTD 文件夹 `/home/yzh/nutstoreFiles/research/Python_codes/FDTD/fem_mg.py`），并且 Meta-MgNet 的记录文件中自己想法章节也有相关记录
+		> 我已经有实现（FDTD 文件夹 `~/nutstoreFiles/research/Python_codes/FDTD/fem_mg.py`），并且 Meta-MgNet 的记录文件中自己想法章节也有相关记录
 		* fig6.2 算法中，电场系数 $\xi$ 在边界的 edge 默认为 0，不需存储（建立数组时）
 		* 注意 $\xi$ 为 3-channel 数组（2D 时为 2-channel），smoother、微分算子的离散化也是 multi-channel 卷积
 		* 原本 $\nabla\times(\nabla\times E)|\partial\Omega\ne 0$ 可以成立，但是由于 eqn(1.5) 使用的（连续情形）test func 为 (D) 边界，此时应该有物理背景的额外假设——$j|\partial\Omega=0$（否则连续情形弱形式不再等价于原问题）从而 $\sigma$ 也 0 边界，并且 $A\xi$ 也应该使用 0 边界（试函数系数空间的对偶），即仍按照 curl curl 边界为 0 处理；

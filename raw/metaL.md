@@ -209,7 +209,7 @@
 	* $i$ 未必离散，可以认为是概率空间的 $\omega$ 来给出 $(x_i,y_i)$，有时候 $\mathcal{L}^T_i$ 还可以涉及梯度等
 	* 这里忽略了 $f$ 内部结构，只抽象输入输出；一般问题也许可以用图搜索问题（的连续情形）来描述
 	* 类比 exploration-exploitation 问题涉及到 客观随机、主观未知 两个部分
-	> 这也作为 `/home/yzh/nutstoreFiles/nutstore/documents_txt/inspTrials.md` 解决方案空间搜索的一个比较
+	> 这也作为 `~/nutstoreFiles/nutstore/documents_txt/inspTrials.md` 解决方案空间搜索的一个比较
 	* MAML: fix $f=$ 5 step SGD，学任务无关的 $\theta_0$
 	* 预测参数版本：$f$ 拆分为两部分，预测初始化参数的 $f_1:T\mapsto\theta_1$，fine-tune 的 $f_2:(\theta_1,T)\mapsto\theta^*$，取定 $f_2$ 只学 $f_1$
 	* 学优化算法：固定 $\theta_0$ 学（调整） $f$ 内部的迭代方式

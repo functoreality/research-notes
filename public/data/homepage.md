@@ -7,8 +7,8 @@
 三年以前，我想清楚了[自己的笔记方法](https://functoreality.github.io/blog-pkm/contents/%E5%A4%A7%E7%BA%B2%E8%AF%AD%E5%A2%83%E7%AC%94%E8%AE%B0%E6%B3%95/)。
 你现在在这里看到的笔记，就是我用这种方法积累了三年的结果。
 
-不过，我当时对方法本身的理论叙述好像有些太过于抽象了。
-在前去看它的具体解释以前，我鼓励大家先在这里多逛一逛，点进几条笔记，看看它们浏览起来是一种什么样的体验。
+如果想再了解得更多一点，你可以看看我为这份公开笔记写的[介绍](https://functoreality.github.io/blog-pkm/contents/%E6%88%91%E7%9A%84AI%E7%A7%91%E7%A0%94%E7%AC%94%E8%AE%B0/)，
+它也有相应的[知乎版本](https://zhuanlan.zhihu.com/p/2053740935960385319)。
 
 ## 索引笔记
 
