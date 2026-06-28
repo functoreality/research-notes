@@ -243,7 +243,7 @@ def format_output(lines: list[dict],
 
     Line format:    N: content       (left-aligned)
     Target line:    >>> N: content
-    Fold indicator:   (N lines folded)   (default; --no-fold-indicators to suppress)
+    Fold indicator: (N lines folded)   (--no-fold-indicators to suppress)
     """
     parts = []
     last_lineno = None
@@ -254,7 +254,7 @@ def format_output(lines: list[dict],
 
         if fold_indicators and last_lineno is not None and lineno > last_lineno + 1:
             skipped = lineno - last_lineno - 1
-            parts.append(f'  ({skipped} lines folded)')
+            parts.append(f'({skipped} lines folded)')
 
         if target_idx is not None and i == target_idx:
             prefix = f'>>> {lineno}: '
