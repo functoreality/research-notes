@@ -41,11 +41,16 @@ export function FileView({
   const onMarkerClickRef = useRef(onMarkerClick);
   onMarkerClickRef.current = onMarkerClick;
 
+  const targetIdx = highlightLine !== null
+    ? file.lines.findIndex(l => l.lineNum === highlightLine)
+    : -1;
+  const targetVisible = targetIdx >= 0 && lineStates[targetIdx]?.isVisible;
+
   useEffect(() => {
-    if (highlightLine !== null && highlightedLineRef.current) {
+    if (targetVisible && highlightedLineRef.current) {
       highlightedLineRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [highlightLine]);
+  }, [highlightLine, targetVisible]);
 
   const handleLinkClick = (marker: string) => {
     const target = globalIndexRef.current.markerToFile[marker];
