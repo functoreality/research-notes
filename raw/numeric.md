@@ -84,6 +84,7 @@
 			* ((o44b37))CoDA-NO 考察不可压 NS 与弹性力学耦合，数据用 TurtleFSI 包生成
 			* 3D 工业级工程设计，线弹性、弹塑性、时变塑性
 			* 极端载荷材料动力学，((_q3uf8s))扰动分层界面（PLI）和动态断裂/破坏演化（FRAC）
+			* 超弹性，涉及多种本构方程（真实预设+随机生成）((_q6rm52))，区域为方形内挖多洞；含生成代码
 		* 反应项，常用于反应扩散 reaction-diffusion
 			* 数据集可用 PDE-bench：1D $u_t=Du_{xx}+ru(1-u)$，2D 为 Fitzhugh-Nagumo 方程（涉及 $u,v$）
 				* DeepONet 1D $u_t=Du_{xx}+ku^2+f$

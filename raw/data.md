@@ -203,6 +203,8 @@
 			* 知识学习系统基本要素：representation 高效的表达，anchor in reality 知识本体空间需与现实本体空间对应，learning method 有学习方法、在模型中增加新知识，reasoning method 将现实问题代入知识、根据目标求解；来源 `2022-06-08`(lectures)
 		* 体现机理的 loss；{ncln3c}
 			* ((n3bg3i))PINN loss
+			* 参与组成的超系统行为符合预期((q6sg4g))，如本构关系使整个参化 PDE 解映射准确，也包括 HNN 系列 `phyGuidedDyn:`
+				* 算特殊的下游任务？
 			* 不限于 loss，可用于一般的((p97l1n))模型输出质量评估，其方法亦可参考
 			* 相关：这里是硬先验，另有用软先验的((ncaa48))物理启发的 loss
 			* 合成数据提供 loss，惩罚网络不满足特定性质的程度；{ncln3x}
