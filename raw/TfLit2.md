@@ -408,6 +408,48 @@
 	> 很多人可能好奇，为什么偏偏选择六层模型做实验？其实这个层数是实打实的神来一笔。
 		> 梯度下降的迭代规律是先快后慢，层数太少，只能覆盖快速收敛阶段；层数太多，大部分网络层都会卡在收敛后的平稳平台期，无法观测完整变化。
 		> 六层的数量刚好不多不少，能同时覆盖梯度下降的快速下降期和平台期，完美适配本次实验需求。
+* TRM-2602.08498 CoT 质量评估，指标分宏微观、有效高效性，推理过程切 DAG，据此训奖励模型
+	* "Characterizing, Evaluating, and Optimizing Complex Reasoning"
+		* Zhang, Haoran; Li, Yafu; Wang, Zhi; Wang, Zhilin; Zhang, Shunkai; Qu, Xiaoye; Cheng, Yu; 
+		> created on 2026-06-29
+	* [公众号报道](https://mp.weixin.qq.com/s/Del4I0ZB_hTKAmJTPoznuw)
+	> 答案之外，还需要进一步区分：哪条推理链更清楚、更紧凑、更值得模型学习。这正是TRM关注的问题。
+	> 用ME² principle刻画推理质量，
+		> 论文沿两条正交轴拆解推理质量：粒度上分macro（整体结构）和micro（单步内容）；目标上分efficiency（高效）和effectiveness（有效）。两两组合得到四个维度：{_q6tk3g}
+			> Macro-Efficiency：整体结构是否高效。好的推理链会沿着必要分支推进，避免在同一条思路上反复重启，也不会做过多无效检查。
+			> Macro-Effectiveness：整体结构是否有效。推理主线应始终围绕问题目标展开，分支之间关系清楚，关键论证能够前后接上。
+			> Micro-Efficiency：单步表达是否简洁。每一步最好都有明确作用，比如计算、验证、排除或归纳，少写不影响结论的重复内容。
+			> Micro-Effectiveness：单步内容是否正确。局部计算、符号使用和前后结论需要自洽，不能用错误步骤支撑正确答案。
+		> 这四个维度把“哪条推理更好”分解成可标注、可比较、可训练的信号，构成后续整套评估和优化流程的基石。
+	> 用DAG-based pairwise evaluation还原推理结构，{_q6tk2l}
+		> 先把原始文本切成一系列原子步骤，把每个步骤作为一个节点，再按照语义依赖关系连边。
+		> 这样一来，推理链中的progression（线性推进）、branching（分支探索）和merging（分支合并）就能清楚呈现出来。
+		> 为此，论文把任意推理链抽象为有向无环图（DAG），并将这一过程拆成三步：
+			> 1.Step Partitioning：先按段落做粗切分，再统计大量轨迹中高频起始词作为更稳定的分隔符，得到一致、有语义意义的步骤边界。
+			> 2.Reasoning Structuring：按时间顺序遍历每个推理步骤，用大模型分配其语义父节点，逐步构建边；
+				> 再把完全线性的相邻节点合并为超节点，得到紧凑的DAG，清晰呈现progression（线性推进）、branching（分支探索）和merging（分支合并）这样的复杂结构。
+			> 3.Pairwise Evaluation：根据ME² principle构造语义抽象，再让评估模型基于这些抽象给出两条推理链的相对偏好。Macro和Micro两种粒度分别对应不同的抽象方式，覆盖ME² principle四个维度。
+		> 这样，评估模型就不必只盯着一整段长文本，而是可以沿着推理结构看：主线是否清楚，分支是否必要，局部步骤是否简洁、正确。
+		> 这样得到的判断，也比直接看原文更稳定。
+	> 训练Thinking Reward Model，把“推理质量”从主观感受变成可复用的奖励信号。{_q6tk4w}
+		> 并将其用于Test-Time Scaling和RL。
+		> 构建了TRM-Preference数据集。
+		* 样本推理链生成
+			> 对于每个问题，研究者先用多个开源推理模型生成候选推理链，
+			> 再通过规则验证器筛掉答案错误的轨迹，只保留最终答案正确的样本。
+		* 标签生成：DeepSeek-V3.2 打分
+			> 论文用DeepSeek-V3.2在ME²四个维度上对DAG进行成对评估。
+			> 为减少位置偏差，评估会在正反两种呈现顺序下重复进行，只保留判断稳定且非平局的偏好标签。
+			> 最终得到103K训练偏好对+1.5K验证偏好对，构成TRM-Preference数据集。
+		* 标量输出的 value model 训练
+			> TRM以Llama-3.1-8B-Instruct为初始化，把语言建模头换成标量value head。
+			> 在TRM-Preference上训练完成后，TRM会为每条推理链输出一个标量分数：分数越高，越符合ME²对高质量推理的定义。
+	* 作用
+		> TRM评估的是推理链质量，但这种信号也能反过来提高最终答案的准确率。
+			> 测试时，可以把TRM用在Best-of-N selection中：让模型针对同一个问题生成多条候选推理链，再由TRM选出质量最高的一条。
+			> 实验显示，随着N增大，TRM选出的结果能够带来更高的最终准确率。
+		> 在训练阶段，TRM也能为强化学习提供更细粒度的奖励信号。
+			> 只有答案正确时，TRM才参与reward shaping，错误轨迹的reward始终为0，避免模型从错误轨迹里学到坏习惯。
 
 ## 多模态
 * NExT-GPT-2309.05519，多模态的任意模态输入、任意模态输出，LLM 为核心
@@ -520,4 +562,4 @@
 		* Wang, Lirui; Chen, Xinlei; Zhao, Jialiang; He, Kaiming; 
 		> created on 2024-10-10
 	* [公众号报道](https://mp.weixin.qq.com/s/TcikCgqg_QcFlchWSuzl6g)
-
+* 
