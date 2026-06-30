@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+"""
+Generate timestamp-based UID for outline notes.
+
+Encodes current time as a 6-character base-36 string, matching the logic in
+func_translator.lua (Rime input method plugin).  The encoding:
+  - First 4 chars: year (2-digit), month, day, hour  → each in base-36
+  - Last 2 chars:  (minute * 6 + seconds_tens_digit) split into two base-36 chars
+The UID refreshes every ~10 seconds (when the seconds tens digit changes).
+
+Optionally checks for collisions in the target notes directory and
+auto-increments (base-36) until a unique UID is found.
+
+Usage:
+  scripts/gen-uid                        # generate + collision check (cwd)
+  scripts/gen-uid --dir /path/to/raw     # collision check in raw/
+  scripts/gen-uid --no-collision-check   # skip collision check
+"""
+
+import argparse
+import sys
+from datetime import datetime
+from pathlib import Path
+
+# ── Base-36 helpers ─────────────────────────────────────────────────────────
+
+def _to_36adic(n: int) -> str:
+    if 0 <= n <= 9:
+        return chr(48 + n)   # ASCII '0' = 48
+    if 10 <= n <= 35:
+        return chr(87 + n)   # ASCII 'a' = 97, offset by 10 → 87
+    raise ValueError(f"Value {n} out of range for single base-36 digit (0-35)")
+
+
+def _core_to_int(core: str) -> int:
+    return int(core, 36)
+
+
+def _int_to_core(n: int) -> str:
+    max_val = 36 ** 6 - 1
+    if n > max_val:
+        raise ValueError(f"Value {n} exceeds 6-char base-36 range (max {max_val})")
+    chars = []
+    for _ in range(6):
+        chars.append(_to_36adic(n % 36))
+        n //= 36
+    return ''.join(reversed(chars))
+
+
+# ── UID generation ─────────────────────────────────────────────────────────
+
+def generate_core(dt: datetime | None = None) -> str:
+    if dt is None:
+        dt = datetime.now()
+
+    yy = dt.year % 100
+    mm = dt.month
+    dd = dt.day
+    hh = dt.hour
+    minute = dt.minute
+    sec_tens = dt.second // 10
+
+    core = (
+        _to_36adic(yy) +
+        _to_36adic(mm) +
+        _to_36adic(dd) +
+        _to_36adic(hh)
+    )
+
+    num = minute * 6 + sec_tens   # 0 .. 59*6+5 = 359
+    core += _to_36adic(num // 36) + _to_36adic(num % 36)
+
+    return core
+
+
+# ── Collision detection ─────────────────────────────────────────────────────
+
+def _check_collision(core: str, notes_dir: Path) -> bool:
+    """Return True if *core* appears as a substring in any .md file under notes_dir.
+
+    Plain substring match — catches {core}, {_core}, ((core)), and any other
+    context where the 6-char string appears.
+    """
+    for fpath in sorted(notes_dir.glob('*.md')):
+        try:
+            if core in fpath.read_text():
+                return True
+        except Exception:
+            continue
+    return False
+
+
+def find_unique_core(notes_dir: Path | None = None) -> tuple[str, int]:
+    """Generate a time-based core and auto-increment on collision.
+
+    If notes_dir is None, collision checking is skipped.
+    Returns (core, collision_count).
+    """
+    core = generate_core()
+    count = 0
+
+    if notes_dir is None or not notes_dir.is_dir():
+        return core, count
+
+    while _check_collision(core, notes_dir):
+        n = _core_to_int(core) + 1
+        if n > 36 ** 6 - 1:
+            print("Error: UID space exhausted, cannot find unique UID",
+                  file=sys.stderr)
+            sys.exit(1)
+        core = _int_to_core(n)
+        count += 1
+
+    return core, count
+
+
+# ── Output & hints ──────────────────────────────────────────────────────────
+
+def _print_hints(core: str, collision_count: int):
+    if collision_count > 0:
+        plural = 's' if collision_count > 1 else ''
+        msg = f'Note: auto-incremented {collision_count} time{plural} to avoid collision → {{{core}}}'
+        print(msg, file=sys.stderr)
+
+    base = _core_to_int(core)
+    next_core = _int_to_core(base + 1)
+
+    print(file=sys.stderr)
+    print('Usage tips:', file=sys.stderr)
+    print(f'  Current UID : {{{core}}}', file=sys.stderr)
+    print(f'  Next UID    : {{{next_core}}}   (add 1 in base-36)', file=sys.stderr)
+    print('  For multiple UIDs, increment in base-36 (chars: 0-9 then a-z).',
+          file=sys.stderr)
+    print('  Examples:', file=sys.stderr)
+    for i in range(1, 5):
+        try:
+            nc = _int_to_core(base + i)
+            print(f'    +{i}: {{{nc}}}', file=sys.stderr)
+        except ValueError:
+            break
+    print('  Literature notes: add underscore inside braces → {_core}',
+          file=sys.stderr)
+    print(f'    e.g. {{_{core}}}', file=sys.stderr)
+
+
+# ── Main ────────────────────────────────────────────────────────────────────
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Generate timestamp-based UID for outline notes.',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog='''
+Examples:
+  scripts/gen-uid                        # generate + collision check (cwd)
+  scripts/gen-uid --dir /path/to/raw     # collision check in raw/
+  scripts/gen-uid --no-collision-check   # skip collision check
+        ''')
+
+    parser.add_argument('--dir', '-d', type=Path, default=Path.cwd(),
+                        help='Notes directory for collision check (default: cwd)')
+    parser.add_argument('--no-collision-check', action='store_true',
+                        help='Skip collision detection against existing notes')
+
+    args = parser.parse_args()
+
+    notes_dir = None if args.no_collision_check else args.dir.resolve()
+    core, collision_count = find_unique_core(notes_dir)
+
+    print(f'{{{core}}}')
+
+    _print_hints(core, collision_count)
+
+
+if __name__ == '__main__':
+    main()

@@ -92,6 +92,18 @@ read generative.md 28 50            # 原生 read 看连续内容
 outline-read --uid _q64m81          # 跟随 RaGAN 的 UID
 ```
 
+### 生成新 UID
+
+笔记中新增条目需要 UID 时，使用项目自带的生成脚本：
+
+```bash
+scripts/gen-uid                        # 生成 + 碰撞检测（当前目录）
+scripts/gen-uid --dir raw              # 碰撞检测在 raw/
+scripts/gen-uid --no-collision-check   # 跳过碰撞检测
+```
+
+脚本执行后 stdout 输出基础 UID，stderr 输出使用提示（如何手动递增、文献笔记使用 `{_core}` 格式等）。默认自动检测已有笔记中的 UID 碰撞，遇到冲突自动递增直到找到唯一值。
+
 ## 展开级别 (`--expand`)
 
 | 级别 | 行为 | 适用场景 |
