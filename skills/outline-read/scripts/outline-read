@@ -14,14 +14,15 @@ Invocation modes:
 
 Expand modes (--expand, default: 3):
   0 (tight):   ultra-tight — ancestry chain only, no unrelated depth-0 lines
-  1:           ancestry chain + all depth-0 headings
-  2:           + expand siblings at target's immediate parent level
+  1:           ancestry chain + siblings at target's immediate parent level
+  2:           level 1 + all depth-0 headings
   3:           block-expand — all sibling groups at every ancestry level
 
-The default (3) gives the richest context for browsing.  Level 2 is a
-middle ground: it shows "what else is discussed in this subsection"
-without the noise of higher-level siblings.  Level 0 (--tight) gives the
-absolute minimum — just the structural path to the target.
+The default (3) gives the richest context for browsing.  Level 1 is a
+minimal "where am I in this section" view: ancestry plus what else is
+discussed in this subsection.  Level 2 adds file-level orientation via
+all top-level headings.  Level 0 (--tight) gives the absolute minimum —
+just the structural path to the target.
 """
 
 import argparse
@@ -152,8 +153,8 @@ def compute_show_lines(lines: list[dict],
 
     target_idx:  0-based index into lines.
     expand:      0=ultra-tight (ancestry chain, no unrelated depth-0),
-                 1=ancestry + all depth-0 headings,
-                 2=+ siblings at target's immediate parent level,
+                 1=ancestry + siblings at target's immediate parent level,
+                 2=level 1 + all depth-0 headings,
                  3=block-expand all levels (default).
     child_depth: how many levels of children to show below target (default 1).
     no_top:      if True, suppress non-ancestor depth-0 lines.
@@ -165,8 +166,8 @@ def compute_show_lines(lines: list[dict],
     target_depth = lines[target_idx]['depth']
     show = set()
 
-    # ── Step 1: show depth-0 lines (unless expand=0 ultra-tight) ──
-    if expand > 0:
+    # ── Step 1: show depth-0 lines (expand >= 2 only) ──
+    if expand >= 2:
         for i, entry in enumerate(lines):
             if entry['depth'] == 0 and entry['stripped'] != '':
                 show.add(i)
@@ -190,8 +191,8 @@ def compute_show_lines(lines: list[dict],
             for j in range(anc_idx + 1, subtree_end):
                 if lines[j]['depth'] == d + 1:
                     show.add(j)
-    elif expand == 2:
-        # Middle: expand siblings only at target's immediate parent level.
+    elif expand >= 1:
+        # Expand siblings only at target's immediate parent level.
         # Shows "what else is discussed in this subsection" without the
         # noise of expanding higher-level siblings.
         if target_depth > 0 and (target_depth - 1) in ancestors:
@@ -200,7 +201,7 @@ def compute_show_lines(lines: list[dict],
             for j in range(anc_idx + 1, subtree_end):
                 if lines[j]['depth'] == target_depth:
                     show.add(j)
-    # expand <= 1: no sibling expansion, just ancestry chain
+    # expand == 0: no sibling expansion, just ancestry chain
 
     show.update(ancestors.values())
 
@@ -279,9 +280,9 @@ Examples:
   outline-read ML                      # TOC: all top-level lines
   outline-read ML:9                    # file:line shorthand
   outline-read --uid n2bf31            # Resolve UID, jump with block-expand
-  outline-read --tight ML 9            # Ultra-tight: ancestry chain only
-  outline-read --expand 1 ML 9         # Ancestry + all depth-0 headings
-  outline-read --expand 2 ML 9         # + siblings at parent level (middle)
+   outline-read --tight ML 9            # Ultra-tight: ancestry chain only
+   outline-read --expand 1 ML 9         # Ancestry + siblings at parent level
+   outline-read --expand 2 ML 9         # Level 1 + all depth-0 headings
   outline-read --depth 2 ML 9          # Show 2 levels of children below target
   outline-read --no-fold-indicators ML 9  # Suppress '(N lines folded)' markers
 
@@ -297,15 +298,15 @@ For raw contiguous reading (no folding), use the native read tool:
     parser.add_argument('--no-fold-indicators', action='store_true',
                         help='Suppress the default (N lines folded) markers at fold gaps')
     parser.add_argument('--expand', type=int, choices=[0, 1, 2, 3], default=3,
-                        help='Expand mode: 0=ultra-tight, 1=+depth-0 headings, '
-                             '2=+parent-level siblings, 3=block-expand all (default)')
+                        help='Expand mode: 0=ultra-tight, 1=+parent-level siblings, '
+                             '2=+depth-0 headings, 3=block-expand all (default)')
     parser.add_argument('--tight', action='store_true',
                         help='Shortcut for --expand 0 (ultra-tight: ancestry chain only)')
     parser.add_argument('--depth', type=int, default=1,
                         help='Levels of children to show below target (default: 1)')
     parser.add_argument('--no-top', action='store_true',
                         help='Suppress non-ancestor depth-0 headings. '
-                             'Redundant with --expand 0; useful with --expand 1 or 2.')
+                             'Redundant with --expand 0 or 1; useful with --expand 2.')
 
     args = parser.parse_args()
 
