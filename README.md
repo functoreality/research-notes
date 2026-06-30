@@ -14,6 +14,7 @@ research-notes/
 ├── src/                       # React/Astro 源码
 ├── scripts/                   # 解析脚本
 ├── .github/workflows/         # GitHub Actions 配置
+├── .agents/skills/            # AI 智能体读写原始笔记的相关技能
 └── dist/                      # 构建产物（不提交）
 ```
 
