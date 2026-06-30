@@ -409,7 +409,7 @@
 		> 梯度下降的迭代规律是先快后慢，层数太少，只能覆盖快速收敛阶段；层数太多，大部分网络层都会卡在收敛后的平稳平台期，无法观测完整变化。
 		> 六层的数量刚好不多不少，能同时覆盖梯度下降的快速下降期和平台期，完美适配本次实验需求。
 * TRM-2602.08498 CoT 质量评估，指标分宏微观、有效高效性，推理过程切 DAG，据此训奖励模型
-	* "Characterizing, Evaluating, and Optimizing Complex Reasoning"
+	* "Characterizing, Evaluating, and Optimizing Complex Reasoning", ICML 2026 oral
 		* Zhang, Haoran; Li, Yafu; Wang, Zhi; Wang, Zhilin; Zhang, Shunkai; Qu, Xiaoye; Cheng, Yu; 
 		> created on 2026-06-29
 	* [公众号报道](https://mp.weixin.qq.com/s/Del4I0ZB_hTKAmJTPoznuw)
