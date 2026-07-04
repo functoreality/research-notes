@@ -98,7 +98,7 @@ outline-read --uid _q64m81          # 跟随 RaGAN 的 UID
 
 ```bash
 scripts/gen-uid                        # 生成 + 碰撞检测（当前目录）
-scripts/gen-uid --dir raw              # 碰撞检测在 raw/
+scripts/gen-uid --dir /path/to/notes   # 碰撞检测在指定笔记目录
 scripts/gen-uid --no-collision-check   # 跳过碰撞检测
 ```
 

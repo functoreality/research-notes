@@ -11,8 +11,8 @@
 笔记中使用 6-7 位 36 进制 UID 作为锚点标识。写入前需先用脚本生成：
 
 ```bash
-# 脚本位于 outline-read skill 目录
-.agents/skills/outline-read/scripts/gen-uid --dir raw
+# 脚本位于 outline-read skill 目录（路径相对于本 skill 的 base dir）
+../outline-read/scripts/gen-uid --dir raw
 ```
 
 脚本 stdout 输出一个基础 UID（如 `q6uk3b`），stderr 输出使用提示（如何递增、文献笔记格式等）。
@@ -69,13 +69,13 @@
 
 ```markdown
 * 方法名-arXivID 一句话描述
-	* "Paper Title in Full"
+	* "Paper Title in Full", （如果有）发表位置简写
 		* Author1; Author2; Author3;
 		> created on YYYY-MM-DD by [软件框架 + 模型名]
 	* 摘要摘录
-		> 摘要中值得注意的原句……
+		> 摘要中值得注意的原句（中文翻译）……
 	* （章节名/要点概括）
-		> 原文引用……
+		> 原文引用（中文翻译）……
 		* 评注或展开……
 ```
 
@@ -114,10 +114,10 @@
 
 ```bash
 # 1. 先用 outline-read 看目录结构
-.agents/skills/outline-read/scripts/outline-read --dir raw PINN
+../outline-read/scripts/outline-read --dir raw PINN
 
 # 2. 有 UID 参考点时，直接跳转
-.agents/skills/outline-read/scripts/outline-read --dir raw --uid n3bg3i
+../outline-read/scripts/outline-read --dir raw --uid n3bg3i
 
 # 3. 用 read 看周围原文，理解上下文和层级
 read raw/PINN.md <start_line> <range>

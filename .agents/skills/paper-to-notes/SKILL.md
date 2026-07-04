@@ -20,7 +20,7 @@ description: >-
 
 ## 工具准备
 
-**开始前，必须先阅读 `skills/outline-read/SKILL.md`**，了解 outline-read 工具的完整用法。后续不再重复这些基础用法。
+**开始前，必须先阅读 `../outline-read/SKILL.md`**（`outline-read` skill），了解 outline-read 工具的完整用法。后续不再重复这些基础用法。
 
 ### 文章来源获取
 
@@ -29,7 +29,7 @@ description: >-
 
 ## 笔记系统结构
 
-笔记根目录：`raw/`（相对于本仓库根目录）。
+笔记根目录：`raw/`（本项目中相对于仓库根目录；迁移到其他项目时需调整此路径）。
 
 ### 文件分类
 
@@ -230,7 +230,7 @@ description: >-
 [是否有值得迁移到主笔记的内容？如有，优先补充哪些？]
 ```
 
-> outline-read 的完整用法见 `skills/outline-read/SKILL.md`。
+> outline-read 的完整用法见 `../outline-read/SKILL.md`。
 >
 > 目的手段链条的详细方法论（节点类型、展开方式、AND/OR 区分等）见 `references/purpose-means-guide.md`。
 

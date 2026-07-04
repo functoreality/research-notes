@@ -13,7 +13,7 @@ auto-increments (base-36) until a unique UID is found.
 
 Usage:
   scripts/gen-uid                        # generate + collision check (cwd)
-  scripts/gen-uid --dir /path/to/raw     # collision check in raw/
+  scripts/gen-uid --dir /path/to/notes   # collision check in notes dir
   scripts/gen-uid --no-collision-check   # skip collision check
 """
 
@@ -152,7 +152,7 @@ def main():
         epilog='''
 Examples:
   scripts/gen-uid                        # generate + collision check (cwd)
-  scripts/gen-uid --dir /path/to/raw     # collision check in raw/
+  scripts/gen-uid --dir /path/to/notes   # collision check in notes dir
   scripts/gen-uid --no-collision-check   # skip collision check
         ''')
 
