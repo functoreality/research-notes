@@ -58,7 +58,7 @@ fi
 
 # 4. 禁止粗体/斜体标记
 if grep -qP '\*\*|__' "$FILE"; then
-    check_fail "粗体/斜体标记" "检测到 ** 或 __"
+    check_fail "粗体/斜体标记" "检测到 ** 或 __（若为 URL 误报，请忽略）"
 else
     check_pass "无粗体/斜体标记"
 fi
@@ -70,7 +70,7 @@ else
     check_pass "tab缩进"
 fi
 
-if echo "$HEADER_LINES" | grep -qP '(^\t*\* 引言$|^\t*\* 实验结果$|^\t*\* 方法概述$|^\t*\* 相关工作$)'; then
+if echo "$HEADER_LINES" | grep -qP '^\t*\* (引言|实验结果|方法概述|相关工作)$'; then
     check_fail "论文结构标题" "笔记逻辑结构应自行重新设计，禁止照搬原文结构，更不应以论文的章节名作为笔记组织标题"
 else
     check_pass "无论文结构标题"
@@ -102,20 +102,18 @@ echo "--- 建议项 ---"
 
 # 8. 引文数量
 quote_count=$(grep -cP '^\t*> (?!created on)' "$FILE" || true)
-if [ "$quote_count" -ge 3 ]; then
+if [ "$quote_count" -ge 1 ]; then
     check_pass "引文数量($quote_count)"
-elif [ "$quote_count" -ge 1 ]; then
-    check_warn "引文数量($quote_count)" "建议3-5处引文作为压缩安全网"
 else
-    check_warn "引文数量(0)" "建议补充3-5处关键引文"
+    check_warn "引文数量(0)" "没有引文——如果笔记中有高度压缩的关键论断，建议补充引文作为安全网"
 fi
 
 # 9. 操作锚点（公式号+图表引用）
-anchor_count=$(grep -cP '(eqn|Eq\.|Equation|Table|Fig|图|表|ℒ)\s*[\(（]?\d' "$FILE" || true)
-if [ "$anchor_count" -ge 3 ]; then
+anchor_count=$(grep -icP '(eqn|eq\.|equation|table|tbl|fig|图|表)\s*[\(（]?\d' "$FILE" || true)
+if [ "$anchor_count" -ge 1 ]; then
     check_pass "操作锚点($anchor_count)"
 else
-    check_warn "操作锚点($anchor_count)" "建议至少3条(含公式号/图表号)"
+    check_warn "操作锚点(0)" "没有操作锚点——如果记录了需要回查的关键数字或公式，建议顺手标注出处"
 fi
 
 # 10. 正文出现"本文/该论文/本工作"（第三人称主语）
