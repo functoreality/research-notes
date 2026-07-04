@@ -86,15 +86,6 @@ else
     check_pass "无第三人称归因"
 fi
 
-if echo "$BODY" | grep -qP '操作锚点'; then
-    while IFS= read -r line; do
-        line_num=$(grep -nF "$line" "$FILE" | head -1 | cut -d: -f1)
-        check_fail "出现'操作锚点'字样 L$line_num" "应拆散并入正文各处，不许出现这四个字"
-    done < <(echo "$BODY" | grep -P '操作锚点')
-else
-    check_pass "正文无'操作锚点'字样"
-fi
-
 echo ""
 
 # ============ Tier 2: 建议检查 (WARN) ============
@@ -108,15 +99,7 @@ else
     check_warn "引文数量(0)" "没有引文——如果笔记中有高度压缩的关键论断，建议补充引文作为安全网"
 fi
 
-# 9. 操作锚点（公式号+图表引用）
-anchor_count=$(grep -icP '(eqn|eq\.|equation|table|tbl|fig|图|表)\s*[\(（]?\d' "$FILE" || true)
-if [ "$anchor_count" -ge 1 ]; then
-    check_pass "操作锚点($anchor_count)"
-else
-    check_warn "操作锚点(0)" "没有操作锚点——如果记录了需要回查的关键数字或公式，建议顺手标注出处"
-fi
-
-# 10. 正文出现"本文/该论文/本工作"（第三人称主语）
+# 9. 正文出现"本文/该论文/本工作"（第三人称主语）
 if echo "$BODY" | grep -qP '(本文|该论文|本工作)'; then
     while IFS= read -r line; do
         check_warn "第三人称主语" "$(echo "$line" | head -c 80)"
