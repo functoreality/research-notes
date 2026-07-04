@@ -21,7 +21,7 @@ check_pass() { pass=$((pass + 1)); printf "  ${GREEN}[PASS]${NC} %s\n" "$1"; }
 check_warn() { warn=$((warn + 1)); printf "  ${YELLOW}[WARN]${NC} %s  %s\n" "$1" "${2-}"; }
 check_fail() { fail=$((fail + 1)); printf "  ${RED}[FAIL]${NC} %s  %s\n" "$1" "${2-}"; }
 
-BODY="$(tail -n +2 "$FILE" | grep -v '^>')"   # 正文(排除标题行和引文)
+BODY="$(tail -n +2 "$FILE" | grep -vP '^\t*>')"   # 正文(排除标题行和带缩进的引文)
 TITLE="$(head -1 "$FILE")"
 HEADER_LINES="$(echo "$BODY" | grep -P '^\t{0,2}\*')"  # 子标题行(也排除行长检查)
 
@@ -70,9 +70,8 @@ else
     check_pass "tab缩进"
 fi
 
-# 6. 禁止照搬论文结构的小标题（作为组织框架）
-if echo "$HEADER_LINES" | grep -qP '(摘要摘录|^\t*\* 引言$|^\t*\* 实验结果$|^\t*\* 方法概述$|^\t*\* 相关工作$)'; then
-    check_fail "论文结构标题" "不应以论文的章节名作为笔记组织标题"
+if echo "$HEADER_LINES" | grep -qP '(^\t*\* 引言$|^\t*\* 实验结果$|^\t*\* 方法概述$|^\t*\* 相关工作$)'; then
+    check_fail "论文结构标题" "笔记逻辑结构应自行重新设计，禁止照搬原文结构，更不应以论文的章节名作为笔记组织标题"
 else
     check_pass "无论文结构标题"
 fi
@@ -85,6 +84,15 @@ if echo "$BODY" | grep -qP '作者(认为|提出|发现|指出|强调)'; then
     done < <(echo "$BODY" | grep -P '作者(认为|提出|发现|指出|强调)')
 else
     check_pass "无第三人称归因"
+fi
+
+if echo "$BODY" | grep -qP '操作锚点'; then
+    while IFS= read -r line; do
+        line_num=$(grep -nF "$line" "$FILE" | head -1 | cut -d: -f1)
+        check_fail "出现'操作锚点'字样 L$line_num" "应拆散并入正文各处，不许出现这四个字"
+    done < <(echo "$BODY" | grep -P '操作锚点')
+else
+    check_pass "正文无'操作锚点'字样"
 fi
 
 echo ""
