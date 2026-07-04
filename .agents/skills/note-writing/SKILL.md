@@ -17,8 +17,6 @@ description: >-
 # 文献笔记写作指南
 
 > 本 skill 关注笔记的**思想质量**：如何阅读、如何思考、如何组织、如何压缩。
-> 关于**物理写入操作**（UID 生成、文件选择、插入位置、层级规则等），
-> 见 `paper-to-notes` skill 的 `references/note-writing-guide.md`。
 > 关于**格式验证**，写完后运行本 skill 目录下的 `scripts/check-note.sh "$FILE"`。
 
 ## 0. 撰写流程
