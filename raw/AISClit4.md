@@ -174,7 +174,8 @@
 			* sec2.2.2 高频回归需要的数据点更多（> 由 aliasing 也容易理解）{_o6ea45}
 	* sec3.1 PINN 新网络求和权重、频率选取，从 PDE 残差估计方式，alg2；{_o6ea5s}
 		* 有效性验证，fig8 PINN 训练，拟合残差时重新缩放幅度、频率的重要性
-	* sec3.2 PINN 多项 loss 加权 $\gamma$（如 BC + PDE 内部），新网络权重 $\gamma$ 选取方式 alg3；{_o6fl1e}
+	* sec3.2 PINN 多项 loss 加权 $\gamma$（如 BC + PDE 内部）
+		* 新网络权重 $\gamma$ 选取方式 alg3：试训，使各 loss 收敛速率一致；{_o6fl1e}
 	* sec3.3.1 PINN 新网络训练的优化器、collocation points 重采样方式；{_o6fl23}
 		* 低频解的方程 LBFGS 通常是 preferred 的优化器
 		* 高频情况有所不同，Adam 结合每步重新随机采样点可利用随机性加速收敛
