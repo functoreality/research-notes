@@ -1,3 +1,12 @@
+* 2605.05488 多历史步 PDE 基础模型，针对守恒方程只预测通量，架构基于超网络
+	* "A Robust Foundation Model for Conservation Laws: Injecting Context into Flux Neural Operators via Recurrent Vision Transformers"
+		* Kim, Taeyoung; Ko, Joon-Hyuk; 
+		> created on 2026-07-05
+	* 基于守恒律的时间推进，eqn(3) 网络输出方程通量，简单时空离散（时间显式）得时间更新；{_q75f9x}
+	* 主网络输入用预计算的 stencil 增强 eqn(4)；{_q75g12}
+	* 方程信息输入：多历史时间步输入超网络 sec3.1:1
+	* 方程信息使用：超网络生成对主网络的调制 eqn(6)；{_q75f9o}
+	* 超网络架构：循环 ViT
 * CAML-2605.25001 PINN 难训归因，内部方程成立子流形上极小化 BC loss，地形崎岖而低效；解决，ansatz 加人工设、不训的常数偏置，训练早期弱化 loss 中内部方程权重
 	* "Mitigating Gradient Pathology in PINNs through Aligned Constraint", ICML 2026
 		* Luo, Yichen; Zhu, Peiyu; Hu, Dongxiao; Wang, Jia; Wu, Tailin; Lan, Dapeng; Liu, Yu; Pang, Zhibo; 
