@@ -15,6 +15,11 @@
 - 明确告知这是草稿，写入**临时文件**（如 `/tmp/lit-note-draft.md`），不要直接写入笔记系统的正式文件
 - 要求遵循 `note-writing` skill 中的写作规范
 
+无需包含：
+- 具体的 UID 值或 UID 分配指令（UID 在步骤二由主 agent 分配）
+- 重复 `note-writing` skill 已有的格式约束（如 tab 缩进、无破折号等），skill 已经覆盖
+- 过长的论文内容摘要（仅传递分析报告中与草稿相关的要点即可）
+
 ## 步骤二：评审、改写并写入文献笔记
 
 1. 阅读子 agent 产出的草稿
@@ -22,7 +27,7 @@
    - 核心洞察准确，组织逻辑符合 `note-writing` skill 的要求
    - 分析报告中的关键要点被恰当纳入
    - 格式规范（包括标题行、created-on 行、引文格式等）
-3. 为有迁移价值的内容行分配 UID（`{_XXX}` 格式），见 `references/note-operations.md` 的 UID 分配规则
+3. 生成 UID，将它们分配给有迁移价值的内容行（行末 `{_XXX}` 格式），分配规则见 `references/note-operations.md`
 4. 将最终版本**追加**到对应文献笔记文件开头（如 `raw/AISClitN.md`）
 5. 运行 `../note-writing/scripts/check-note.sh "$FILE"` 验证格式
 
