@@ -24,7 +24,7 @@ description: >-
 
 ### 文章来源获取
 
-- arXiv 论文优先看 HTML 版。若网页抓取有截断，可下载到本地后读
+- arXiv 论文优先看 HTML 版。若 Web Fetch 截断，用 curl 下载 HTML 或 PDF 到本地后 read 该文件
 - 对已有论文的解读报道，应自行找原论文阅读，以原文为准
 
 ## 笔记系统结构

@@ -251,6 +251,7 @@ description: >-
 * 方法名-arXivID 一句话描述
 	* "Paper Title in Full", 发表位置简写
 		* Author1; Author2; Author3;
+		* 核心作者所在机构
 		> created on YYYY-MM-DD by [软件框架 + 模型名]
 	* 正文内容（按分析逻辑组织，引文和评注穿插其中）
 ```
