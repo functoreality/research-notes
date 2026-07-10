@@ -10,16 +10,11 @@ set -e
 FILE="${1:?用法: $0 <笔记文件>}"
 [ -f "$FILE" ] || { echo "文件不存在: $FILE"; exit 1; }
 
-RED='\033[0;31m'
-YELLOW='\033[0;33m'
-GREEN='\033[0;32m'
-NC='\033[0m'
-
 pass=0; warn=0; fail=0
 
-check_pass() { pass=$((pass + 1)); printf "  ${GREEN}[PASS]${NC} %s\n" "$1"; }
-check_warn() { warn=$((warn + 1)); printf "  ${YELLOW}[WARN]${NC} %s  %s\n" "$1" "${2-}"; }
-check_fail() { fail=$((fail + 1)); printf "  ${RED}[FAIL]${NC} %s  %s\n" "$1" "${2-}"; }
+check_pass() { pass=$((pass + 1)); printf "  [PASS] %s\n" "$1"; }
+check_warn() { warn=$((warn + 1)); printf "  [WARN] %s  %s\n" "$1" "${2-}"; }
+check_fail() { fail=$((fail + 1)); printf "  [FAIL] %s  %s\n" "$1" "${2-}"; }
 
 BODY="$(tail -n +2 "$FILE" | grep -vP '^\t*>')"   # 正文(排除标题行和带缩进的引文)
 TITLE="$(head -1 "$FILE")"
@@ -130,10 +125,10 @@ echo ""
 
 # ============ 行长度检查 ============
 echo "--- 行长度 (统一阈值: WARN>80, VLONG>100) ---"
-LONG_LINES=$(tail -n +2 "$FILE" | grep -vP '^\t*>' | grep -vP '^\t*\*' | awk -v RED="$RED" -v YELLOW="$YELLOW" -v NC="$NC" '
+LONG_LINES=$(tail -n +2 "$FILE" | grep -vP '^\t*>' | grep -vP '^\t*\*' | awk '
 { l=length($0) }
-l>100 { printf "  %s[VLONG %dc L%d]%s %s...\n", RED, l, NR+1, NC, substr($0,1,100); vc++ }
-l>80 && l<=100 { printf "  %s[LONG  %dc L%d]%s %s...\n", YELLOW, l, NR+1, NC, substr($0,1,80); lc++ }
+l>100 { printf "  [VLONG %dc L%d] %s...\n", l, NR+1, substr($0,1,100); vc++ }
+l>80 && l<=100 { printf "  [LONG  %dc L%d] %s...\n", l, NR+1, substr($0,1,80); lc++ }
 END { printf "%d %d\n", lc+0, vc+0 }
 ')
 LONG_STATS=$(echo "$LONG_LINES" | tail -1)
@@ -161,10 +156,10 @@ else
 fi
 
 # 子标题行长度 (tab缩进 + * 开头，非顶级标题行)
-SUBH_COUNT=$(tail -n +2 "$FILE" | grep -vP '^\t*>' | grep -P '^\t+\* ' | awk -v RED="$RED" -v YELLOW="$YELLOW" -v NC="$NC" '
+SUBH_COUNT=$(tail -n +2 "$FILE" | grep -vP '^\t*>' | grep -P '^\t+\* ' | awk '
 { l=length($0) }
-l>100 { printf "  %s[VLONG-SUBH %dc L%d]%s %s...\n", RED, l, NR+1, NC, substr($0,1,90); vc++ }
-l>80 && l<=100 { printf "  %s[LONG-SUBH  %dc L%d]%s %s...\n", YELLOW, l, NR+1, NC, substr($0,1,80); lc++ }
+l>100 { printf "  [VLONG-SUBH %dc L%d] %s...\n", l, NR+1, substr($0,1,90); vc++ }
+l>80 && l<=100 { printf "  [LONG-SUBH  %dc L%d] %s...\n", l, NR+1, substr($0,1,80); lc++ }
 END { printf "%d %d\n", lc+0, vc+0 }
 ')
 SUBH_STATS=$(echo "$SUBH_COUNT" | tail -1)
@@ -180,10 +175,10 @@ else
 fi
 
 # 引文行长度（与正文统一标准：80/100）
-QUOTE_COUNT=$(tail -n +2 "$FILE" | grep -P '^\t+>' | awk -v RED="$RED" -v YELLOW="$YELLOW" -v NC="$NC" '
+QUOTE_COUNT=$(tail -n +2 "$FILE" | grep -P '^\t+>' | awk '
 { l=length($0) }
-l>100 { printf "  %s[VLONG-QT %dc L%d]%s %s...\n", RED, l, NR+1, NC, substr($0,1,100); vc++ }
-l>80 && l<=100 { printf "  %s[LONG-QT  %dc L%d]%s %s...\n", YELLOW, l, NR+1, NC, substr($0,1,80); lc++ }
+l>100 { printf "  [VLONG-QT %dc L%d] %s...\n", l, NR+1, substr($0,1,100); vc++ }
+l>80 && l<=100 { printf "  [LONG-QT  %dc L%d] %s...\n", l, NR+1, substr($0,1,80); lc++ }
 END { printf "%d %d\n", lc+0, vc+0 }
 ')
 QUOTE_STATS=$(echo "$QUOTE_COUNT" | tail -1)
@@ -217,10 +212,10 @@ echo ""
 # ============ 汇总 ============
 echo "========== 汇总: PASS=$pass WARN=$warn FAIL=$fail =========="
 if [ "$fail" -gt 0 ]; then
-    echo -e "${RED}存在 $fail 项必须修改的问题${NC}"
+    echo "存在 $fail 项必须修改的问题"
     exit 1
 elif [ "$warn" -gt 0 ]; then
-    echo -e "${YELLOW}通过，但建议检查 $warn 项${NC}"
+    echo "通过，但建议检查 $warn 项"
 else
-    echo -e "${GREEN}全部通过${NC}"
+    echo "全部通过"
 fi
