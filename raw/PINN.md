@@ -327,6 +327,7 @@
 		* 混用—按训练阶段，随训练进行换用 loss
 			* 特例为含时方程，loss 中考虑的时间范围逐步增大，见((n4kn0f))
 	* 空间导数计算（包括数值离散）、空间各点结果整合方式，见 ((n3pj3j))coordLoss
+	* 相关：((n8kh2l))“残差”消歧义
 * coordLoss 空间场的 loss，包括函数、图像；{n3pj3j}
 	* 主要涉及：`NO%`，`PINN%`，`paramPDE%`，`coordMLP%`，传统图像与 INR
 		* `invDP%` 用 PINN 类方法求解也算

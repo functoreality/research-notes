@@ -142,7 +142,7 @@
 			* 优化过程另有 ODE 解读优化算法、NTK 等等，暂未整理统一框架
 		* ResNet¹ 按 ODE 解读，另可参考 ((n35f03))invCtrlRL, `[NeuralDE综述-2202.02435]`；{n8kh2l}
 			* ¹消歧义：指一种 ((n4tb9n))MLP 变种；作为一种 CNN 架构的 ResNet 见((n37m6h))CNN
-				* “残差”其他含义：((o3da4d))PDE residual
+				* “残差”其他含义：((n3bg3i))PDE residual；已有映射输出上再叠加额外网络输出的((n7d90o))boosting
 			* 相关架构设计的见 ((n32f3o))DE启发的NN架构设计
 			* `2023-01-11`(lectures)张伟伟 提到：ResNet=前向 Euler，PolyNet=后向 Euler，FractalNet=RK，RevNet=（未记录）
 			* 残差连接作用：((n8kh29))深层 MLP 不可能好训（无法兼顾梯度、增量爆炸问题），引入残差连接后可以
