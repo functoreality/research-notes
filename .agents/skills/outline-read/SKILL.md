@@ -165,3 +165,11 @@ Resolved n4sj8e -> generative.md:33
 ```
 read generative.md 28 50
 ```
+
+## 辅助脚本
+
+scripts/ 目录下还有三个辅助脚本：
+
+- `tree-validate <file>`        验证 tab 层级结构，检测缩进跳跃和空行问题
+- `tree-stats <file>`           节点数、深度、行数统计
+- `tree-shift <file> L1 L2 N`   给 L1-L2 行统一 ±N 个 tab（输出到 stdout）

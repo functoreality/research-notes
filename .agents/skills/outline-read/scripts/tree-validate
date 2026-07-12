@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+"""Validate tab indentation structure in outline Markdown files.
+
+Checks:
+1. An indented line (depth > 0) must not immediately follow an empty line.
+2. The depth difference between consecutive non-empty lines must not be >= 2.
+
+Usage: tree-validate <file>
+Exit codes: 0 = OK, 1 = errors found
+"""
+
+import sys
+
+
+def compute_depth(line):
+    """Count leading tab characters."""
+    return len(line) - len(line.lstrip('\t'))
+
+
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: tree-validate <file>", file=sys.stderr)
+        sys.exit(2)
+
+    filepath = sys.argv[1]
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            lines = f.read().splitlines()
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(2)
+
+    errors = []
+    for i in range(1, len(lines)):
+        curr = lines[i]
+        prev = lines[i - 1]
+
+        if curr.strip() == '':
+            continue
+
+        curr_depth = compute_depth(curr)
+        prev_empty = prev.strip() == ''
+
+        # Check 1: indented line after empty line
+        if curr_depth > 0 and prev_empty:
+            errors.append(f"行 {i + 1}：缩进行前不能有空行")
+
+        # Check 2: depth jump >= 2 (only between non-empty lines)
+        if not prev_empty:
+            prev_depth = compute_depth(prev)
+            if curr_depth - prev_depth >= 2:
+                errors.append(
+                    f"行 {i + 1}：缩进层级跳跃"
+                    f"（前一行 depth={prev_depth}，当前 depth={curr_depth}）"
+                )
+
+    if errors:
+        for e in errors:
+            print(e)
+        sys.exit(1)
+    else:
+        print("OK")
+        sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()

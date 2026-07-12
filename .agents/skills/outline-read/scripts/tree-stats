@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+"""Print statistics for tab-indented outline Markdown files.
+
+Usage: tree-stats <file>
+"""
+
+import sys
+
+
+def compute_depth(line):
+    """Count leading tab characters."""
+    return len(line) - len(line.lstrip('\t'))
+
+
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: tree-stats <file>", file=sys.stderr)
+        sys.exit(2)
+
+    filepath = sys.argv[1]
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            lines = f.read().splitlines()
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(2)
+
+    total_lines = len(lines)
+    non_empty = [l for l in lines if l.strip() != '']
+    node_count = len(non_empty)
+    max_depth = max((compute_depth(l) for l in non_empty), default=0)
+    terminal_count = sum(1 for l in lines if '：末端' in l)
+    ref_count = sum(
+        1 for l in lines if '：上方已分析' in l or '：下方已分析' in l
+    )
+
+    print(f"文件总行数：{total_lines}")
+    print(f"节点总数（非空行）：{node_count}")
+    print(f"最大深度：{max_depth}")
+    print(f"终端节点数（：末端）：{terminal_count}")
+    print(f"引用节点数（：上方/下方已分析）：{ref_count}")
+
+
+if __name__ == '__main__':
+    main()

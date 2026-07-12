@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+"""Shift tab indentation for a range of lines.
+
+Usage: tree-shift <file> <start> <end> <n>
+  start, end: 1-based line range (inclusive)
+  n: number of tabs to add (positive) or remove (negative)
+
+Errors out if the range contains:
+  - empty lines
+  - lines starting with '#' (title lines)
+  - lines with fewer than |n| tabs when n < 0
+
+Output: modified file content to stdout.
+"""
+
+import sys
+
+
+def main():
+    if len(sys.argv) != 5:
+        print("Usage: tree-shift <file> <start> <end> <n>", file=sys.stderr)
+        sys.exit(2)
+
+    filepath = sys.argv[1]
+    try:
+        start = int(sys.argv[2])
+        end = int(sys.argv[3])
+        n = int(sys.argv[4])
+    except ValueError:
+        print("Error: start, end, n must be integers", file=sys.stderr)
+        sys.exit(2)
+
+    if start < 1 or end < start:
+        print("Error: invalid line range", file=sys.stderr)
+        sys.exit(2)
+
+    if n == 0:
+        print("Error: n must be non-zero", file=sys.stderr)
+        sys.exit(2)
+
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            lines = f.read().splitlines()
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(2)
+
+    if end > len(lines):
+        print(
+            f"Error: end line {end} exceeds file length {len(lines)}",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
+    # Check for empty lines and title lines in range
+    for i in range(start - 1, end):
+        line = lines[i]
+        if line.strip() == '':
+            print(f"Error: 行 {i + 1} 是空行，不能 shift", file=sys.stderr)
+            sys.exit(1)
+        if line.lstrip().startswith('#'):
+            print(f"Error: 行 {i + 1} 是标题行，不能 shift", file=sys.stderr)
+            sys.exit(1)
+
+    # If removing tabs, check sufficient tabs on each line
+    if n < 0:
+        for i in range(start - 1, end):
+            line = lines[i]
+            tab_count = len(line) - len(line.lstrip('\t'))
+            if tab_count < abs(n):
+                print(
+                    f"Error: 行 {i + 1} 仅有 {tab_count} 个 tab，"
+                    f"不足 {abs(n)} 个",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+
+    # Apply shift
+    result = []
+    for i, line in enumerate(lines):
+        if start - 1 <= i <= end - 1:
+            if n > 0:
+                result.append('\t' * n + line)
+            else:
+                result.append(line[abs(n):])
+        else:
+            result.append(line)
+
+    print('\n'.join(result))
+
+
+if __name__ == '__main__':
+    main()
