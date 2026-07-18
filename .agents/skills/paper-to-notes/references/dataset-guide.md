@@ -20,14 +20,21 @@
 
 ## 搜索策略
 
-在判断情况 C/D 时需要主动搜索（可由子 agent 负责，并要求其读此文档）。搜索方式（按优先级）：
+在判断情况 C/D 时需要主动搜索（可由子 agent 负责，并要求其读此文档）。搜索不限于特定平台，应尽可能覆盖以下所有渠道：
 
-1. 检查论文内是否包含代码/数据链接
-2. 搜索引擎搜索：`论文标题 GitHub`、`论文方法名 GitHub`、`论文方法名 HuggingFace`
+1. 检查论文内是否包含代码/数据链接（正文、附录、脚注、arXiv 页面侧栏）
+2. **通用搜索引擎**：例如 `论文标题 GitHub`、`论文方法名 GitHub`、`论文方法名 HuggingFace`、`论文标题 dataset`、`论文标题 download`、`作者名 + 方法名 + data`
 3. **搜索引擎选择**：优先 Google；若不可用，换 Bing 或其他可用引擎
-4. **GitHub/Hugging Face**：很多数据集发布在 Hugging Face 上（`huggingface.co/...`），搜索时应包含
-5. **镜像站**（中国大陆网络环境下）：GitHub 可尝试 `bgithub.xyz`，Hugging Face 可尝试 `hf-mirror.com`
-6. 检查作者主页或个人网站是否有链接
+4. **代码托管平台**：GitHub、GitLab、Gitee
+5. **数据集托管平台**：Hugging Face（`huggingface.co/datasets/...`）、Zenodo（`zenodo.org`）、Dataverse、figshare、Kaggle
+6. **学术相关**：PapersWithCode、OpenReview（查看补充材料）、arXiv 的 ancillary files
+7. **云存储**：Google Drive、OneDrive、Dropbox 等（有时作者通过个人链接分享）
+8. **镜像站**（中国大陆网络环境下）：GitHub 可尝试 `bgithub.xyz`，Hugging Face 可尝试 `hf-mirror.com`
+9. 检查作者主页、个人网站、或机构页面是否有链接
+10. 搜索作者 GitHub 用户名（可通过作者邮箱、个人网站等推断），查看其仓库列表
+11. 搜索作者是否通过自己维护的站点公开了数据（不过通常退化为通用搜索引擎检索）
+
+**重要**：不要仅搜索 GitHub 和 Hugging Face 就停止。论文声称 release 但未找到公开位置时，必须执行多轮不同关键词和平台的搜索，在报告中记录搜索范围。
 
 ## 验证要求（情况 D 和 E）
 
