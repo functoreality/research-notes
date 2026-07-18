@@ -1,3 +1,18 @@
+* CCM-2605.14546 （备用）PDE 基模微调至单参方程，权重更新量分解为 特定方程符号适配 + 特定参数适配，线性内插用于新参数求解
+	* "Discovering Physical Directions in Weight Space: Composing Neural PDE Experts"
+		* Wang, Pengkai; Liu, Pengwei; Wang, Yuanyi; Chen, Guanyu; Ren, Xingyu; Li, Xiaolong; Hao, Zhongkai; Kong, Yuting; Zhang, Qixin; Ni, Dong; 
+		* 香港 PolyU、浙大、清华、南洋理工
+		> created on 2026-07-18
+	* 所用基模：FNO，DPOT
+		> （摘要）在不同的 FNO 尺度上进行的进一步实验、基于 DPOT 架构的模型测试以及各种消融实验都表明
+	* fig2
+		* 场景：方程有单个实值参数（如 NS 粘度，反应扩散 r）
+		* 最低最高值分别训网络，分别提取权重更新量，求二者平均、差值
+		* 新参数下权重更新量据此线性组合得到 $\theta(\lambda)=\theta_0+\Delta^++\lambda\Delta^-$
+	* （未确认细节）三种坐标选择方式 + 适用场景 eqn(9–11)
+		* CCM-Coord：物理元数据直接映射（DiffReact，r=1.00）
+		* CCM-Scale：物理坐标有序但权重空间尺度不匹配（NS2D，r=0.99）
+		* CCM-Prefix：短 rollout 前缀（K=4）在坐标库中选 α（RDB，r=0.79 标量元数据不可靠）
 * HyCOP-2605.00820 含时方程算子分裂，不同块分别用 传统算法、NN 模块，分裂方式由策略网络动态生成
 	* "HyCOP: Hybrid Composition Operators for Interpretable Learning of PDEs"
 		* Zhao, Jinpai; Panda, Nishant; Lin, Yen Ting; Valseth, Eirik; Oyen, Diane; Dawson, Clint; 

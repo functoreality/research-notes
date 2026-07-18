@@ -1,17 +1,17 @@
 ---
 name: note-writing
 description: >-
-  Use this skill when the user asks to write literature notes on an academic
-  paper, or when you need to create or edit literature notes in this
-  AI-for-PDE research notes system. This skill guides the thinking, structure,
-  compression, and style of high-quality literature notes, not just format
-  rules, but the philosophy of reading with purpose, organizing around core
-  insights, and writing as self-dialogue. Trigger when the user says "write
-  notes on this paper", "帮我写文献笔记", "记一下这篇论文", "记录这篇",
-  "take notes on this article", or similar. Also trigger whenever creating or
-  editing .md files in the notes directory that follow the literature note
-  format. Also trigger whenever the user asks to improve, review, or edit
-  existing literature notes for quality.
+	Use this skill when the user asks to write literature notes on an academic
+	paper, or when you need to create or edit literature notes in this
+	AI-for-PDE research notes system. This skill guides the thinking, structure,
+	compression, and style of high-quality literature notes, not just format
+	rules, but the philosophy of reading with purpose, organizing around core
+	insights, and writing as self-dialogue. Trigger when the user says "write
+	notes on this paper", "帮我写文献笔记", "记一下这篇论文", "记录这篇",
+	"take notes on this article", or similar. Also trigger whenever creating or
+	editing .md files in the notes directory that follow the literature note
+	format. Also trigger whenever the user asks to improve, review, or edit
+	existing literature notes for quality.
 ---
 
 # 文献笔记写作指南
@@ -134,7 +134,7 @@ description: >-
 但如果你有论文没提到的局限，或者你不同意论文对某个局限的评估，那才是值得记录的内容。
 - **方法的技术细节**：省略网络层数、学习率、超参数等常规实现细节。但如果方法的核心创新就体现在某个具体的数学公式或计算过程中（如注意力分数的计算方式、投影算子的形式、网格初始化公式），这些不是"细节"而是方法的本质——保留。
 - **区分方法的"常规细节"和"独特要点"**：网络超参数是方法细节（省略），但论文给出的数据处理管线、实验测量数据的预处理步骤（如 DIC 位移场到网格节点的插值流程、可靠性判定准则）若是本文独有、其他论文所不会涉及的要点，应予记录。
-  未来如果你需要复现或借鉴这个流程，这些信息比方法公式更难从论文中快速定位。
+	未来如果你需要复现或借鉴这个流程，这些信息比方法公式更难从论文中快速定位。
 - **论文的背景和动机**：读者（未来的你）已经知道这个领域为什么重要。
 
 **每写完一部分，问自己：这段内容是否在帮助理解核心洞察？** 如果不是，删掉。
@@ -246,25 +246,33 @@ description: >-
 ```
 
 - **方法名**：论文的核心方法简称（如 ICM、FNO、CAML），应来自论文本身使用的简称。不要自造论文中没有的缩写。没有显著方法名的可省略。
-- **arXiv ID**：取标识符后段（如 `2604.23098`，不要前面的 `arXiv:`）。
-- **一句话完整描述**：标题行的核心。它应同时交代"论文发现了什么问题"和"怎么解决的"，用一句话（一个视觉行）讲完整故事。
+- **arXiv ID**：取标识符后段（如 `2604.23098`，不要前面的 `arXiv:`）。即使论文已正式发表，也应记录 arXivID（只要有）。
+- 方法名、arXivID 任一缺失时，省略连字符和对应部分；都缺失则不写。
+- **一句话概括**：标题行的核心。
+- 写前先设想未来你可能带着什么问题回来查；标题行应让未来的你一眼判断这篇论文与你当时的问题是否相关。
+	- 用一句话交代它的**适用场景和核心操作**（而非抽象洞察或论文作者自己的包装词）。
+	- 常见形式：什么场景下、遇到什么问题、做了什么操作、达到什么效果。
+		- 不总是需要全写；若某部分显然、或很容易由其他元素推出，可省略。
+- **标题不是对作者摘要的压缩。** 用你自己的语言和术语来描述，而非复述作者的框架词汇。
 
-**标题不是对作者摘要的压缩，而是用自己的概念框架重新框定论文。** 比如作者用 "constraint-aligned optimization" 来描述，你可以写成 "ansatz 加不训的常数偏置"——同一个方法，完全不同的解读角度。
+可以用自己的概念框架重新框定论文。比如作者用 "constraint-aligned optimization" 来描述，你可以写成 "ansatz 加不训的常数偏置"——同一个方法，完全不同的解读角度。
 标题行应该让未来的你一眼看出**你从这个工作中提取的核心洞察**，而不是复述作者自己的包装词。
 
-常用结构：
-
+典型结构举例：
 ```
-问题诊断（压缩到最简），解决方法（同理）
+场景描述（压缩到最简），核心操作（同理）
+NO 架构，单层内同时用频域、原空间域信息交互
 
-或用分号分隔：
-问题诊断…；解决，方法…手段…
+问题诊断，解决方法
+PINN 难训归因…；解决，ansatz 加不训的常数偏置…
+
+数据集描述，关键特性
+自行车设计数据集，40 约束、10 目标
 ```
 
 写作要求：
 - **一句话，一个视觉行**。用逗号和分号连接紧凑子句。标题行中只使用中文全角标点（，；），不要混用英文半角标点
-- **口语化判断词**："难训"优于"存在梯度冲突"，"不训"优于"不由BP训练"
-- 三要素任一缺失时，省略连字符和对应部分
+- **凝练判断词**："难训"优于"存在梯度冲突"，"不训"优于"不由BP训练"
 
 ## 4. 正文格式
 
@@ -279,8 +287,8 @@ description: >-
 
 - 作者列表：用分号分隔
 - **发表位置**：需核实论文是否已正式发表。
-  已发表的标注会议/期刊简写（如 `ICML 2026`、`Nature Communications 2026`）；仅 arXiv 预印本的省略发表位置，只保留 `"Paper Title in Full"`。
-  不确定时主动检索确认
+	已发表的标注会议/期刊简写（如 `ICML 2026`、`Nature Communications 2026`）；仅 arXiv 预印本的省略发表位置，只保留 `"Paper Title in Full"`。
+	不确定时主动检索确认
 - `created on` 行：AI 生成的笔记需注明软件框架和模型名（如 `> created on YYYY-MM-DD by OpenCode + deepseek-v4-pro`）；人类笔记只有日期。不要改动已有的人工笔记
 - tab 缩进构建层级关系：每深入一层细节增加一级缩进，表示从概括到细节的展开
 - 原文引用用 `> `，自己的评注不加 `>`
