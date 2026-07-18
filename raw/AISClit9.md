@@ -30,7 +30,7 @@
 	* 对标 FMT-2509.18611，同样 AE + 隐空间生成做动力学，但 Tadpole 明确将三类下游拆为独立微调协议，框架更清晰
 	* 预训练数据全在线生成，无离线数据集。代码开源，权重在 Hugging Face
 		* 训练数据全由 GPU 伪谱求解器在线实时生成，算完就扔，无存储/IO 瓶颈
-		* 三级缓冲：仿真 FIFO（先进先出）→ 训练 FIFO → MFU 缓存
+		* 三级缓冲：仿真 FIFO（先进先出）→ 训练 FIFO → MFU 缓存；{_q7if8g}
 * Shodh-MoE-2605.15179 PDE 基础模型多物理联训有梯度冲突，建议用 MoE 架构
 	* "Eradicating Negative Transfer in Multi-Physics Foundation Models via Sparse Mixture-of-Experts Routing"
 		* Sharma, Ellwil; Sharma, Arastu; 
