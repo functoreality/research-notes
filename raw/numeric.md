@@ -318,6 +318,8 @@
 				* 取单个 patch
 					* 用途—作输入，((n4sj7z))GAN判别器降计算量
 					* 用途—作输出，INR 的微观有网格变种，((oam965))输出为 patch 而非单点值；{oam96b}
+					* 用途—同时作输入输出，如((q7jh93))boosting-仅修关键局部残差
+						* 输入范围可适当 pad 以大于输出，如((_q7jh9b))
 					* 划分方式，边界移动 连续or离散（即切分为若干不重叠 patch）
 						* COIN++ step1 训练 patch manifold 的参化映射时 patch 连续移动，step2 对各 patch 找其对应参数时 patch 离散移动((_p59b7r))
 				* patch 集合

@@ -1,3 +1,64 @@
+* ARC-STAR-2605.22222 PDE 基模冻结、学后处理修正网络，全局+更新剧烈的局部块
+	* "ARC-STAR: Auditable Post-Hoc Correction for PDE Foundation Models"
+		* Li, Chengze; Wei, Lingwei; Sun, Li; Lv, Hongbo; Yang, Jie; Zhang, Hanrong; Zheng, Kening; Huang, Wei-Chieh; Ma, Enze; Yu, Philip S.;
+		* University of Illinois Chicago，北邮，华北电力
+		> created on 2026-07-19 by OpenCode + DeepSeek-V4-Pro
+	* 方法全称：Adaptive Risk-Calibrated Spatial Triage for Auditable Refinement (ARC-STAR)
+	* 场景：PDE 基模（Poseidon、DPOT 等）部署时 rollout 误差累积
+		* 不想微调主模型（不稳定且贵），希望主模型冻结、加轻量修正层；{_q7jj3t}
+		* 现有三条路：微调主模型（不稳定），全场 dense 后处理（浪费计算），手写空间指标路由（如涡度，不保证与误差分布对齐）
+	* 方法概述：学后处理校正网络，先学全局校正，再叠加块状局部校正器 sec3.1:-1
+		> ARC-STAR 通过三个阶段来处理这个被冻结的数据结构，这一过程与图 2 中的三个处理步骤相对应。
+		> 第一阶段（图 2.I）中，系统会训练一个全局校正器 Gϕ ，以消除整体上的偏差（详见 3.2 节）。
+		> 第二阶段（图 2.II）中，系统会在全局校正后的残差数据上，使用块状局部校正器 Lθ 来进行进一步处理。
+			> 该过程遵循“光环读取、中心写入”的原则。
+			> 算法 1 将这一过程分为两个步骤：首先是密集的块级预训练步骤（步骤 2a），然后是使用 k=B 进行的自回归微调步骤（步骤 2b）。
+			> 这样一来，局部校正模块就不必依赖具体的部署方案，且可以在不同部署方案之间重复使用，而无需重新训练（详见 3.3 节）。
+		> 第三阶段（图 2.III）则是实际应用阶段：系统会无标签地对各个块进行排序，然后根据“光环读取、中心写入”的原则，将全部数据或其中的前 k 个块发送给 Lθ 进行处理（详见 3.4 节）。
+			> 在整个过程中， {Ωb}b=1B 表示将空间域划分为若干个互不重叠的块； Ωb+h 则表示同一个块经过扩展后形成的、宽度为 h 的“光环区域”。
+			> 本地精化器读取的是 Ωb+h ，但实际写入的却是 Ωb 。
+			> 该合约是实现高效且精确推理的关键：当为 k=B 时，同一个经过训练的本地模块会处理所有数据块；而当为 k<B 时，该模块仅处理部分数据块，无需重新训练。
+	* 推理方式：冻结主模型，两阶段修正 全局+块状局部，局部选块依据时间更新幅度
+		* 消全场偏移：$G(x_t, x̂_{t+1})$ 输出速度通道残差，加入主模型预测得到 $x^g_{t+1}$（方法 §3.2）
+		* 消局部残差：blockwise $L(x_t, x̂^g_{t+1})$
+			* 每块输出：16×16 块；为消块边界伪影，Hann 窗保中间幅值、到边缘衰减到 0，secD.1.3；{_q7jh9r}
+				* （评）patchify 边界位置无法有效被 L 修正，因此处 Hann 窗衰减明显；不过 G 修复能力保持
+				* 衰减宽度小：（from AI）紧邻边界的第二圈像素权重虽然低（~0.04），但不为 0。离边界稍微往里两三个像素，权重就上来了
+			* 每块输入：pad halo=8 得 32×32（读邻域写中心）sec3.3；{_q7jh9b}
+		* 局部性动机：全场修正后的残余误差空间上高度集中，非均匀分布；{_q7jh7r}
+			* 图1：top 20% 空间块承载 38%–64% 残余误差，平均 Gini 0.48
+			* 集中模式与湍流结构相关、跨主模型一致（Poseidon 和 DPOT-Ti 上都出现，附录 H）
+			* 因此全场 dense 修正浪费算力，需要 blockwise 选择性修正
+		* L 只修部分块以降计算量，选块依据时间更新幅度
+			* 选块方式：label-free routing score（innovation_keg, Eq5），选 top-k
+			* 基于预测场在时间步间的变化量，无需真值（§3.4）{_q7jh9k}
+				* 直觉：预测场连续两步间变化剧烈 → 该区域"不确定"→ 需 L 介入
+			* 与 9 种替代路由策略对比，同算力下追到最低或接近最低的误差前沿
+			* （AI 评）与卡尔曼滤波的 innovation（观测-预测差）概念呼应；这里用时间差分替代，绕开真值依赖
+		* 可审计性：G 和 L 独立，误差改进可分解为全局份额 A 和局部份额 (1-A)·J_loc
+			* Eq11: 1-L_hyb/L_raw = A + (1-A)·J_loc，
+			* 其中 A = 1-L_glob/L_raw, J_loc = 1-L_hyb/L_glob（§3.4）
+			* 部署时诊断：新 regime 上全局修正不够还是局部残余太大
+			* NS-G Ext. 是唯一 J_loc 很低的 cell（9.6%），审计正确标记它不适合 L，因为后全局残余不是空间局部化的
+	* 训练方式：分阶段串行，保证 L 看到的输入分布与部署时一致
+		* 阶段 1，训 G：自回归 5 步 rollout，主模型冻结（方法 §3.2）
+		* 阶段 2，训 L（G 冻结后）：先 patch 预训练（3000 步，密集采样），再自回归微调（200 epoch，budget k/B=1，即全块）（方法 §3.3，算法1）
+		* 串行训练的设计要点：G 训完冻结后 L 才训，L 在训和部署时看到的是同一个 (H, G) 的输出，消除训推分布差异
+	* 实验：5 类流体 benchmark（NS、KF、NS-SL、NS-PwC、NS-Sines）各两个粘度，10 regime cell
+		* 主模型 Poseidon（frozen），自回归 rollout 10 步，速度通道 relative L2
+		* G 单独降 raw error 91–99%；L 进一步降后全局残余至多 94.4%
+		* ARC-STAR 是唯一在每个 cell 上将 rollout error 降至 raw 的 1/36 以下的方法
+		* 对比 Poseidon 参数高效微调（full-param、partial、LoRA r=8），9/10 cell 胜出
+		* 跨主模型：Poseidon 移植到 DPOT-Ti，效果保持（附录 H）
+		* （AI 评）DPOT-Ti 仅一个额外主模型，不够证明"host-independent"。应测更多（MPP、PROSE-FD）
+	* 与已有后处理修正手段的关系
+		* vs PDE-Refiner：都修正 rollout 误差，但 Refiner 每步内迭代自精化（去噪目标），ARC-STAR 是外挂串行修正+计算预算路由
+		* vs PhysicsCorrect：PDE 残差单步 Newton 修正（无需训），但需已知 PDE 形式和特殊离散格式；ARC-STAR 用 learned correction，不依赖方程形式
+		* （AI 评）vs SPINO denoiser/corrector：CNN 修正与主网络同步训练；ARC-STAR 的 G 和 L 独立于主模型
+	* （AI 评）局限
+		* G 和 L 依赖有监督训练（需真值），不能像 PhysicsCorrect 零样本部署
+		* blockwise 接口假设规则网格（16×16），散点/非结构网格需改 patchify 或等效机制
+		* innovation score 依赖时间差分，稳态或大时间步场景可能失效
 * AOT-POT-2605.15793 DPOT 引入输入依赖算子变换，简化异构解算子
 	* "AOT-POT: Adaptive Operator Transformation for Large-Scale PDE Pre-training"
 		* Lv, Qitan; Wang, Hong; Hao, Zhongkai; Wu, Wen; Xu, Xuenan; Zhou, Bowen; Wu, Feng; Zhang, Chao;
