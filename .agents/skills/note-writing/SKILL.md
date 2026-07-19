@@ -290,7 +290,7 @@ PINN 难训归因…；解决，ansatz 加不训的常数偏置…
 	- 已发表的标注会议/期刊简写 + 年份（如 `ICML 2026`、`Nature Communications 2026`）
 	- 仅 arXiv 预印本的省略发表位置，只保留 `"Paper Title in Full"`
 	- 不确定时主动检索确认
-- `created on` 行：AI 生成的笔记需注明软件框架和模型名（如 `> created on YYYY-MM-DD by OpenCode + deepseek-v4-pro`）；人类笔记只有日期。不要改动已有的人工笔记
+- `created on` 行：AI 生成的笔记需注明软件框架和模型名（如 `> created on YYYY-MM-DD by OpenCode + DeepSeek-V4-Pro`）；人类笔记只有日期。不要改动已有的人工笔记
 - tab 缩进构建层级关系：每深入一层细节增加一级缩进，表示从概括到细节的展开
 - 原文引用用 `> `，自己的评注不加 `>`
 - 不要出现"本文""该论文""作者认为"等第三人称表述。你在写笔记，不是在写论文 review。直接用第一人称判断或省略主语

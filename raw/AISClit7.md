@@ -353,7 +353,7 @@
 		* 1D 处理：p9:-1 zero-padding（> 为啥不是 repeat）
 		* 跨维数迁移：p10:2 2D 预训练，1D、3D 微调；{_pbhb0l}
 		* 各维数联合预训练 tbl2
-* MoE-POT-2510.25803 （备用）DPOT 架构引入 MoE
+* MoE-POT-2510.25803 （备用）DPOT 架构引入 MoE；{_q7jb08}
 	* "Mixture-of-Experts Operator Transformer for Large-Scale PDE Pre-Training", NeurIPS 2025
 		* Wang, Hong; Xin, Haiyang; Wang, Jie; Yang, Xuanze; Zha, Fei; Dong, Huanshuo; Jiang, Yan; 
 		> created on 2025-11-17

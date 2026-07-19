@@ -46,7 +46,8 @@
 					* 可理解为((o1lh1z))无记忆含参动力学 转化为 有记忆不含参动力学
 				* “未知参数”推广为 动力学形式可变，考虑一大类动力学，当前具体为其中哪一种动力学不直接已知，需从多时间步 snapshot 中推断；{nbim9t}
 					* 如((_naha1z))MPP 针对多种含时 PDE 的预训练模型
-					* ((_p15a1p))DPOT，((_p1vk5a))OmniArch，((_p2af5j))BCAT，((_paim5g))GPhyT
+					* DPOT((_p15a1p))，后续工作((_q7jb08))MoE-POT 引入 MoE，((_q7jb04))AOT-POT 引入输入依赖算子变换）
+					* ((_p1vk5a))OmniArch，((_p2af5j))BCAT，((_paim5g))GPhyT
 					* ((_q1if95))MATEY 历史步的时间间隔固定，预测推进的时间步长可变
 					* ((_q3m909))NESTOR 涉及 MoE 架构
 					* 历史轨迹与当前状态分开输入，历史多步输入超网络，区分其输出形式

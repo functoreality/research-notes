@@ -1,3 +1,37 @@
+* AOT-POT-2605.15793 DPOT 引入输入依赖算子变换，简化异构解算子
+	* "AOT-POT: Adaptive Operator Transformation for Large-Scale PDE Pre-training"
+		* Lv, Qitan; Wang, Hong; Hao, Zhongkai; Wu, Wen; Xu, Xuenan; Zhou, Bowen; Wu, Feng; Zhang, Chao;
+		* 中科大，上海 AI Lab，清华
+		> created on 2026-07-19 by OpenCode + DeepSeek-V4-Pro
+	* 核心诊断：多 PDE 联训难不因模型容量不够，而是因为各 PDE 的解算子本身太异构，强行让一个网络同时近似它们相当于让一个函数逼近多个差异巨大的目标
+		* 已有路线：扩大容量（DPOT 加宽加深、MoE-POT 加稀疏专家路由）
+		* 本文路线：不动模型容量，改对目标的表述——学一个输入依赖的算子变换，把各异构解算子变换为对齐的等价形式，让骨干网络只需近似这些变简单后的目标
+		* 类比古典数值分析：Fourier 变换把 Laplace 算子变逐点乘法、预条件子把病态矩阵变良态——都是变换算子本身以减少求解难度
+		* （AI 评）这个视角区分了两类策略：让模型更强 vs 让任务更简单。目前领域主流在前者（scaling law 信仰），本文在后者开辟了一条新路线
+	* 动机实验（DPOT-Tiny 骨干 + 点式线性变换验证 H1/H2）
+		* H1（变换有用）：在 DPOT 前后加 4×4 可学线性层（仅 ~40 额外参数），四个 PDE 族上的 L2RE 全部下降
+			* Matched Frozen（先在 PDE 1 上训变换再冻结、在 PDE 1 上从头训骨干）效果比 Joint Learned 还好——说明增益不是来自容量增加，而是变换本身简化了学习目标
+			* Joint Learned 与 Matched Frozen 之间的差距说明单层 C×C 变换不够用，需要每层、输入依赖的变换（即 AOT 要做的）
+		* H2（变换 PDE 特异）：将 PDE k 上训的冻结变换复用于 PDE j，对角元（源=目标）改善、非对角退化可达 46 倍
+			* 即确实需要输入依赖的自适应变换，不能用一个全局固定变换服务所有 PDE
+	* AOT block 三组件
+		* 多流并行表示：隐表示扩展为 n 条并行流，提供多个潜在基底分量（类比潜在函数空间的多个基函数）
+		* 输入依赖聚合/重分配：子层前用输入依赖权重将 n 条流聚合为一条 → 骨干子层处理 → 输出用另一组可学权重重新分配回 n 条流
+			* 效果等同于对潜在解算子做逐样本的基底变换
+		* Sinkhorn 双随机混合：每层用 Sinkhorn-Knopp 投影得到双随机矩阵 $T_l$（$T_l1 = 1, T_l^T1 = 1$），对各流做信息混合
+			* 数学性质：体积保持（行列式=1）、谱范数有界 → 保证训练稳定，不改变前传中的信息量
+		* 三组件合在一起相当于：每层对隐空间做一次输入依赖的基底变换 + 保范混合
+	* 对骨干的改变：仅替换 DPOT 的普通残差连接为上述 AOT 连接，额外参数 ~3%；{_q7jb04}
+		* 其余全部照搬 DPOT：AFNO 骨干（Fourier mixer 注意力层）、time-aggregation layer、去噪自回归预训练目标、加噪声稳定 rollout、分辨率/通道数/不规则形状处理
+	* 实验结果要点
+		* 12 个 PDE benchmark（FNO 数据集 + PDEBench + PDEArena + CFDBench），预训练后 L2RE 平均降 40.9%，最高 77.6%
+		* AOT-POT-S（31M）在 11/12 数据集上超过 DPOT-M（122M）
+		* 微调后 in-domain 误差再降至多 92%，out-of-domain（预训练未见 PDE 类型）至多 89%
+		* 长轨迹 rollout 稳定性优于 DPOT；MoE + AOT 混合的初步实验不如纯 AOT
+	* 可解释性：训练过程中各流逐渐分化，不同流对不同的 PDE 类型形成专业化响应
+		* 学习到的变换 T_l 具分类能力——即使不做显式分类训，T_l 也能在训练中自发学会按 PDE 类型分离样本，且该能力随训练进程逐步涌现、跨模型尺度保持一致
+	* （AI 评）interpretability 声称"自发学会分类 PDE 类型"，但可能只是学到了对不同 PDE 的幅值/频率分布做自适应归一化（类似 instance norm），不一定真正识别了 PDE 类型
+		* 如果加噪声扰乱幅值分布后分类能力仍保持，说服力更强
 * Tadpole-2605.15284 3D PDE 基模基于 P3D AE 预训练 + 微调，在隐空间演化、流匹配生成；动态生成数据集达百 TB
 	* "Tadpole: Autoencoders as Foundation Models for 3D PDEs with Online Learning", ICML
 		* Liu, Qiang; Koehler, Felix; Holzschuh, Benjamin; Thuerey, Nils;
