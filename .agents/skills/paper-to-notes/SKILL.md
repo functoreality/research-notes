@@ -24,8 +24,22 @@ description: >-
 
 ### 文章来源获取
 
-- arXiv 论文优先看 HTML 版。若 web fetch 截断，curl HTML 或 wget -c PDF 下载到本地后读取
+- arXiv 论文优先看 HTML 版。若 web fetch 截断，下载到本地后读取
 - 对已有论文的解读报道，应自行找原论文阅读，以原文为准
+
+从 arxiv.org 下载常遇 QoS 限速，速度衰减到 0，增大超时无用。建议下载命令：
+
+```bash
+wget -c --tries=20 --timeout=30 --waitretry=5 --read-timeout=20 -O 目标文件名 URL
+```
+
+优先下 HTML；PDF 较大可能触发多次重试。备选 curl 手动续传：
+
+```bash
+curl -L -C - --max-time 60 -o 目标文件名 URL
+# 反复执行直到 wc -c 等于 HEAD 查到的 content-length
+# 出现 0 字节响应是冷却期，隔几秒再试
+```
 
 ## 笔记系统结构
 
