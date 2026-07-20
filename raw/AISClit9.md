@@ -1,4 +1,4 @@
-* PhysBiasBench-2605.29283 评估 PDE 基模泛化：因子化至 8 PDE、3 混和、5×5 动态-IC 测试网格
+* PhysBiasBench-2605.29283 评估 PDE 基模泛化：因子化至 8 PDE、3 混和、5×5 设定动态-IC 测试网格
 	* "Do Physics Foundation Models Learn Generalizable Physics? A Bias-Aware Benchmark Across Physical Regimes and Distribution Shifts"
 		* Chu, Mengdi; Liu, Yang; Biswas, Ayan; Shen, Han-Wei;
 		* Ohio State Univ, Los Alamos National Lab
@@ -9,10 +9,10 @@
 		* 8 PDE：Fisher-KPP、Gray-Scott、Swift-Hohenberg、
 			* Burgers、Kolmogorov、Kuramoto-Sivashinsky、Decay、Wave
 		* 数据由 APEBench/Exponax 过程式生成，100 帧 dense 轨迹，再时间子采样构造动态尺度
-	* 因子化评估设计 sec3；{_q7kh63}
-		* 评估轴独立可控：架构、变体（pretrain+size）、PDE 族、训练混和、测试 regime（5×5 网格）、预测 horizon
-			> 25 个测试 regime 由动态尺度和初始条件复杂度
-			> 偏移产生，覆盖分布内、分布偏移和 OOD 设置。
+	* 因子化评估设计 sec3
+		* 评估轴独立可控：架构、变体（pretrain+size）、PDE 族、训练混和、测试 regime（5×5 种设定）、预测 horizon
+			> 25 个测试 regime 由动态尺度和初始条件复杂度偏移产生，覆盖分布内、分布偏移和 OOD 设置。
+			* 每种设定称为 cell
 		* 动态尺度轴：dense 轨迹时间子采样
 			* 小 stride → 小帧间变化，大 stride → 大帧间变化
 			* 训练内三档（small/medium/large），测试扩展 OOD-small/OOD-large
@@ -27,22 +27,24 @@
 	* 诊断指标 sec3.4
 		* PDEBias：模型在 PDE p 上的误差除以该模型所有 PDE 的均值，>1 表示该 PDE 相对更难
 		* ShiftDamage：测试 cell 误差 / 同模型同 PDE 的 train-seen cell 均值，衡量相对退化；{_q7kh65}
-		* RolloutAmplification：E_10-step / E_1-step，分离即时精度和时序稳定性；{_q7kh64}
+		* RolloutAmplification：E_roll / E_1-step，分离即时精度和时序稳定性；{_q7kh64}
+			* roll 典型选取 10-step
+			* （评）E_1 是首步误差不是单步误差，前者输入只考虑动力学初态，后者输入遍历所有非末态
 		* PretrainingGain：(scratch_M − ft_M) / scratch_M，配对尺寸比较
 		* ModelSizeGain：(ft_S − ft_s) / ft_S，s∈{M,L}，S baseline 衡量缩放收益
 	* 主要发现
 		* RQ1 物理 regime 偏差：同一模型在 train-seen 条件下，不同 PDE 误差差 1-2 数量级；{_q7kh66}
 			* Fisher-KPP 最易（中位数 0.011），Wave/Kolmogorov 最难的几个
 			* pretrain 和 scaling 改变误差量级但不消除 PDE 偏好模式
-		* RQ2 horizon 依赖：首帧误差与 rollout 误差放大几乎不相关（Spearman ρ=0.04）
+		* RQ2 horizon 依赖：首帧误差与 rollout 误差放大几乎不相关（Spearman ρ=0.04）；{_q7kl5r}
 			* Poseidon 首帧最差（0.072）但 rollout 放大最低（2.09×），MORPH 相反（9.11×）
 			* （AI 评）所有模型统一按自回归 rollout 评估，尽管 Poseidon 原生以 Δt 作 modulation 输入
 				* 设计上可直接预测大 Δt 后状态，不必逐帧迭代；自回归非其最优使用方式
 				* 在此不利条件下仍 rollout 最稳，反而更有力
-		* RQ3 分布偏移：Dynamic-OOD 比 IC-OOD 严重得多，最高到 8× baseline
+		* RQ3 分布偏移：Dynamic-OOD 比 IC-OOD 严重得多，最高到 8× baseline；{_q7kl1g}
 			* pretrain 大模型反而加大 normalized ShiftDamage：
 				* scratch 3.24× → L 6.28×，train-seen 提升远大于 OOD 提升
-		* RQ4 训练混和：复杂训练数据改善绝对精度，但 OOD 相对 gap 反而拉大（Mix-simple 4.33 → Mix-complex 4.98）
+		* RQ4 训练混和：复杂训练数据改善绝对精度，但 OOD 相对 gap 反而拉大（Mix-simple 4.33 → Mix-complex 4.98）{_q7kh63}
 			* 数据在重新分配能力而非统一提升
 		* RQ5 pretrain + scaling：37.5% 架构-PDE 对 pretrain 负迁移，25% 更大模型劣于 S；{_q7kh68}
 			* DPOT 和 Poseidon 在 Fisher-KPP 上严重逆缩放（−173%）
