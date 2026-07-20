@@ -441,6 +441,12 @@
 			* 异质推理网络交替用，以抑制特定频率误差累积，如((q1ka3o))ViT 用不同 patch-size
 			* 相关：MBRL 中模型累积误差导致决策非最优，`DMPO-2207.06559` 引用了“branched rollout scheme”解决方案
 				* 不含时问题 loss 设定见 ((n3pj3j))coordLoss
+		* 长时间预测稳定性 实证评估诊断 {q7kh69}
+			* RolloutAmplification：$E_{\text{10-step}}/E_{\text{1-step}}$，分离首帧精度和时序稳定性 ((_q7kh64))
+			* PhysBiasBench 跨 5 架构 8 PDE 实证：首帧误差与 rollout 放大几乎不相关（Spearman ρ=0.04）
+				* Poseidon 首帧最差（0.072）但 rollout 最稳（2.09×），MORPH 相反（9.11×）
+				* 注意统一自回归协议可能不利 Δt-as-input 类模型（如 Poseidon），自回归非其最优使用方式
+			* 表明短期精度和时序稳定性是独立维度，不能仅看短时精度选模型
 		* 长时间预测稳定性 理论分析
 			* ((_pak856))多步误差受单步误差控制，取决于真实流映射算子 Lipschitz 常数，混沌系统放大、耗散系统缩小误差
 			* ((_pak85d))多步误差的通用近似定理，代理算子复合 K 次可逼近真实流映射算子；架构针对 FD-Net

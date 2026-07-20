@@ -437,6 +437,11 @@
 			* active-learning/在线学习 下，获取当前样本 label 用于增量训练
 				* 包括让人打标签，或 `NO%` 类设定下调用精确物理求解器、花一定成本给出真实 label
 		* 相关杂思考：((仪器适用范围检测))
+	* 评估 OOD 影响程度 {q7kh6a}
+		* ShiftDamage：测试误差 / 同模型 train-seen baseline，消除绝对精度差异后衡量 OOD 相对退化 ((_q7kh65))
+		* OOD 不是单一概念：不同偏移方向的退化量级可差数倍
+			* PhysBiasBench 中 Dynamic-OOD 远大于 IC-OOD，最高到 8× baseline
+			* 复杂训练数据改善绝对精度但不缩小 OOD 相对 gap；因子化方法参见 ((q7kj7j))
 	* 应对方案：{o6mm75}
 		* ((n32f33))NN架构设计 中 dynamic NN 等
 		* distribution align
