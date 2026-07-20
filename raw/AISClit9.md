@@ -46,7 +46,9 @@
 				* scratch 3.24× → L 6.28×，train-seen 提升远大于 OOD 提升
 		* RQ4 训练混和：复杂训练数据改善绝对精度，但 OOD 相对 gap 反而拉大（Mix-simple 4.33 → Mix-complex 4.98）{_q7kh63}
 			* 数据在重新分配能力而非统一提升
-		* RQ5 pretrain + scaling：37.5% 架构-PDE 对 pretrain 负迁移，25% 更大模型劣于 S；{_q7kh68}
+		* RQ5 pretrain + scaling：
+			* 37.5% 架构-PDE 对 pretrain 负迁移；{_q7kh68}
+			* 25% 更大模型劣于 S；{_q7kl88}
 			* DPOT 和 Poseidon 在 Fisher-KPP 上严重逆缩放（−173%）
 				* 但大模型在其他 PDE 上正向，缩放按 regime 重新分配能力
 		* RQ6 失效指纹：各架构因不同机制失败；{_q7kh67}
