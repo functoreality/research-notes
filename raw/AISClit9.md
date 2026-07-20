@@ -1,3 +1,64 @@
+* PDEInvBench-2605.25353 反问题数据，网络输入单个完整解输出参数（标量为主），推理时微调有增益，导数拼接有益，IC 多样性收益远大于参数覆盖
+	* "PDEInvBench: A Comprehensive Dataset and Design Space Exploration of Neural Networks for PDE Inverse Problems", TMLR 2026
+		* Divyam Goel; Nithin Chalapathi; Sanjeev Raja; Aditi S. Krishnapriyan;
+		* UC Berkeley, LBNL
+		> created on 2026-07-19 by OpenCode + DeepSeek-V4-Pro
+	* 定位：首个系统比较逆问题各设计轴（优化、表示、缩放）的 benchmark + 实证研究，非方法论贡献
+		* 反问题定义：$u$ 的解轨迹 → PDE 物理参数 $\phi$，即完整网格解到参数的直接映射；{_q7kf6n}
+			* （AI 评）设定窄：仅单个完整网格解→标量/场参数。主实验不含散点观测（仅 D.6）、噪声（仅 D.5），未涉多 IC 解推断共享参数、可控/待反演参数分离（如 EIT）等更实际的反问题变体
+		* 以前的正问题 benchmark（PDEBench 等）只取少数参数值后变 IC，不覆盖多物理行为
+	* 数据集：5 个 PDE 系统，参数范围跨多种物理行为，HuggingFace + GitHub 公开
+		* 2D Reaction-Diffusion：$k, D_u, D_v$ 三参数，Turing 分岔到全耗散
+			* 单独反演一个参数，其余视为已知
+		* 2D NS unforced：粘度 $\nu\in[10^{-4},10^{-2}]$，层流区，涡量形式
+		* 2D NS forced（湍流）：$\nu\in[10^{-5},10^{-2}]$，Kolmogorov 强迫项 $-2\cos(2y)$
+		* 1D KdV：$\delta\in[0.8,5]$，色散项强度
+		* 2D Darcy Flow：扩散系数场 $a(x,y)$（非标量参数），时间无关
+		* 每种参数 100-120 个值，每值 100-192 条不同 IC 轨迹（log 或线性分布）
+		* 评估分 ID / OOD Non-Extreme（中间 16% 留出）/ OOD Extreme（两端各 10%）
+		* 除相对误差外，还检查：预测参数代入数值模拟的能量谱是否匹配真值的模拟
+		* 代码仓库含数据生成脚本（附录 B.2 提供了完整数值求解器参数）、训练/评估脚本、所有对比架构的实现
+	* 核心发现 1 优化：有监督 >> 纯 PDE 残差自监督；监督预训练 + TTT 进一步提 OOD 且从不损，是最优组合
+		* 三种比较的设定均为同一 $f_\theta:u\to\phi$ 架构，仅变 loss 和是否 test-time 微调
+			* 监督：用配对 $(u,\phi)$ 训 data loss
+			* 自监督：仅训 PDE 残差 loss $\|\mathcal{F}_{\hat{\phi}}(u)\|^2$，无标签
+			* TTT：先监督预训练，测试时微调 loss = PDE 残差 + 微调幅度惩罚
+				* anchor loss 衡量惩罚微调前后输出的相对偏差（Eq6），用于限制微调幅度；加权 α；{_q7kg39}
+					* 即 nRMSE，label 为微调前输出；输入仅单样本点
+				* 微调过程：对每条测试数据单独微调 50 步 Adam（batch 32）
+			* （AI 评）未对比 PINN 联合求解或正问题替代模型+梯度反演：非范式比较，仅同一范式内的训练策略比较
+		* 自监督全系统、全分裂远不如有监督（含加 weight 的 physics-informed 调和版也不如纯监督）{_q7kg2h}
+		* TTT 在 OOD + 未见 IC 时增益最大（KdV/2D-RD 10-100%，2D-NS/TF 几乎无增益）{_q7kg2j}
+		* （AI 评）TTT 在 2D-NS/TF 上无用，可能反映粘度对涡量演化的短期影响不明显，残差信号不足以区分不同粘度值
+	* 核心发现 2 表示：无噪情形导数拼接输入全系统一致提升，FNO 含时最优、Darcy ResNet 最优
+		* 将空间、时间偏导数（有限差分近似）作为额外通道 concat 到输入
+		* 所有系统、所有架构（FNO/ResNet/scOT）均提升；即使 FNO 理论上能表示导数算子、显式给也有帮助；{_q7kf9d}
+		* 含时 PDE（RD/NS/TF/KdV）：FNO > ResNet ≈ scOT ≈ DeepONet，OOD 尤其
+		* Darcy（不含时）：ResNet ≈ DeepONet 显著 > FNO、scOT
+			* 论文解释：不含时 → 纯空间建模，卷积方法更适合
+			* DeepONet 的 branch 也用 ResNet，所以表现相似
+		* 所有架构都 ~5M 参数；逆问题数据到标量参数的输出 pipeline 本身就不保证离散不变性（需要 pooling）
+		* 噪声鲁棒性（附录 D.5，Butterworth / salt-and-pepper）：有噪声时去掉导数拼接反而更鲁棒；{_q7kg04}
+		* 非均匀网格（附录 D.6）：FNO/scOT 比 ResNet 鲁棒
+	* 核心发现 3 缩放：IC 多样性 > 参数覆盖范围，任意维度增数据都有效；{_q7kg0i}
+		* 三种缩放轴：(1) 每参数的 IC 数量 (2) 参数取值数量 (3) 轨迹时间长度
+		* 比较方式：NLS（最佳拟合线负斜率），测量每增加一个缩放单位相对误差下降速率
+		* 增加 IC 在各系统、各分裂（ID + OOD Non-Extreme）一致显著提升；OOD Extreme 改善微弱
+		* NLS 比较：IC 缩放轴斜率远大于参数缩放轴
+		* 模型缩放（0.5M→5M→50M，扩通道宽）：不显著（结果见附录）
+	* （AI 评）作为研究资源的实用评价
+		* 最高价值：数据生成策略的实证结论（IC > 参数），直接指导逆问题 data engineering
+		* 参考价值：导数拼接和 TTT 是低成本 easy win，可放心给网络加
+		* 局限 1：参数是标量（Darcy 除外），实际逆问题常见的空间变参数场（如非均匀扩散系数）只测了 Darcy 这一种
+		* 局限 2：TTT 需要 PDE 的有限差分形式已知，对某些只知道解数据不知道确切形式的场景不适用
+		* 局限 3：架构对比过于简化——FNO vs ResNet vs scOT 在实现细节（normalization、skip、深度）上不对等，控制参数量不能真正控制这些因素的影响
+		* 局限 4：全均匀网格（正方形/线性），不规则几何缺失
+		* 局限 5：论文的「TTT 从不受损」结论建立在训练数据量充足的假设上；如果用极少数据训练初始模型，TTT 的 anchor loss 可能反而锁死在次优解上
+	* （AI 评）与笔记已有内容的对照
+		* aisc1.md 的逆问题框架按求解策略（PINN-based、surrogate-based、有监督 η→λ 等）组织，TTT 可作为一个新策略大类补充
+		* largeNN.md 的 scaling law 讨论指出「AI4Sci 的数据信息量不随数据量线性增长」，IC>参数的发现正好是该论点的具体例证
+		* optim.md 的 FNO 二阶段训练记录与本文 TTT 思路相似但机制不同（那里是谱卷积层微调，这里是全参数 TTT + anchor）
+		* paramPDE.md 的反问题数据集目前仅有 OpenFWI，本 benchmark 可作为第二个反问题数据集记录
 * ARC-STAR-2605.22222 PDE 基模冻结、学后处理修正网络，全局+更新剧烈的局部块
 	* "ARC-STAR: Auditable Post-Hoc Correction for PDE Foundation Models"
 		* Li, Chengze; Wei, Lingwei; Sun, Li; Lv, Hongbo; Yang, Jie; Zhang, Hanrong; Zheng, Kening; Huang, Wei-Chieh; Ma, Enze; Yu, Philip S.;

@@ -444,9 +444,11 @@
 		* 训练 $\eta\mapsto\lambda$ 网络，可以是 NO、有监督训练；{o1hn0d}
 			* 训练方式，数据等；{o1lj8k}
 				* 若有监督训练，可使用正问题 $\lambda\mapsto\eta$ 生成数据
+					* IC 多样性比（标量为主的）参数覆盖范围 更重要((_q7kg0i))；{q7kg20}
 					* 相关：((oaie9v))正反向数据 同时生成、使用
 				* 非传统有监督训练：使用（正问题）surrogate 提供的 loss 训练，"tandem network"
 				* PINN loss：PI-DION-2412.03161 仿照 PI-DeepONet，输出 $(\lambda,u)$，训练 loss PINN+data
+					* ((_q7kg2h))效果不如有监督训
 				* 解不唯一时，((_o1lj5b))consistency loss 似为利用正问题可微数值求解器，希望其解得的 $\eta$ 与反问题 NO 输入接近
 				* 引入辅助任务 可提高数据利用率，包括((q3kh4l))同方程正问题、多方程正问题（基础模型）
 					* 基模类型：本身支持多时间步输入，如自回归；上下文学习类似乎也可
@@ -455,6 +457,7 @@
 			* 网络结构 可依据理论推导的正反问题映射形式¹设计
 				* ¹可见((n7un1l))invP-根据边界观测算子推断内部系数场，包括 EIT
 				* eg. 应乐兴的系列工作，如((n86k0e))根据 DtN map 预测系数场
+			* 推理时结合 PINN loss 微调有增益((_q7kg2j))，可同时惩罚微调幅度
 			* 注：考察解算子的 `GalerkinTf-2105.14995` 可能属于这类工作，未深入 check
 			* 相关：DeepM&Mnet 也构建了该网络，但并非用于直接预测 $\lambda$，而是((o1hn0w))与正问题 $\lambda\mapsto\eta$ 网络联用、用类 cycleGAN loss 优化求解反问题
 			* 该方法灵活性可能低于基于优化的 invDP 求解方法：{o1hn2s}
