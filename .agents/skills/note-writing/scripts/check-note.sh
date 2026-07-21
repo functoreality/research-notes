@@ -65,7 +65,7 @@ else
     check_pass "tab缩进"
 fi
 
-if echo "$HEADER_LINES" | grep -qP '^\t*\* (引言|实验结果|方法概述|相关工作)$'; then
+if echo "$HEADER_LINES" | grep -qP '^\t*\* (引言|相关工作|摘要)$'; then
     check_fail "论文结构标题" "笔记逻辑结构应自行重新设计，禁止照搬原文结构，更不应以论文的章节名作为笔记组织标题"
 else
     check_pass "无论文结构标题"

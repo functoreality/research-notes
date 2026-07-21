@@ -24,7 +24,7 @@ description: >-
 
 ### 文章来源获取
 
-- arXiv 论文优先看 HTML 版。WebFetch 会截断固定长度，若不完整可下载到本地后读（可结合 html2text、pdftotext）
+- arXiv 论文优先看 HTML 版。WebFetch 会截断固定长度，若不完整可下载到本地后读（可结合 `html2text -nobs`、`pdftotext`）
 - 对已有论文的解读报道，应自行找原论文阅读，以原文为准
 
 从 arxiv.org 下载常遇 QoS 限速，速度衰减到 0，增大超时无用。建议下载命令：
