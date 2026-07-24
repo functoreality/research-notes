@@ -1,17 +1,17 @@
 ---
 name: note-writing
 description: >-
-	Use this skill when the user asks to write literature notes on an academic
-	paper, or when you need to create or edit literature notes in this
-	AI-for-PDE research notes system. This skill guides the thinking, structure,
-	compression, and style of high-quality literature notes, not just format
-	rules, but the philosophy of reading with purpose, organizing around core
-	insights, and writing as self-dialogue. Trigger when the user says "write
-	notes on this paper", "帮我写文献笔记", "记一下这篇论文", "记录这篇",
-	"take notes on this article", or similar. Also trigger whenever creating or
-	editing .md files in the notes directory that follow the literature note
-	format. Also trigger whenever the user asks to improve, review, or edit
-	existing literature notes for quality.
+  Use this skill when the user asks to write literature notes on an academic
+  paper, or when you need to create or edit literature notes in this
+  AI-for-PDE research notes system. This skill guides the thinking, structure,
+  compression, and style of high-quality literature notes, not just format
+  rules, but the philosophy of reading with purpose, organizing around core
+  insights, and writing as self-dialogue. Trigger when the user says "write
+  notes on this paper", "帮我写文献笔记", "记一下这篇论文", "记录这篇",
+  "take notes on this article", or similar. Also trigger whenever creating or
+  editing .md files in the notes directory that follow the literature note
+  format. Also trigger whenever the user asks to improve, review, or edit
+  existing literature notes for quality.
 ---
 
 # 文献笔记写作指南
@@ -152,13 +152,13 @@ description: >-
 
 **你不是在写参考文档。** 如果有人需要了解论文的全部内容，他们应该去读论文。你的笔记只应该包含你从论文中提取出来的、对你有价值的东西。以下内容通常可以省略：
 - **常规的实验结果**：除非实验设计本身有巧思（如巧妙的基准构造、新颖的评估指标、反直觉的发现），否则不用写"在 X 个数据集上超越了 Y 个 baseline"这类常规结果。
-	- 不要按 RQ1/RQ2 逐一列举实验结论，不记具体误差数字。
-	- 但消融所揭示的"哪个组件解决哪个问题"的归因关系如果有助于理解方法机制，可以一两句概括。
+  - 不要按 RQ1/RQ2 逐一列举实验结论，不记具体误差数字。
+  - 但消融所揭示的"哪个组件解决哪个问题"的归因关系如果有助于理解方法机制，可以一两句概括。
 **不要和论文自己的 limitations 段落抢话说。** 如果论文明确列了自己的局限（"only steady-state"、"no theoretical convergence guarantee"），不需要你在笔记中复述。
 但如果你有论文没提到的局限，或者你不同意论文对某个局限的评估，那才是值得记录的内容。
 - **方法的技术细节**：省略网络层数、学习率、超参数等常规实现细节。但如果方法的核心创新就体现在某个具体的数学公式或计算过程中（如注意力分数的计算方式、投影算子的形式、网格初始化公式），这些不是"细节"而是方法的本质——保留。
 - **区分方法的"常规细节"和"独特要点"**：网络超参数是方法细节（省略），但论文给出的数据处理管线、实验测量数据的预处理步骤（如 DIC 位移场到网格节点的插值流程、可靠性判定准则）若是本文独有、其他论文所不会涉及的要点，应予记录。
-	未来如果你需要复现或借鉴这个流程，这些信息比方法公式更难从论文中快速定位。
+  未来如果你需要复现或借鉴这个流程，这些信息比方法公式更难从论文中快速定位。
 - **论文的背景和动机**：读者（未来的你）已经知道这个领域为什么重要。
 
 **每写完一部分，问自己：这段内容是否在帮助理解核心洞察？** 如果不是，删掉。
@@ -175,7 +175,7 @@ description: >-
 - **模糊指代后紧跟消歧。** 不是只说"两阶段"，补充成"两阶段（全局+块状局部）"让读者无需带着"哪两个"的疑问继续往下。如果当前行太长放不下，消歧内容尽量在紧邻位置出现。
 - **前提在问题之前。** 先交代"L 只修部分块以降计算量"，再让"选哪些块"自然涌现。先问"选哪些块"会让不理解前提的读者困惑。
 - **当前层自解释。** 每层信息读完后最好让读者立即理解，不依赖下层来解码。
-	- 如讨论"选块"方式，说"routing score"不自解释（它是间接手段，需要下层解释才能知道它在衡量什么），而其直接手段"依据时间更新幅度"读了就懂。
+  - 如讨论"选块"方式，说"routing score"不自解释（它是间接手段，需要下层解释才能知道它在衡量什么），而其直接手段"依据时间更新幅度"读了就懂。
 
 ### 综合优先，而非摘录
 
@@ -280,9 +280,9 @@ description: >-
 - 方法名、arXivID 任一缺失时，省略连字符和对应部分；都缺失则不写。
 - **一句话概括**：标题行的核心。
 - 写前先设想未来你可能带着什么问题回来查；标题行应让未来的你一眼判断这篇论文与你当时的问题是否相关。
-	- 用一句话交代它的**适用场景和核心操作**（而非抽象洞察或论文作者自己的包装词）。
-	- 常见形式：什么场景下、遇到什么问题、做了什么操作、达到什么效果。
-		- 不总是需要全写；若某部分显然、或很容易由其他元素推出，可省略。
+  - 用一句话交代它的**适用场景和核心操作**（而非抽象洞察或论文作者自己的包装词）。
+  - 常见形式：什么场景下、遇到什么问题、做了什么操作、达到什么效果。
+    - 不总是需要全写；若某部分显然、或很容易由其他元素推出，可省略。
 - **标题不是对作者摘要的压缩。** 用你自己的语言和术语来描述，而非复述作者的框架词汇。
 
 可以用自己的概念框架重新框定论文。比如作者用 "constraint-aligned optimization" 来描述，你可以写成 "ansatz 加不训的常数偏置"——同一个方法，完全不同的解读角度。
@@ -308,24 +308,24 @@ PINN 难训归因…；解决，ansatz 加不训的常数偏置…
 
 ```markdown
 * 方法名-arXivID 一句话描述
-	* "Paper Title in Full", 发表位置简写
-		* Author1; Author2; Author3;
-		* 核心作者所在机构（优先使用简称）
-		> created on YYYY-MM-DD by [软件框架 + 模型名]
-	* 方法全称：xxx（仅当方法名存在且为缩写时）
-	* 正文内容（按分析逻辑组织，引文和评注穿插其中）
+  * "Paper Title in Full", 发表位置简写
+    * Author1; Author2; Author3;
+    * 核心作者所在机构（优先使用简称）
+    > created on YYYY-MM-DD by [软件框架 + 模型名]
+  * 方法全称：xxx（仅当方法名存在且为缩写时）
+  * 正文内容（按分析逻辑组织，引文和评注穿插其中）
 ```
 
 - 作者列表：用分号分隔
 - **发表位置**：需核实论文是否已正式发表。
-	- 已发表的标注会议/期刊简写 + 年份（如 `ICML 2026`、`Nature Communications 2026`）
-	- 仅 arXiv 预印本的省略发表位置，只保留 `"Paper Title in Full"`
-	- 不确定时主动检索确认
+  - 已发表的标注会议/期刊简写 + 年份（如 `ICML 2026`、`Nature Communications 2026`）
+  - 仅 arXiv 预印本的省略发表位置，只保留 `"Paper Title in Full"`
+  - 不确定时主动检索确认
 - `created on` 行：AI 生成的笔记需注明软件框架和模型名（如 `> created on YYYY-MM-DD by OpenCode + DeepSeek-V4-Pro`）；人类笔记只有日期。不要改动已有的人工笔记
 - tab 缩进构建层级关系：每深入一层细节增加一级缩进，表示从概括到细节的展开
 - 原文引用用 `> `，自己的评注用 `* （AI 评）` 不加 `>`
 - **避免为术语添加不必要的引号或格式强调。** 不要用引号（""或「」）、粗体（**）、斜体（*）来标记术语——未来的你知道这些词的含义，格式噪音只会降低阅读效率
-	- 引号保留给直接引用原文的场合；但如果引号服务于精确语义（如区分"论文声称的 A"和"实际发生的 A"），可以保留
+  - 引号保留给直接引用原文的场合；但如果引号服务于精确语义（如区分"论文声称的 A"和"实际发生的 A"），可以保留
 - **英文术语仅用于中文表达不自然的情形**（如 ansatz、token、patch、softmax）。能用中文的地方一律用中文
 - 不要出现"本文""该论文""作者认为"等第三人称表述。你在写笔记，不是在写论文 review。直接用第一人称判断或省略主语
 - 正文的层级标题应反映你的分析逻辑，不要以论文的"摘要""引言""方法""实验结果"等章节名作为笔记的组织框架。如果需标注引文来源，可以用章节名作为简短标签，但不作为组织标题
@@ -352,8 +352,8 @@ PINN 难训归因…；解决，ansatz 加不训的常数偏置…
 - **理论洞察型**（论文的核心贡献是一个新的理论发现，如某个定理揭示了问题的几何根源）：从理论发现出发，推导出它如何解释现象、如何引出方法，最后评价这个理论的解释力有什么局限。
 - **实验发现型**（论文的核心贡献是对一个广泛使用的方法进行了系统的实验检验，发现它在某些条件下失效）：从发现出发，拆解失效机制，再讨论论文提出的修复方案是否足够。
 - **方法设计型**（论文的核心贡献是一个新的架构/算法/训练策略）：从方法的设计原则出发，展开它为什么这样设计、和已有方法的关系是什么，再评价设计的优雅性和局限。
-	- 适合用目的手段链展开（顶层目的 ← 子问题分解 ← 各层手段）。
-	- 例如，先讨论方法的推理行为（部署时如何使用，各阶段输入输出和职责划分），再讨论使其可行的训练方式（训练顺序、各阶段目标、关键约束如何保证推理可行）；二阶段内部也可再展开手段链。
+  - 适合用目的手段链展开（顶层目的 ← 子问题分解 ← 各层手段）。
+  - 例如，先讨论方法的推理行为（部署时如何使用，各阶段输入输出和职责划分），再讨论使其可行的训练方式（训练顺序、各阶段目标、关键约束如何保证推理可行）；二阶段内部也可再展开手段链。
 - **质疑驱动型**（你读完后发现论文对问题的诊断可能不对，或者方法和声称之间有差距）：从你的质疑出发，用论文中的内容来佐证你的质疑，同时也要诚实地呈现论文做得好的地方。
 
 **不要把所有论文都套进同一个"问题→原因→方法→实验→评价"的模板。** 这个模板是论文自己的结构，不是你思考的结构。
