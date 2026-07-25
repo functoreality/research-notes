@@ -397,11 +397,10 @@
 		* PDE 基模性能评估；{q7kh6b}
 			* PDE 类型差异：同一模型在不同 PDE 上误差差 1-2 数量级((_q7kh66))
 				* pretrain 和 scaling 改变量级但不消除偏好模式
-			* 预训练不总有益：37.5% 架构-PDE 对预训练负迁移((_q7kh68))；{q7kj7k}
+			* 预训练不总有益((q7kj7k))，37.5% 架构-PDE pair 预训练负迁移
 			* 网络规模扩大不总有益：25% 更大模型不如小模型((_q7kl88))
 			* 现有架构失效模式分析：((_q7kh67))DPOT OOD 最敏感，MORPH rollout+缩放最不稳，MPP pretrain 负迁移最高；不能用单一指标排名
-			* OoD 迁移—IC 分布，((q7oa3n))Walrus sim2real 测试
-			* OoD 迁移—同方程不同物理 regime，((_q7oc3a))Walrus 分层 regime 测试，定性正确但偏差指向训练分布；{q7oc3b}
+			* OoD 迁移能力见((q7oh0e))NO-OoD
 		* 包含多个函数 `MIONet-2202.06137`，有相应逼近理论
 			* 相关，((q1nb9f))跨 PDE 维数迁移、共享架构，方程自变量数可变（分量泛化是因变量数可变）
 			* BC 刻画：
