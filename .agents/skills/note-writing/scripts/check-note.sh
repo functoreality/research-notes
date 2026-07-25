@@ -58,11 +58,18 @@ else
     check_pass "无粗体/斜体标记"
 fi
 
-# 5. 必须用tab缩进而非空格
-if grep -qP '^ {2,}\*' "$FILE"; then
-    check_fail "空格缩进" "检测到空格缩进，应使用tab"
+# 5. 行首格式：每行必须匹配 ^\t*(\*|>)  (任意个 tab 缩进 + * 或 > + 空格)
+#    覆盖原"空格缩进"检查：凡符合此模式必不以空格起手
+#    空白行视为违规
+violations=$(grep -vnP '^\t*(\*|>) ' "$FILE" || true)
+if [ -n "$violations" ]; then
+    while IFS= read -r line; do
+        line_num=${line%%:*}
+        content=${line#*:}
+        check_fail "行格式 L${line_num}" "${content:0:80}"
+    done <<< "$violations"
 else
-    check_pass "tab缩进"
+    check_pass "行首格式"
 fi
 
 if echo "$HEADER_LINES" | grep -qP '^\t*\* (引言|相关工作|摘要)$'; then
