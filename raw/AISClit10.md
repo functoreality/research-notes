@@ -65,13 +65,13 @@
 			* 效果：改善 transient 阶段对实验释放结构的捕捉，late-time α 已由 zero-shot 达到
 		* 样本效率：1-3 个 DNS 实现已可恢复大尺度物理；增 DNS 实现仅优化高频
 			* table 2 带平均谱误差：1 实现 0.107/0.293，3 实现 0.042/0.079
-		* checkpoint 选择基于物理诊断，非 pointwise val loss
+		* checkpoint 选择基于物理诊断，非 pointwise val loss；{_q7pa4d}
 			> 3D finetuned 模型的 checkpoint 选择基于验证实现 $\mathcal{S}_4$ 上的表现（Appendix 8.3）
 			> 在保存的 checkpoint 中保留 KE(t) 与 δPE(t) 全局能量演化与真值最一致的那个，而非仅按逐点 loss 选择
 			* 反映 PDE 基础模型评估特殊性：val loss 不等于物理忠实度
 	* 推理侧：自回归 rollout（即 delta-prediction 反馈）
 		* 前 L 帧输入，每步预测下帧增量，反馈作输入
-	* 数据与代码
+	* 数据与代码；{_q7pc1d}
 		* 3D RTI DNS（5 个 256³→128³）：HF datasets/pmukhop/rti-dataset-boussinesq
 		* 稳定分层 RTI 评估数据：HF datasets/pmukhop/rti-stratified-data
 		* finetuned checkpoint：HF pmukhop/rti-walrus-model（safetensors + pth + yaml）
