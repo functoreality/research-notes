@@ -40,6 +40,17 @@ else
     check_fail "created-on行" "应匹配: > created on YYYY-MM-DD by 框架+模型"
 fi
 
+# NEW. 方法全称行（仅当标题含方法名缩写时）
+# 仅对单篇文献笔记检测：文件唯一无缩进行为第一行标题行，其余行均有 tab
+non_indented=$(grep -cP '^[^\t]' "$FILE" || true)
+if [ "$non_indented" -eq 1 ] && echo "$TITLE" | grep -qP '^\* [A-Za-z]'; then
+    if grep -qP '^\t\* 方法全称：' "$FILE"; then
+        check_pass "方法全称行"
+    else
+        check_fail "方法全称行" "标题含方法名缩写但缺「方法全称」行，应在 created-on 行后补一行 \\t* 方法全称：xxx。若方法名已是全称，此为误报，请忽略"
+    fi
+fi
+
 # 3. 正文禁止EM dash（排除引文）
 if echo "$BODY" | grep -qP '——'; then
     # 显示具体行
@@ -72,6 +83,7 @@ else
     check_pass "行首格式"
 fi
 
+# 6. 论文结构标题
 if echo "$HEADER_LINES" | grep -qP '^\t*\* (引言|相关工作|摘要)$'; then
     check_fail "论文结构标题" "笔记逻辑结构应自行重新设计，禁止照搬原文结构，更不应以论文的章节名作为笔记组织标题"
 else
