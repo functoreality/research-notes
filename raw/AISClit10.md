@@ -1,3 +1,85 @@
+* Chop-2606.12318 ICON 用于预训未见算子时不微调，输入输出作用一系列简单变换，简化后算子求解可靠
+	* "Harness In-Context Operator Learning with Chain of Operators"
+		* Minghui Yang; Ling Guo; Liu Yang;
+		* 上海师范，NUS
+		> created on 2026-07-25 by OpenCode + GLM-5.2
+	* 方法全称：Chain of Operators
+	* 前置：ICON（In-Context Operator Network）通过上下文对隐式推断算子，不动权重即可适配新算子
+		* 但 target 算子偏离训练分布时仍失效
+	* 核心诊断：OOD 失败非模型容量不足，是目标算子落在模型可靠推断算子的 regime 外
+		* 前作 ICON-2401.07364 已示：简单 affine rescaling 对齐 shifted PDE 即可恢复精度
+			* 说明 OOD 失败是 prompt-regime 不匹配，非模型本身局限
+		* 因此解法不是更新参数（让模型更强），是重构 prompt（让任务回到模型可靠 regime）
+		* 类比 LLM harness engineering：不改参数改 prompt
+		* 类比 Chain of Thought：把难问题拆成简单子任务序列
+	* （评）仿依赖类型论记号，普通 ICON: $n\mapsto(x_1,y_1,\dots,x_n,y_n)\mapsto x\mapsto y$
+		* 场景：目标算子（末映射）$\phi: x\mapsto y$ 偏离 ICON 预训练分布，导致倒数第二个映射 在当前输入形态下 网络输出与真输出偏离大
+		* 方法：输入输出变换，$\phi$ 拆为 $x\xmapsto{F_x}x'\xmapsto{\phi'}y'\xmapsto{G}y$，使 $\phi'$ 在 ICON 预训练分布内
+		* 原文所谓 prompt 变换 $F$ 对应 $F(x,y)=(x'=F_xx, y'=G^{-1}y)$
+	* 方法：$F \to \text{Icon} \to G$ 链（sec3）
+		* $F$（prompt 侧）把 prompt 变换到 Icon 训练时熟悉的表示空间（归纳空间）
+		* Icon 在归纳空间预测，$G$（预测侧）把预测映射回原输出空间
+		* 松弛条件 eqn(9)：设 $T$ 为目标算子，$T'$ 为变换后 Icon 需近似算子
+			* $G(T'(F(x))) \approx T(x)$，且 Icon 对 $T'$ 的预测误差远小于对 $T$
+			* 不要求 $G = F^{-1}$：$G$ 可含投影、约束施加、残差校正
+	* $F$ 形式：预设变换，零可训参数；{_q7ph0y}
+		* 所有变换常数从 prompt 数据即时估计（均值、方差、位移量）
+		* 无需训练，无需超参调优，完全可解释
+		* 变换类型
+			* 对称变换（sec1:-2 提及，实验未见）
+			* 值归一化（affine gauge）：$F$ 侧 $u = (v - \mu)/\sigma$，$G$ 侧逆变换 $v = \sigma u + \mu$
+				* $\mu, \sigma$ 从 prompt 中所有上下文样本聚合估计
+				* 密度场：$\mu = 0$，$\sigma = \text{RMS}$（保非负，因 $v \geq 0 \Rightarrow u \geq 0$）
+				* cost 场：$\mu, \sigma$ 取样本均值和标准差
+			* 坐标对齐（平移对称）：cyclic shift 空间网格索引
+				* 位移量 $s$ 从最近上下文对估计（最小化中心化输入输出差的 L2）
+			* 守恒律投影：L2 投影到空间均值等于查询输入均值的子空间
+			* 残差迁移：留一估计上下文预测残差，按输入相似度加权迁移到查询
+		* （AI 评）与 AOT-POT 均冻结现有网络、补充新模块以应对未见算子，但方法略有区别
+			* 变换类型：AOT-POT 可学变换层，本文用闭式变换
+			* 变换对象：AOT-POT 针对网络内部隐层，本文针对输入输出
+	* 守恒律链（sec4.1）：$F$ = shift + scale，$G$ = unscale + unshift + mass
+		* shift 利用周期边界下平移对称性，对齐上下文对到共同空间帧
+		* mass 投影消除 rollout 中质量漂移，防止误差跨步累积
+		* 三种 OOD flux（sin-cos, tanh, Buckley-Leverett）rel-L2 降 35-52%
+		* 10步 rollout 维持 15-27% 降幅（单步降幅收窄，误差仍累积，mass 投影不能完全阻止）
+	* MFC 链（sec4.2）：$F$ = value norm，$G$ = inverse value norm + residual transfer
+		* residual transfer（Algorithm 3）核心：用上下文已知预测误差校正查询
+			* $\mathcal{B}_0$ 为 Raw Icon 预测函数，$\mathcal{C}_{-h}$ 为排除第 $h$ 对的上下文
+			* 留一残差 $R_h = y_h - \mathcal{B}_0(\mathcal{C}_{-h}, x_h)$，$x_h, y_h$ 为第 $h$ 对输入输出
+			* $\Pi_{h\to*}$ 将残差从 $x_h$ 位置搬运到查询 $x_*$ 位置（插值/投影）
+			* 加权校正量 $\Delta^* = \sum_h w_h^* \Pi_{h\to*}(R_h)$，$w_h^*$ 按 $x_h$ 与 $x_*$ 相似度
+			* 留一交叉验证拟合标量 $\hat\alpha \in [0,1]$，最终校正 $\hat\alpha \Delta^*$
+		* MFC 中 $g$ 为代价函数参数，$\rho$ 为密度分布参数
+			* g-param 任务变化 $g$ 而 $\rho$ 固定，ρ-param 反之
+		* 9 个 g-param 任务降 19-86%；6 个 ρ-param 任务无改善
+			* 归因：value norm 对条件（cost $g$）和目标（density $\rho$）做同一变换
+			* 但二者物理量纲不同，共享 rescaling 不一致
+			* 消融：去掉 value norm 只留 $G_{\text{res}}$，ρ-param (1,2) 改善 37-42%
+				* 说明 residual transfer 独立有效，value norm 对 ρ-param 有害无益
+	* 推理时决定是否启用变换：in-context cross-validation（eqn 15）
+		* 对每个上下文对留一，比较 chain 和 Raw Icon 预测误差
+		* 选误差小者用于实际查询，无需真值标签
+		* 让链在无效时自动回退到 Raw Icon（如 ρ-param 任务）
+	* 跨 PDE 迁移（sec4.3）：MFC 链直接用到守恒律
+		* rel-L2 降 19-24%，chain 优于 Raw Icon 的样本占比 89-91%
+		* 不如守恒律专用链，但正迁移说明链捕捉到跨 PDE 共享结构
+	* 链发现：EvE 进化搜索（sec3.2 末），LLM agent 提议改进候选链
+		* 仅在单一任务上进化（守恒律: sin-cos；MFC: g-param (2,2) $\ell=0.5$）
+		* 论文未展开 EvE 细节，见 [36] arXiv:2605.09018
+	* （AI 评）残差迁移的非平凡性
+		* 留一残差库 + 相似度加权迁移，本质是"用上下文预测误差做查询的偏差校正"
+		* 类似 kNN 回归的偏差校正，但在算子学习的上下文框架下是新的组合
+	* （AI 评）"迁移性"与"专用性"的 tradeoff
+		* 守恒律链的 shift/mass 强依赖周期边界 + 质量守恒结构
+		* 到无此结构的 PDE 上，shift 可能退化为无作用或引入伪影，论文未测此种负迁移
+		* MFC 链的 value/residual 更通用，确实迁移到守恒律（sec4.3）
+		* 但 sec4.3 也显示它不如守恒律专用链，仅两个 PDE 验证不足以判断泛化边界
+	* （AI 评）进化搜索的可靠性存疑
+		* 仅单一任务进化出链，迁移到其他任务靠运气还是链本身有通用结构？
+		* 论文未报告进化过程的多样性和稳定性（多次 run 是否得到相似链？）
+		* 缺乏多次进化运行的稳定性报告，泛化性主张的说服力受限
+	* 数据无公开。守恒律数据 WENO 自生成，MFC 标准问题。论文未提代码/数据仓库
 * Walrus-RTI-2606.01470 Walrus 微调解不稳定流，zero-shot 应用于实验 IC 与未见稳定分层 regime
 	* "Emergent Transfer of a Physics Foundation Model from Simulation to Laboratory Turbulence"
 		* Mukhopadhyay, Payel; Nixon, Stefan S.; Watteaux, Romain; McCabe, Michael; Bietti, Alberto; Cho, Kyunghyun; Diaconu, Cristiana; Espejo, Irina; Fouhey, David; Golkar, Siavash; Hehir, Tom; Ho, Shirley; Kovalic, Jake; Krawezik, Géraud; Lanusse, François; Marwah, Tanya; Morel, Rudy; Pettee, Mariel; Qu, Helen; Shen, Jeff; Sotoudeh, Hadi; Dalziel, Stuart B.; Cranmer, Miles

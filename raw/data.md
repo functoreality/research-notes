@@ -442,7 +442,7 @@
 		* 指标—测试误差 / 同模型 train-seen baseline，消绝对精度差异后衡量 OoD 相对退化((_q7kh65))
 		* 特殊对象 NO，见((q7oh0e))NO-OoD迁移能力评估
 		* OoD 维度差异，不同偏移方向的退化程度差异大，如((q7og7b))动力学演化速度OoD 影响远大于 IC复杂度OoD
-	* 应对方案：{o6mm75}
+	* 应对方案（默认目标分布上要求直接推理，无训练数据可用）：{o6mm75}
 		* ((n32f33))NN架构设计 中 dynamic NN 等
 		* distribution align
 		* 元学习，包括 ((n3gd5l))hyperNet 中讨论的
