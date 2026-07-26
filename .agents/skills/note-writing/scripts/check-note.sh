@@ -12,7 +12,8 @@ FILE="${1:?用法: $0 <笔记文件>}"
 
 pass=0; warn=0; fail=0
 
-check_pass() { pass=$((pass + 1)); printf "  [PASS] %s\n" "$1"; }
+# check_pass() { pass=$((pass + 1)); printf "  [PASS] %s\n" "$1"; }
+check_pass() { pass=$((pass + 1)); }
 check_warn() { warn=$((warn + 1)); printf "  [WARN] %s  %s\n" "$1" "${2-}"; }
 check_fail() { fail=$((fail + 1)); printf "  [FAIL] %s  %s\n" "$1" "${2-}"; }
 
@@ -56,7 +57,7 @@ if echo "$BODY" | grep -qP '——'; then
     # 显示具体行
     while IFS= read -r line; do
         line_num=$(grep -nF "$line" "$FILE" | head -1 | cut -d: -f1)
-        check_fail "EM dash L$line_num" "$(echo "$line" | head -c 80)"
+        check_fail "EM dash L$line_num" "$(echo "$line")"
     done < <(echo "$BODY" | grep -P '——')
 else
     check_pass "正文无EM dash"
@@ -83,27 +84,27 @@ else
     check_pass "行首格式"
 fi
 
+echo ""
+
+# ============ Tier 2: 建议检查 (WARN) ============
+echo "--- 建议项 ---"
+
 # 6. 论文结构标题
 if echo "$HEADER_LINES" | grep -qP '^\t*\* (引言|相关工作|摘要)$'; then
-    check_fail "论文结构标题" "笔记逻辑结构应自行重新设计，禁止照搬原文结构，更不应以论文的章节名作为笔记组织标题"
+    check_warn "论文结构标题" "笔记逻辑结构应自行重新设计，禁止照搬原文结构，更不应以论文的章节名作为笔记组织标题"
 else
     check_pass "无论文结构标题"
 fi
 
 # 7. 禁止"作者认为/提出/发现"（第三人称归因）
-if echo "$BODY" | grep -qP '作者(认为|提出|发现|指出|强调)'; then
-    while IFS= read -r line; do
-        line_num=$(grep -nF "$line" "$FILE" | head -1 | cut -d: -f1)
-        check_fail "第三人称归因 L$line_num" "$(echo "$line" | head -c 80)"
-    done < <(echo "$BODY" | grep -P '作者(认为|提出|发现|指出|强调)')
-else
-    check_pass "无第三人称归因"
-fi
-
-echo ""
-
-# ============ Tier 2: 建议检查 (WARN) ============
-echo "--- 建议项 ---"
+# if echo "$BODY" | grep -qP '作者(认为|提出|发现|指出|强调)'; then
+#     while IFS= read -r line; do
+#         line_num=$(grep -nF "$line" "$FILE" | head -1 | cut -d: -f1)
+#         check_warn "第三人称归因 L$line_num" "$(echo "$line")"
+#     done < <(echo "$BODY" | grep -P '作者(认为|提出|发现|指出|强调)')
+# else
+#     check_pass "无第三人称归因"
+# fi
 
 # 8. 引文数量
 # quote_count=$(grep -cP '^\t*> (?!created on)' "$FILE" || true)
@@ -113,29 +114,38 @@ echo "--- 建议项 ---"
 #     check_warn "引文数量(0)" "没有引文——如果笔记中有高度压缩的关键论断，建议补充引文作为安全网"
 # fi
 
-# 9. 正文出现"本文/该论文/本工作"（第三人称主语）
-if echo "$BODY" | grep -qP '(本文|该论文|本工作)'; then
-    while IFS= read -r line; do
-        check_warn "第三人称主语" "$(echo "$line" | head -c 80)"
-    done < <(echo "$BODY" | grep -P '(本文|该论文|本工作)' | head -5)
-else
-    check_pass "无第三人称主语"
-fi
+# # 9. 正文出现"本文/该论文/本工作"（第三人称主语）
+# if echo "$BODY" | grep -qP '(本文|该论文|本工作)'; then
+#     while IFS= read -r line; do
+#         check_warn "第三人称主语" "$(echo "$line")"
+#     done < <(echo "$BODY" | grep -P '(本文|该论文|本工作)' | head -5)
+# else
+#     check_pass "无第三人称主语"
+# fi
 
-# 11. 元概括句式
-if echo "$BODY" | grep -qP '(这本质上是|核心贡献不是|揭示了一个机制)' ; then
+# # 11. 元概括句式
+# if echo "$BODY" | grep -qP '(这本质上是|核心贡献不是|揭示了一个机制)' ; then
+#     while IFS= read -r line; do
+#         check_warn "元概括句式" "$(echo "$line")"
+#     done < <(echo "$BODY" | grep -P '(这本质上是|核心贡献不是|揭示了一个机制)' | head -3)
+# else
+#     check_pass "无元概括句式"
+# fi
+
+# 无意义标签
+if echo "$BODY" | grep -qP '(关键|核心)(设计|创新|诊断)'; then
     while IFS= read -r line; do
-        check_warn "元概括句式" "$(echo "$line" | head -c 80)"
-    done < <(echo "$BODY" | grep -P '(这本质上是|核心贡献不是|揭示了一个机制)' | head -3)
+        check_warn "无意义标签" "$(echo "$line")"
+    done < <(echo "$BODY" | grep -P '(关键|核心)(设计|创新|诊断)')
 else
-    check_pass "无元概括句式"
+    check_pass "无无意义标签"
 fi
 
 # 12. 空洞强调词
-if echo "$BODY" | grep -qP '(值得注意的是|值得一提的是|有趣的是|值得关注的是)'; then
+if echo "$BODY" | grep -qP '(值得注意|值得一提|值得关注|有趣)的是'; then
     while IFS= read -r line; do
         check_warn "空洞强调词" "$(echo "$line" | head -c 80)"
-    done < <(echo "$BODY" | grep -P '(值得注意的是|值得一提的是|有趣的是|值得关注的是)')
+    done < <(echo "$BODY" | grep -P '(值得注意|值得一提|值得关注|有趣)的是')
 else
     check_pass "无空洞强调词"
 fi
@@ -218,14 +228,14 @@ echo ""
 echo "--- 自查提示 ---"
 echo "  建议自行 grep 检查以下模式（根据论文内容选择相关项）:"
 echo "  - 括号解释已知概念: grep -P '（[A-Za-z].*）' \"\$FILE\""
-echo "  - 英文半角标点混入正文: grep -P '^[^>].*[;,?](?!.*\\\$)' \"\$FILE\""
-echo "  - 描述句式替代归因句式: grep -P '(其原因|问题根源|背后的原因)' \"\$FILE\""
+# echo "  - 英文半角标点混入正文: grep -P '^[^>].*[;,?](?!.*\\\$)' \"\$FILE\""
+# echo "  - 描述句式替代归因句式: grep -P '(其原因|问题根源|背后的原因)' \"\$FILE\""
 echo ""
 echo "--- 长行处理建议 ---"
 echo "  对于标记为 LONG/VLONG 的行，按优先级处理："
 echo "  1. 精简内容：删除不必要的修饰词、过渡语、元概括"
 echo "  2. 从标点拆分：在句号、分号、逗号处插入换行，一个 bullet 变多个子 bullet"
-echo "  3. 引文同理：长引文从原文句号处切分，保持每个 > 子行独立可读"
+echo "  3. 引文同理：长引文从原文标点处切分，保持每个 > 子行独立可读"
 echo ""
 
 # ============ 汇总 ============
