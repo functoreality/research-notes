@@ -3,7 +3,7 @@
 # 用法: ./check-note.sh <笔记文件路径>
 # 
 # 分为三级：PASS(通过) / WARN(不推荐，建议检查) / FAIL(违反规则，应修改)
-# 行长度阈值：统一 WARN>80字符, VLONG>100字符（基于专家笔记统计, 90%行≤80）
+# 行长度阈值：统一 WARN>100字符, VLONG>120字符（基于专家笔记统计, 90%行≤80）
 
 set -e
 
@@ -143,11 +143,11 @@ check_pattern WARN "空洞强调词" '(值得注意|值得一提|值得关注|�
 echo ""
 
 # ============ 行长度检查 ============
-echo "--- 行长度 (统一阈值: WARN>80, VLONG>100) ---"
+echo "--- 行长度 (统一阈值: WARN>100, VLONG>120) ---"
 LONG_LINES=$(tail -n +2 "$FILE" | grep -vP '^\t*>' | grep -vP '^\t*\*' | awk '
 { l=length($0) }
-l>100 { printf "  [VLONG %dc L%d] %s...\n", l, NR+1, substr($0,1,100); vc++ }
-l>80 && l<=100 { printf "  [LONG  %dc L%d] %s...\n", l, NR+1, substr($0,1,80); lc++ }
+l>120 { printf "  [VLONG %dc L%d] %s...\n", l, NR+1, substr($0,1,120); vc++ }
+l>100 && l<=120 { printf "  [LONG  %dc L%d] %s...\n", l, NR+1, substr($0,1,100); lc++ }
 END { printf "%d %d\n", lc+0, vc+0 }
 ')
 LONG_STATS=$(echo "$LONG_LINES" | tail -1)
@@ -156,20 +156,20 @@ LONG_LINES=$(echo "$LONG_LINES" | head -n -1)
 long_count=$(echo "$LONG_STATS" | awk '{print $1}')
 vlong_count=$(echo "$LONG_STATS" | awk '{print $2}')
 if [ "${vlong_count:-0}" -eq 0 ] && [ "${long_count:-0}" -eq 0 ]; then
-    check_pass "正文行长度(全部≤80字符)"
+    check_pass "正文行长度(全部≤100字符)"
 else
-    [ "${vlong_count:-0}" -gt 0 ] && check_warn "正文行(${vlong_count}行>100字符)" "建议精简内容或拆为多个 bullets"
-    [ "${long_count:-0}" -gt 0 ] && check_warn "正文行(${long_count}行>80字符)" "考虑压缩或拆分"
+    [ "${vlong_count:-0}" -gt 0 ] && check_warn "正文行(${vlong_count}行>120字符)" "建议精简内容或拆为多个 bullets"
+    [ "${long_count:-0}" -gt 0 ] && check_warn "正文行(${long_count}行>100字符)" "考虑压缩或拆分"
 fi
 
 echo ""
 
 # 首行长度
 TITLE_LEN=${#TITLE}
-if [ "$TITLE_LEN" -gt 100 ]; then
-    check_warn "首行长度(${TITLE_LEN}字符>100)" "专家均值56-63，建议大幅压缩"
-elif [ "$TITLE_LEN" -gt 80 ]; then
-    check_warn "首行长度(${TITLE_LEN}字符>80)" "专家均值56-63，建议压缩"
+if [ "$TITLE_LEN" -gt 120 ]; then
+    check_warn "首行长度(${TITLE_LEN}字符>120)" "专家均值56-63，建议大幅压缩"
+elif [ "$TITLE_LEN" -gt 100 ]; then
+    check_warn "首行长度(${TITLE_LEN}字符>100)" "专家均值56-63，建议压缩"
 else
     check_pass "首行长度(${TITLE_LEN}字符)"
 fi
@@ -177,8 +177,8 @@ fi
 # 子标题行长度 (tab缩进 + * 开头，非顶层首行)
 SUBH_COUNT=$(tail -n +2 "$FILE" | grep -vP '^\t*>' | grep -P '^\t+\* ' | awk '
 { l=length($0) }
-l>100 { printf "  [VLONG-SUBH %dc L%d] %s...\n", l, NR+1, substr($0,1,90); vc++ }
-l>80 && l<=100 { printf "  [LONG-SUBH  %dc L%d] %s...\n", l, NR+1, substr($0,1,80); lc++ }
+l>120 { printf "  [VLONG-SUBH %dc L%d] %s...\n", l, NR+1, substr($0,1,90); vc++ }
+l>100 && l<=120 { printf "  [LONG-SUBH  %dc L%d] %s...\n", l, NR+1, substr($0,1,100); lc++ }
 END { printf "%d %d\n", lc+0, vc+0 }
 ')
 SUBH_STATS=$(echo "$SUBH_COUNT" | tail -1)
@@ -187,17 +187,17 @@ SUBH_LINES=$(echo "$SUBH_COUNT" | head -n -1)
 sub_long=$(echo "$SUBH_STATS" | awk '{print $1}')
 sub_vlong=$(echo "$SUBH_STATS" | awk '{print $2}')
 if [ "${sub_vlong:-0}" -eq 0 ] && [ "${sub_long:-0}" -eq 0 ]; then
-    check_pass "子标题行长度(全部≤80字符)"
+    check_pass "子标题行长度(全部≤100字符)"
 else
-    [ "${sub_vlong:-0}" -gt 0 ] && check_warn "子标题行(${sub_vlong}行>100字符)" "建议精简或拆为多个 bullets"
-    [ "${sub_long:-0}" -gt 0 ] && check_warn "子标题行(${sub_long}行>80字符)" "考虑压缩或拆分"
+    [ "${sub_vlong:-0}" -gt 0 ] && check_warn "子标题行(${sub_vlong}行>120字符)" "建议精简或拆为多个 bullets"
+    [ "${sub_long:-0}" -gt 0 ] && check_warn "子标题行(${sub_long}行>100字符)" "考虑压缩或拆分"
 fi
 
-# 引文行长度（与正文统一标准：80/100）
+# 引文行长度（与正文统一标准：100/120）
 QUOTE_COUNT=$(tail -n +2 "$FILE" | grep -P '^\t+>' | awk '
 { l=length($0) }
-l>100 { printf "  [VLONG-QT %dc L%d] %s...\n", l, NR+1, substr($0,1,100); vc++ }
-l>80 && l<=100 { printf "  [LONG-QT  %dc L%d] %s...\n", l, NR+1, substr($0,1,80); lc++ }
+l>120 { printf "  [VLONG-QT %dc L%d] %s...\n", l, NR+1, substr($0,1,120); vc++ }
+l>100 && l<=120 { printf "  [LONG-QT  %dc L%d] %s...\n", l, NR+1, substr($0,1,100); lc++ }
 END { printf "%d %d\n", lc+0, vc+0 }
 ')
 QUOTE_STATS=$(echo "$QUOTE_COUNT" | tail -1)
@@ -206,10 +206,10 @@ QUOTE_LINES=$(echo "$QUOTE_COUNT" | head -n -1)
 quote_long=$(echo "$QUOTE_STATS" | awk '{print $1}')
 quote_vlong=$(echo "$QUOTE_STATS" | awk '{print $2}')
 if [ "${quote_vlong:-0}" -eq 0 ] && [ "${quote_long:-0}" -eq 0 ]; then
-    check_pass "引文行长度(全部≤80字符)"
+    check_pass "引文行长度(全部≤100字符)"
 else
-    [ "${quote_vlong:-0}" -gt 0 ] && check_warn "引文行(${quote_vlong}行>100字符)" "引文也是笔记的一部分，可从句号/分号处拆分换行"
-    [ "${quote_long:-0}" -gt 0 ] && check_warn "引文行(${quote_long}行>80字符)" "考虑在标点处拆分"
+    [ "${quote_vlong:-0}" -gt 0 ] && check_warn "引文行(${quote_vlong}行>120字符)" "引文也是笔记的一部分，可从句号/分号处拆分换行"
+    [ "${quote_long:-0}" -gt 0 ] && check_warn "引文行(${quote_long}行>100字符)" "考虑在标点处拆分"
 fi
 
 echo ""
