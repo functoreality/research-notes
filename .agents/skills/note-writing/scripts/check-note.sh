@@ -106,12 +106,12 @@ echo ""
 echo "--- 建议项 ---"
 
 # 8. 引文数量
-quote_count=$(grep -cP '^\t*> (?!created on)' "$FILE" || true)
-if [ "$quote_count" -ge 1 ]; then
-    check_pass "引文数量($quote_count)"
-else
-    check_warn "引文数量(0)" "没有引文——如果笔记中有高度压缩的关键论断，建议补充引文作为安全网"
-fi
+# quote_count=$(grep -cP '^\t*> (?!created on)' "$FILE" || true)
+# if [ "$quote_count" -ge 1 ]; then
+#     check_pass "引文数量($quote_count)"
+# else
+#     check_warn "引文数量(0)" "没有引文——如果笔记中有高度压缩的关键论断，建议补充引文作为安全网"
+# fi
 
 # 9. 正文出现"本文/该论文/本工作"（第三人称主语）
 if echo "$BODY" | grep -qP '(本文|该论文|本工作)'; then
@@ -158,7 +158,7 @@ vlong_count=$(echo "$LONG_STATS" | awk '{print $2}')
 if [ "${vlong_count:-0}" -eq 0 ] && [ "${long_count:-0}" -eq 0 ]; then
     check_pass "正文行长度(全部≤80字符)"
 else
-    [ "${vlong_count:-0}" -gt 0 ] && check_warn "正文行(${vlong_count}行>100字符)" "建议精简内容或从逗号/句号处拆分换行"
+    [ "${vlong_count:-0}" -gt 0 ] && check_warn "正文行(${vlong_count}行>100字符)" "建议精简内容或拆为多个 bullets"
     [ "${long_count:-0}" -gt 0 ] && check_warn "正文行(${long_count}行>80字符)" "考虑压缩或拆分"
 fi
 
@@ -189,7 +189,7 @@ sub_vlong=$(echo "$SUBH_STATS" | awk '{print $2}')
 if [ "${sub_vlong:-0}" -eq 0 ] && [ "${sub_long:-0}" -eq 0 ]; then
     check_pass "子标题行长度(全部≤80字符)"
 else
-    [ "${sub_vlong:-0}" -gt 0 ] && check_warn "子标题行(${sub_vlong}行>100字符)" "建议精简或从逗号/句号处拆分"
+    [ "${sub_vlong:-0}" -gt 0 ] && check_warn "子标题行(${sub_vlong}行>100字符)" "建议精简或拆为多个 bullets"
     [ "${sub_long:-0}" -gt 0 ] && check_warn "子标题行(${sub_long}行>80字符)" "考虑压缩或拆分"
 fi
 
