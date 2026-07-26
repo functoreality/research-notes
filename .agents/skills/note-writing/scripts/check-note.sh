@@ -17,6 +17,42 @@ check_pass() { pass=$((pass + 1)); }
 check_warn() { warn=$((warn + 1)); printf "  [WARN] %s  %s\n" "$1" "${2-}"; }
 check_fail() { fail=$((fail + 1)); printf "  [FAIL] %s  %s\n" "$1" "${2-}"; }
 
+# check_pattern: 检查正文(排除首行标题与 tab 缩进引文)中匹配某 pattern 的违规行
+# 用法: check_pattern <FAIL|WARN> <标签> <正则> [可选:hint]
+# 每个匹配行输出两行:
+#   [LEVEL] <标签> L<行号>  匹配: <行内匹配到的具体串>
+#       L<行号>: <整行内容>
+# 通过时打印 "无<标签>"
+# 若 hint 非空, 在所有违规行之后打印一次 hint 作为说明
+check_pattern() {
+    local level="$1" label="$2" pattern="$3" hint="${4-}"
+    local hits lnum content pmatch
+    # 在原文件中匹配, 通过行号>1 排除首行(标题), 通过 [ \t]*> 排除引文行(保留真实行号)
+    hits=$(grep -nP "$pattern" "$FILE" | awk -F: '$1>1' | grep -vP '^[0-9]+:[ \t]*>') || true
+    if [ -z "$hits" ]; then
+        check_pass "无${label}"
+        return
+    fi
+    while IFS= read -r hit; do
+        [ -n "$hit" ] || continue
+        lnum="${hit%%:*}"
+        content="${hit#*:}"
+        pmatch=$(printf '%s' "$content" | grep -oP "$pattern" | head -1)
+        # 去掉前导空白与列表标记 "* ", 让 pmatch 更紧凑可读
+        pmatch="${pmatch#"${pmatch%%[![:space:]]*}"}"
+        pmatch="${pmatch#\* }"
+        if [ "$level" = "FAIL" ]; then
+            check_fail "${label} L${lnum}" "匹配: ${pmatch}"
+        else
+            check_warn "${label} L${lnum}" "匹配: ${pmatch}"
+        fi
+        printf "    L%d: %s\n" "$lnum" "$content"
+    done <<< "$hits"
+    if [ -n "$hint" ]; then
+        printf "    (%s)\n" "$hint"
+    fi
+}
+
 BODY="$(tail -n +2 "$FILE" | grep -vP '^\t*>')"   # 正文(排除首行和带缩进的引文)
 TITLE="$(head -1 "$FILE")"
 HEADER_LINES="$(echo "$BODY" | grep -P '^\t{0,2}\*')"  # 子标题行(也排除行长检查)
@@ -53,22 +89,10 @@ if [ "$non_indented" -eq 1 ] && echo "$TITLE" | grep -qP '^\* [A-Za-z]'; then
 fi
 
 # 3. 正文禁止EM dash（排除引文）
-if echo "$BODY" | grep -qP '——'; then
-    # 显示具体行
-    while IFS= read -r line; do
-        line_num=$(grep -nF "$line" "$FILE" | head -1 | cut -d: -f1)
-        check_fail "EM dash L$line_num" "$(echo "$line")"
-    done < <(echo "$BODY" | grep -P '——')
-else
-    check_pass "正文无EM dash"
-fi
+check_pattern FAIL "EM dash" '——'
 
 # 4. 禁止粗体/斜体标记
-if grep -qP '\*\*|__' "$FILE"; then
-    check_fail "粗体/斜体标记" "检测到 ** 或 __（若为 URL 误报，请忽略）"
-else
-    check_pass "无粗体/斜体标记"
-fi
+check_pattern FAIL "粗体/斜体标记" '\*\*|__' "URL 中可能误报，按行内容判断"
 
 # 5. 行首格式：每行必须匹配 ^\t*(\*|>)  (任意个 tab 缩进 + * 或 > + 空格)
 #    覆盖原"空格缩进"检查：凡符合此模式必不以空格起手
@@ -90,21 +114,11 @@ echo ""
 echo "--- 建议项 ---"
 
 # 6. 论文结构标题
-if echo "$HEADER_LINES" | grep -qP '^\t*\* (引言|相关工作|摘要)$'; then
-    check_warn "论文结构标题" "笔记逻辑结构应自行重新设计，禁止照搬原文结构，更不应以论文的章节名作为笔记组织标题"
-else
-    check_pass "无论文结构标题"
-fi
+check_pattern WARN "论文结构标题" '^\t*\* (引言|相关工作|摘要)$' \
+    "笔记逻辑结构应自行重新设计，禁止照搬原文结构，更不应以论文的章节名作为笔记组织标题"
 
 # 7. 禁止"作者认为/提出/发现"（第三人称归因）
-# if echo "$BODY" | grep -qP '作者(认为|提出|发现|指出|强调)'; then
-#     while IFS= read -r line; do
-#         line_num=$(grep -nF "$line" "$FILE" | head -1 | cut -d: -f1)
-#         check_warn "第三人称归因 L$line_num" "$(echo "$line")"
-#     done < <(echo "$BODY" | grep -P '作者(认为|提出|发现|指出|强调)')
-# else
-#     check_pass "无第三人称归因"
-# fi
+# check_pattern WARN "第三人称归因" '作者(认为|提出|发现|指出|强调)'
 
 # 8. 引文数量
 # quote_count=$(grep -cP '^\t*> (?!created on)' "$FILE" || true)
@@ -114,41 +128,17 @@ fi
 #     check_warn "引文数量(0)" "没有引文——如果笔记中有高度压缩的关键论断，建议补充引文作为安全网"
 # fi
 
-# # 9. 正文出现"本文/该论文/本工作"（第三人称主语）
-# if echo "$BODY" | grep -qP '(本文|该论文|本工作)'; then
-#     while IFS= read -r line; do
-#         check_warn "第三人称主语" "$(echo "$line")"
-#     done < <(echo "$BODY" | grep -P '(本文|该论文|本工作)' | head -5)
-# else
-#     check_pass "无第三人称主语"
-# fi
+# 9. 正文出现"本文/该论文/本工作"（第三人称主语）
+# check_pattern WARN "第三人称主语" '(本文|该论文|本工作)'
 
-# # 11. 元概括句式
-# if echo "$BODY" | grep -qP '(这本质上是|核心贡献不是|揭示了一个机制)' ; then
-#     while IFS= read -r line; do
-#         check_warn "元概括句式" "$(echo "$line")"
-#     done < <(echo "$BODY" | grep -P '(这本质上是|核心贡献不是|揭示了一个机制)' | head -3)
-# else
-#     check_pass "无元概括句式"
-# fi
+# 11. 元概括句式
+# check_pattern WARN "元概括句式" '(这本质上是|核心贡献不是|揭示了一个机制)'
 
 # 无意义标签
-if echo "$BODY" | grep -qP '(关键|核心)(设计|创新|诊断)'; then
-    while IFS= read -r line; do
-        check_warn "无意义标签" "$(echo "$line")"
-    done < <(echo "$BODY" | grep -P '(关键|核心)(设计|创新|诊断)')
-else
-    check_pass "无无意义标签"
-fi
+check_pattern WARN "无意义标签" '(关键|核心)(设计|创新|诊断)'
 
 # 12. 空洞强调词
-if echo "$BODY" | grep -qP '(值得注意|值得一提|值得关注|有趣)的是'; then
-    while IFS= read -r line; do
-        check_warn "空洞强调词" "$(echo "$line" | head -c 80)"
-    done < <(echo "$BODY" | grep -P '(值得注意|值得一提|值得关注|有趣)的是')
-else
-    check_pass "无空洞强调词"
-fi
+check_pattern WARN "空洞强调词" '(值得注意|值得一提|值得关注|有趣)的是'
 
 echo ""
 
