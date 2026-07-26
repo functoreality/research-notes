@@ -322,8 +322,7 @@ curl -L -C - --max-time 60 -o 目标文件名 URL
 > outline-read 的完整用法见 `../outline-read/SKILL.md`。
 > 目的手段链条的详细方法论（节点类型、展开方式、AND/OR 区分等）见 `references/purpose-means-guide.md`。
 > 数据集状态判断的完整流程（搜索策略、验证维度、报告要求）见 `references/dataset-guide.md`。
-> 下一步：用户同意继续后，AI 将阅读 `references/writing-workflow.md` 并按分步流程执行。
 
-## 实际写入笔记
+## 下一步
 
-输出分析报告后，如果用户同意继续，**必须阅读 `references/writing-workflow.md`**，按其中步骤执行。
+输出分析报告后，阅读 `references/writing-workflow.md`，按其中步骤执行。
