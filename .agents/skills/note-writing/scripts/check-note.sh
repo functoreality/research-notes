@@ -16,7 +16,7 @@ check_pass() { pass=$((pass + 1)); printf "  [PASS] %s\n" "$1"; }
 check_warn() { warn=$((warn + 1)); printf "  [WARN] %s  %s\n" "$1" "${2-}"; }
 check_fail() { fail=$((fail + 1)); printf "  [FAIL] %s  %s\n" "$1" "${2-}"; }
 
-BODY="$(tail -n +2 "$FILE" | grep -vP '^\t*>')"   # 正文(排除标题行和带缩进的引文)
+BODY="$(tail -n +2 "$FILE" | grep -vP '^\t*>')"   # 正文(排除首行和带缩进的引文)
 TITLE="$(head -1 "$FILE")"
 HEADER_LINES="$(echo "$BODY" | grep -P '^\t{0,2}\*')"  # 子标题行(也排除行长检查)
 
@@ -26,11 +26,11 @@ echo ""
 # ============ Tier 1: 必须通过 (FAIL) ============
 echo "--- 必须项 ---"
 
-# 1. 标题行格式
+# 1. 首行格式
 if echo "$TITLE" | grep -qP '^\* [\w\s-]+\d{4}\.\d{5} '; then
-    check_pass "标题行格式"
+    check_pass "首行格式"
 else
-    check_fail "标题行格式" "应匹配: * 方法名-arXivID 描述"
+    check_fail "首行格式" "应匹配: * 方法名-arXivID TLDR"
 fi
 
 # 2. created-on 行
@@ -40,14 +40,14 @@ else
     check_fail "created-on行" "应匹配: > created on YYYY-MM-DD by 框架+模型"
 fi
 
-# NEW. 方法全称行（仅当标题含方法名缩写时）
-# 仅对单篇文献笔记检测：文件唯一无缩进行为第一行标题行，其余行均有 tab
+# NEW. 方法全称行（仅当首行含方法名缩写时）
+# 仅对单篇文献笔记检测：文件唯一无缩进行为首行，其余行均有 tab
 non_indented=$(grep -cP '^[^\t]' "$FILE" || true)
 if [ "$non_indented" -eq 1 ] && echo "$TITLE" | grep -qP '^\* [A-Za-z]'; then
     if grep -qP '^\t\* 方法全称：' "$FILE"; then
         check_pass "方法全称行"
     else
-        check_fail "方法全称行" "标题含方法名缩写但缺「方法全称」行，应在 created-on 行后补一行 \\t* 方法全称：xxx。若方法名已是全称，此为误报，请忽略"
+        check_fail "方法全称行" "首行含方法名缩写但缺「方法全称」行，应在 created-on 行后补一行 \\t* 方法全称：xxx。若方法名已是全称，此为误报，请忽略"
     fi
 fi
 
@@ -164,17 +164,17 @@ fi
 
 echo ""
 
-# 标题行长度
+# 首行长度
 TITLE_LEN=${#TITLE}
 if [ "$TITLE_LEN" -gt 100 ]; then
-    check_warn "标题行长度(${TITLE_LEN}字符>100)" "专家均值56-63，严重超标，需大幅压缩"
+    check_warn "首行长度(${TITLE_LEN}字符>100)" "专家均值56-63，建议大幅压缩"
 elif [ "$TITLE_LEN" -gt 80 ]; then
-    check_warn "标题行长度(${TITLE_LEN}字符>80)" "专家均值56-63，建议压缩"
+    check_warn "首行长度(${TITLE_LEN}字符>80)" "专家均值56-63，建议压缩"
 else
-    check_pass "标题行长度(${TITLE_LEN}字符)"
+    check_pass "首行长度(${TITLE_LEN}字符)"
 fi
 
-# 子标题行长度 (tab缩进 + * 开头，非顶级标题行)
+# 子标题行长度 (tab缩进 + * 开头，非顶层首行)
 SUBH_COUNT=$(tail -n +2 "$FILE" | grep -vP '^\t*>' | grep -P '^\t+\* ' | awk '
 { l=length($0) }
 l>100 { printf "  [VLONG-SUBH %dc L%d] %s...\n", l, NR+1, substr($0,1,90); vc++ }
