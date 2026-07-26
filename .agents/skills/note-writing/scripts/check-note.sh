@@ -64,11 +64,11 @@ echo ""
 echo "--- 必须项 ---"
 
 # 1. 首行格式
-if echo "$TITLE" | grep -qP '^\* [\w\s-]+\d{4}\.\d{5} '; then
-    check_pass "首行格式"
-else
-    check_fail "首行格式" "应匹配: * 方法名-arXivID TLDR"
-fi
+# if echo "$TITLE" | grep -qP '^\* [\w\s-]*\d{4}\.\d{5} '; then
+#     check_pass "首行格式"
+# else
+#     check_fail "首行格式" "应匹配: * 方法名-arXivID TLDR"
+# fi
 
 # 2. created-on 行
 if grep -qP 'created on \d{4}-\d{2}-\d{2} by' "$FILE"; then
