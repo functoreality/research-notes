@@ -1,3 +1,44 @@
+* 2606.11657 Walrus 机理解释：剪切流输出目测接近时，单层 SAE 的物理相关不能单独证明模型机制
+	* 注：GLM5.2 版 TLDR：Walrus 中间层 SAE 探表征，单步预测目测无偏但表征未稳定对应物理
+	* "Sparse probes and murky physics: a case study of interpretability challenges in a foundation model for continuum dynamics", FM4Science @ ICLR 2026
+		* Katherine Rosenfeld；Maike Sonnewald；
+		* Gates Foundation；UC Davis
+		> created on 2026-07-26 by Codex + GPT-5.6-Terra-high
+	* 定位：不改 Walrus 的表征审查，问内部表征能否稳定对应已知物理
+	* SAE 只是诊断坐标系，不是自动发现机制；{_q7qj9l}
+		* 第 20 个 Transformer 块的空间混合层激活，训 8 倍扩张 Top-K SAE，sec2.4
+			* 得 22,528 个特征
+			* 同一字典用于全部轨迹，才能比较同一特征的跨轨迹激活
+		* 稀疏特征可逐个探测，仍不自带物理语义
+		* 未报告独立评测集的重构保真度、随机种子稳定性或特征对预测的保留度
+	* 相关性筛选只生成候选
+		* Sim50 作参考轨迹，按特征空间总激活和 $\mathcal{E}(t)$ 的 Spearman $\rho$ 排序
+			* $s_j(t)=\sum_x a_j(x,t)$，sec2.3、3.1
+		* 100 次置换的 99% 阈值为 $\rho=0.30$，最高特征为 $0.85$
+		> 约 10% SAE 特征超过此阈值，说明 $\mathcal{E}$ 的区分性不高，sec3.1；{_q7qk1c}
+		* 换 $\dot{\mathcal{E}}$ 后最高 $\rho=0.50$，阈值 $0.48$
+		* （AI 评）正文为约 10%，附录图 8 为 6%，比例不一致
+		* （AI 评）阈值的统计含义不足以支持物理解释
+			* 未说明怎样控制 22,528 次筛选的多重比较
+			* 随机打乱会破坏时间相关性，宜只作候选排序
+			* 仅 100 次置换估计 99% 尾部分位，阈值本身也不稳
+		* （AI 评）Sim50 的选择规则也不一致
+			* sec2.3 取最高中位 $\dot{\mathcal{E}}$
+			* 附录图 7 取最大平均绝对 $\dot{\mathcal{E}}$
+	* 跨条件比较未能给出稳定解释
+		* Sim50、Sim56 的 $Re,Sc$ 均不同
+			* $t=15$ 时，按全部模拟合并排序的前 10 个特征有相近空间激活，sec3.2、图3、4
+		* 后续时刻缺乏持续一致性，不能把局部热图直接命名为涡旋或界面特征；{_q7qk1d}
+		* 各时刻均以 6 个真值历史步作输入的单步预测，不是自回归 rollout
+		> 即使输出层能合理复现剪切流，内部编码也未清楚对应所检验的物理分解，sec4
+	* 输出谱偏差也不能替代表征证据
+		* Sim50 的两次单步预测目测接近，但能谱在中等波数低估、高波数高估，sec2.2
+		* 输出可表现为过弥散或过度局部化，特征也可稀疏而空间不连贯
+		> 输出层误差与内部表征的关系仍不清楚，sec3.3
+	* （AI 评）现有负结果只限制单层 SAE 加单指标筛选的解释力
+		* 不能据此否定 Walrus 已学到物理，也分不清模型失配和探针失配
+		* 机制证据应先挑候选，再验参数、时间、种子与输出失效模式的稳定性
+		* 还应干预候选特征，比较物理量、预测误差和对照特征的响应
 * Chop-2606.12318 ICON 用于预训未见算子时不微调，输入输出作用一系列简单变换，简化后算子求解可靠
 	* "Harness In-Context Operator Learning with Chain of Operators"
 		* Minghui Yang; Ling Guo; Liu Yang;
