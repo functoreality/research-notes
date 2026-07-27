@@ -18,30 +18,15 @@ description: >-
 
 输出是一个简洁报告，重点在「可补充什么、补到哪里、为什么」。
 
-## 工具准备
+## 文章来源获取
 
-**开始前，必须先阅读 `../outline-read/SKILL.md`**（`outline-read` skill），了解 outline-read 工具的完整用法。后续不再重复这些基础用法。
-
-### 文章来源获取
-
-- arXiv 论文优先看 HTML 版。WebFetch 会截断固定长度，若不完整可下载到本地后读（可结合 `html2text -nobs`、`pdftotext`）
+- 若用户仅提供 arXiv ID，加载 `arxiv-download` skill（`../arxiv-download/SKILL.md`）以获取原文
 - 对已有论文的解读报道，应自行找原论文阅读，以原文为准
 
-从 arxiv.org 下载常遇 QoS 限速，速度衰减到 0，增大超时无用。建议下载命令：
-
-```bash
-wget -c --tries=20 --timeout=30 --waitretry=5 --read-timeout=20 -O 目标文件名 URL
-```
-
-优先下 HTML；PDF 较大可能触发多次重试。备选 curl 手动续传：
-
-```bash
-curl -L -C - --max-time 60 -o 目标文件名 URL
-# 反复执行直到 wc -c 等于 HEAD 查到的 content-length
-# 出现 0 字节响应是冷却期，隔几秒再试
-```
-
 ## 笔记系统结构
+
+工具准备：笔记浏览需使用 outline-read 工具。
+开始前请先加载 `outline-read` skill（`../outline-read/SKILL.md`）了解其完整用法。后续不再重复这些基础用法。
 
 笔记根目录：`raw/`（本项目中相对于仓库根目录；迁移到其他项目时需调整此路径）。
 
