@@ -1,3 +1,70 @@
+* CATO-2605.09016 轴向注意力中 RoPE 相对坐标改由学得 chart 给出，应对坐标几何与解结构不匹配；稳态解有标签时，以梯度双头压局部过平滑
+	* "CATO: Charted Attention for Neural PDE Operators"
+		* Chun-Wun Cheng; Sifan Wang; Carola-Bibiane Schönlieb; Angelica I. Aviles-Rivero
+		* Cambridge DAMTP, Yale IFDS, 清华丘成桐数学科学中心
+		> created on 2026-07-31 by OpenCode + GPT-5.6-terra
+	* 方法全称：Charted Axial Transformer Operator
+	* 定位：神经算子的几何感知架构改进，用学习 chart 改写轴向注意力的位置几何
+	* 适用几何：原坐标与解的相对距离结构不匹配，直接把坐标送入位置编码会误导轴内注意力
+		* 推理坐标：网格点物理坐标 $x=(x,y)$ 经 $\zeta=\Phi_{\rm chart}(x)=(\xi,\eta)$ 映为连续二维 chart，不要求可逆
+		* 推理分组：结构化网格原有的行、列 token 分组不变，$\xi$ 只作行内 RoPE 位置变量，$\eta$ 只作列内变量；{_q81007}
+			* 局部补偿：depthwise 加 pointwise 卷积并联，补轴向全局交互不擅长的局部 stencil
+		* （AI 评）这仍是位置编码层，不重排 token 或重建交互拓扑
+			* 有效性归因不一定是几何对齐，也可能仅来自新增的可学习位置表示，现有消融不足以分开二者
+			* Geo-FNO 的形变服务于让 FNO 处理不规则几何，这里服务于让轴向分解贴近算子的低秩方向
+			* 二者不能只按都有 deformation 合并
+		> 合适坐标中，解算子可沿坐标方向近似分离，学习 chart 后轴向注意力可高效逼近这种结构。
+		> 原文 §3.1、§3.3
+	* 训练监督：仅为稳态 PDE，主头 $\hat u$ 外再预测梯度代理 $\hat q$
+		* 参考导数：依赖带坐标网格的中心差分和局部 $2\times2$ 线性系统，不是自动微分 PDE residual
+		* 值监督：$\mathcal L_{\rm val}$ 令 $\hat u\approx u$
+		* 导数监督：$\mathcal L_{\rm grad}$ 令 $\nabla\hat u\approx\nabla u$
+		* 双头监督：$\mathcal L_{\rm flux}$ 令 $\hat q\approx\nabla u$
+		* 自洽约束：$\mathcal L_{\rm cons}$ 令 $\hat q\approx\nabla\hat u$
+		* （AI 评）名字叫 physical loss，但训练信号来自 $\nabla u$ 真值，归类应是有监督导数匹配
+			* 价值在于让辅助头与主头可导出的物理量相容，不是新增无监督物理约束
+		> 联合值、梯度、辅助通量及通量和预测梯度的一致性，以提高局部结构保真度。
+		> 原文 §3.2
+	* 点云变体：没有可定义的行列轴时保留 chart，换成 KNN 局部聚合和全局不规则注意力
+		* （AI 评）chart 是可复用的表示层，轴向注意力只是规则或结构化网格上的一项 interaction 选择
+			* 若 chart 未使邻域关系或有效秩变简单，CATO-PC 不会从同一机制获益
+	* 实验范围：Darcy、Navier-Stokes、Airfoil、Pipe、Plasticity、Elasticity，覆盖规则网格、结构化网格和点云
+		* 效果：六个基准均优于比较方法，原文 §4
+		* （AI 评）结果能支持在这些数据上 chart 有用，尚不能支持 chart 对任意复杂几何都能产生可分坐标
+			* 论文也没有公开 CATO 代码或权重，复现须自行实现
+* NEST-2605.12343 静态 3D 超弹性大域不重训全域 NO，改训最小局部 solver，再经 Schwarz 迭代传递块间位移，组装全局一致解
+	* "Neural-Schwarz Tiling for Geometry-Universal PDE Solving at Scale"
+		* Paolo Secchi；Daniel S. Balint；Marco Maurizi；
+		* Imperial College London；Italian Institute of Artificial Intelligence
+		> created on 2026-07-31 by OpenCode + GPT-5.6-Terra
+	* 方法全称：Neural-Schwarz Tiling
+	* 定位：神经局部求解器嵌入区域分解，不是新的全域 NO 架构
+	* 双 GNO：位移 GNO 迭代解全局位移，梯度 GNO 在收敛后恢复导数
+	* 推理：位移图神经算子 GNO 不直接负责全局解，反复充当重叠块上的 Dirichlet 解算器；{_q7vn5b}
+		* 输入：3×3×3 体素 patch 的二值实体几何和 patch 边界位移
+			* 周围一层 cell 提供重叠缓冲，中心 cell 是唯一可作非平凡局部更新的内部 cell，sec4.1
+		* 通信：外边界取给定 $g$，内部边界取上轮全局位移 $u^{(n)}$，sec4.2 eqn(11)
+		* 组装：重叠处各 patch 预测以权重和为 1 的单位分解 $\chi_p$ 加权，再迭代至收敛，
+			* $u^{(n+1)}=\sum_p\chi_p\hat u_p^{(n+1)}$，sec4.2 eqn(12)-(13)
+		> 通过重叠区域交换接口信息，局部解逐步与彼此及全局边界条件一致，sec4.2
+	* 训练：局部 solver 要见过推理时可能接到的多尺度接口数据，不能只拟合小域边界
+		* 几何：面连通的活动 cell 集随机取样，允许孔洞，不允许空集和仅中心 cell，sec4.1 eqn(6)
+		* 边界：多尺度随机场以 zoom $\zeta$ 在随机偏移处截取长度 $1/\zeta$ 的窗口，sec4.1 eqn(7)
+			* 大结构内的局部块会接到更陡或更缓的接口位移，zoom 在训练时模拟这类分布
+			* （AI 评）这不是普通数据增强，目标是补训练边界和 Schwarz 接口之间的分布缺口
+		* 监督：FEniCS 生成 15,000 个几何和边界条件配对的局部 neo-Hookean 解，
+			* 位移 GNO 加梯度 MSE 约束导数一致性，梯度 GNO 直接用梯度 MSE，sec4.1
+	* 导数恢复：位移收敛后另跑梯度 GNO，不对 $\hat u$ 数值微分
+		* 同一 patch 几何和收敛位移作输入，以同一单位分解单次组装；只演示 $\nabla u_{11}$，sec4.1-4.2
+		* （AI 评）把迭代求解和易放大误差的导数恢复解耦，适合应力为下游目标的情形
+			* 但完整应力或应变张量需多个输出分量，成本和误差耦合未验证
+	* 证据边界：只证明最小块可拼接所测 3D 超弹性几何，不证明几何或 PDE 普适
+		* 测试为 SimJEB 支架和合成 TPMS，均是体素化固体，分辨率至 $60^3$，sec5.1
+		* 只处理全 Dirichlet 的可压缩 neo-Hookean 静态平衡，sec3、4.2
+		* （AI 评）材料参数或 PDE 类别变化仍要重训局部 solver，未展示跨物理复用
+		* （AI 评）无非线性 Schwarz 收敛或误差理论，单次不做 Schwarz 耦合时误差显著增大
+	* 复现：自建局部数据与 NEST 代码均未公开
+		* SimJEB 是公开测试几何，TPMS、FEniCS 生成脚本、权重和训练数据均未发布
 * Iso-FNO-2605.02597 FNO 频域核反映 D4（2D 方形旋转反射）对称性
 	* "Isotropic Fourier Neural Operators"
 		* Michael F. Staddon
