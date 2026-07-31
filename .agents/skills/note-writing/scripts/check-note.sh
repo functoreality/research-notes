@@ -145,8 +145,8 @@ vlong_count=$(echo "$LONG_STATS" | awk '{print $2}')
 if [ "${vlong_count:-0}" -eq 0 ] && [ "${long_count:-0}" -eq 0 ]; then
     check_pass "正文行长度(全部≤100字符)"
 else
-    [ "${vlong_count:-0}" -gt 0 ] && check_warn "正文行(${vlong_count}行>120字符)" "建议精简内容或拆为多个 bullets"
-    [ "${long_count:-0}" -gt 0 ] && check_warn "正文行(${long_count}行>100字符)" "考虑压缩或拆分"
+    [ "${vlong_count:-0}" -gt 0 ] && check_warn "正文行(${vlong_count}行>120字符)" "建议精简内容或拆为多个独立信息点、成为多个 bullets；禁止通过纯粹物理换行续写"
+    [ "${long_count:-0}" -gt 0 ] && check_warn "正文行(${long_count}行>100字符)" "考虑压缩或拆为多个独立信息点；bullets 禁止通过纯粹物理换行续写"
 fi
 
 echo ""
@@ -211,8 +211,8 @@ echo ""
 echo "--- 长行处理建议 ---"
 echo "  对于标记为 LONG/VLONG 的行，按优先级处理："
 echo "  1. 精简内容：删除不必要的修饰词、过渡语、元概括"
-echo "  2. 从标点拆分：在句号、分号、逗号处插入换行，一个 bullet 变多个子 bullet"
-echo "  3. 引文同理：长引文从原文标点处切分，保持每个 > 子行独立可读"
+echo "  2. 将内容拆为多个独立信息点，从而重写为多个完整 bullet；不得（像引文那样）用物理换行续写"
+echo "  3. 引文从标点拆分：长引文在句号、分号后插入换行，保持每个 > 子行独立可读；尊重原文，不得（像 bullets 那样）擅自精简压缩或拆分重写"
 echo "  4. 论文标题、作者列表等固定信息不允许改写，若误报请忽略"
 echo ""
 
