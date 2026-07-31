@@ -1,3 +1,44 @@
+* CPGNet-2604.15617 （备用）激波 Euler 长时 rollout，GNN 只学界面重构，状态仍按 Godunov 通量更新
+	* "A Structure-Preserving Graph Neural Solver for Parametric Hyperbolic Conservation Laws"
+		* Jiamin Jiang; Shanglin Lv; Jingrun Chen;
+		* USTC; Suzhou Institute for Advanced Research
+		> created on 2026-07-26 by OpenCode + GPT-5.6-Terra
+	* 方法全称：Conservation-preserving Godunov-type network
+	* 场景：参数化二维 Euler 非结构网格长时 surrogate，四类自建超音速基准
+		* 直接预测 cell 状态增量时，守恒误差和错误波向可在 rollout 中放大
+		* 改作 Godunov 格式的可学习重构模块，数值通量和保守更新不交给 NN
+		> 网络被定位为可学习的重构和通量算子，而非黑箱状态更新器，sec1、6
+	* 推理：当前 cell 状态和网格特征入，边重构后经 Rusanov 与散射聚合更新 cell
+		* 输入：节点取当前 primitive state、坐标、边界类型、全局 Mach 数；
+			* 边取相对位置、距离、单位法向，sec5、8.1
+		* 重构：多层有向消息传递扩大感受野；每条边解码界面左右 primitive state，
+			* 并解码几何权重 $g_{ij}$，sec6.2、8.3
+			* 密度、压强经指数映射保正；更新后的 cell 态未见正性保证
+		* 更新：左右态转守恒变量，Rusanov 算 $F_{ij}$
+			* 反向边取 $F_{ji}=-F_{ij}$，再以 $g_{ij}F_{ij}$ scatter-add 更新相邻 cell，sec8.4
+			* $g_{ij}$ 由有向边嵌入经 Softplus 学得，拟合 $|s_{ij}|/|\Omega_i|$
+		* （AI 评）可学习自由度只留给激波分辨最缺解析表达的 reconstruction
+			* 黎曼求解器和更新拓扑固定，通量值仍随学习到的界面态改变
+		* （AI 评）反对称通量硬约束共享界面的局部相消，不等于体积加权全局守恒
+			* 若 $g_{ij}|\Omega_i|$ 与 $g_{ji}|\Omega_j|$ 不配对，反对称不推出全局守恒
+			* 论文未给这个更强配对约束
+	* 大时间步：边重构粗区间的时空有效态，Rusanov 通量取该区间平均，不是真隐式求解
+		* 粗步推理：每次前向仍走上述更新链，只是边解码粗区间有效左右态，
+			* 通量近似区间时间平均，eqn(35)-(36)、sec7.2
+		* 训练：DGSEM 轨迹按粗间隔重采样；one-step MSE 预训练后，
+			* 以 $n_w=3$ rollout 微调压低累积误差，sec7.2、9
+		> 单步目标给稳定初始化，多步目标直接压低 rollout 累积误差，sec9
+		* （AI 评）implicit-like 不求解下一态非线性方程，也无无条件稳定性证明
+			* 粗步稳定性来自数值结构、粗步监督与数据分布的合效，未被消融拆开
+	* 证据与复现：二维超音速 Euler 内有效，尚不能外推或直接复现
+		* 证据：CPGNet 的 EConv processor 通常优于 GAT、GT，sec11.1
+			* EConv 版相对 GINO、GNOT、MGN 的 rollout RMSE 降约四至八成，sec11.1
+		* （AI 评）实验未分离守恒、迎风、时空态与多步训练的各自贡献
+			* 也不支持跨 PDE 族泛化
+		* 复现：官方 GitLab 仅见模型与训练代码，README 空
+			* 训练和 rollout 期待 dataset/data_downsampled 下的 train.h5、test.h5
+			* 无数据、checkpoint、依赖环境、训练配置或 Trixi/Gmsh 数据生成脚本
+			* （AI 评）论文声称数据公开，但当前仓库不足以作为可直接复现的数据集
 * 2606.11657 Walrus 机理解释：剪切流输出目测接近时，单层 SAE 的物理相关不能单独证明模型机制
 	* 注：GLM5.2 版 TLDR：Walrus 中间层 SAE 探表征，单步预测目测无偏但表征未稳定对应物理
 	* "Sparse probes and murky physics: a case study of interpretability challenges in a foundation model for continuum dynamics", FM4Science @ ICLR 2026
