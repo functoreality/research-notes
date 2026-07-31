@@ -1,3 +1,22 @@
+* Iso-FNO-2605.02597 FNO 频域核反映 D4（2D 方形旋转反射）对称性
+	* "Isotropic Fourier Neural Operators"
+		* Michael F. Staddon
+		* Independent Researcher
+		> created on 2026-07-31 by OpenCode + GPT-5.6-terra
+	* 方法全称：Isotropic Fourier Neural Operator
+	* 论文定位：FNO Fourier 层的轻量 D4 等变参数化，对照 R-FNO 的径向核约束、G-FNO 的 activation 群增广和群卷积
+	* 方法：将 D4 作用转成 Fourier 核的权重绑定，再由种子参数生成完整核；{_q7vg94}
+		* 对称约束：频点通道矩阵 $R_{k,l}$ 在 x、y 反射下满足 $R_{k,l}=R_{-k,l}=R_{k,-l}$
+		* 坐标交换约束：$R_{k,l}=R_{l,k}$
+			> x 反射要求 $R_{k,l}=R_{-k,l}$，而实值输入输出要求对应 Fourier 项互为复共轭，因此核参数为实数。论文 §III
+		* 核生成：只训独立频率轨道的实值种子 $R^{iso}$，前传时经反射、转置补全完整核
+		* （AI 评）群生成元对应参数相等关系，故等变性和压缩是同一硬约束的两面
+	* 验证：2D Darcy flow，16 modes、32 channels，参数从 4.202M 降至 0.565M。table1
+		* 等变检验：训练样本作 x、y 翻转或转置，Iso-FNO 的 $L_2$ 误差仍等于原训练误差 0.00436，标准 FNO 约为 0.018。table1
+	* （AI 评）局限
+		* 归因边界：训练误差更高，测试改善也可能来自减参正则化，不能单独归因于对称归纳偏置
+		* 比较边界：只比较标准 FNO，未直比 R-FNO、G-FNO
+		* 构造边界：仅标量场、二维 D4 有完整构造，3D、向量场和球面 FNO 均无实验
 * CPGNet-2604.15617 （备用）激波 Euler 长时 rollout，GNN 只学界面重构，状态仍按 Godunov 通量更新
 	* "A Structure-Preserving Graph Neural Solver for Parametric Hyperbolic Conservation Laws"
 		* Jiamin Jiang; Shanglin Lv; Jingrun Chen;
