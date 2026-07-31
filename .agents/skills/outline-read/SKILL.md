@@ -173,3 +173,4 @@ scripts/ 目录下还有三个辅助脚本：
 - `tree-validate <file>`        验证 tab 层级结构，检测缩进跳跃和空行问题
 - `tree-stats <file>`           节点数、深度、行数统计
 - `tree-shift <file> L1 L2 N`   给 L1-L2 行统一 ±N 个 tab（输出到 stdout）
+  - 若用于修改现有文件，可能方式之一：输出重定向到新文件，确认输出正确（read 或与原文件 diff），替换原文件

@@ -63,21 +63,21 @@ echo ""
 # ============ Tier 1: 必须通过 (FAIL) ============
 echo "--- 必须项 ---"
 
-# 1. 首行格式
+# 首行格式
 # if echo "$TITLE" | grep -qP '^\* [\w\s-]*\d{4}\.\d{5} '; then
 #     check_pass "首行格式"
 # else
 #     check_fail "首行格式" "应匹配: * 方法名-arXivID TLDR"
 # fi
 
-# 2. created-on 行
+# created-on 行
 if grep -qP 'created on \d{4}-\d{2}-\d{2} by' "$FILE"; then
     check_pass "created-on行"
 else
     check_fail "created-on行" "应匹配: > created on YYYY-MM-DD by 框架+模型"
 fi
 
-# NEW. 方法全称行（仅当首行含方法名缩写时）
+# 方法全称行（仅当首行含方法名缩写时）
 # 仅对单篇文献笔记检测：文件唯一无缩进行为首行，其余行均有 tab
 non_indented=$(grep -cP '^[^\t]' "$FILE" || true)
 if [ "$non_indented" -eq 1 ] && echo "$TITLE" | grep -qP '^\* [A-Za-z]'; then
@@ -88,15 +88,10 @@ if [ "$non_indented" -eq 1 ] && echo "$TITLE" | grep -qP '^\* [A-Za-z]'; then
     fi
 fi
 
-# 3. 正文禁止EM dash（排除引文）
 check_pattern FAIL "EM dash" '——'
-
-# 4. 禁止粗体/斜体标记
 check_pattern FAIL "粗体/斜体标记" '\*\*|__' "URL 中可能误报，按行内容判断"
 
-# 5. 行首格式：每行必须匹配 ^\t*(\*|>)  (任意个 tab 缩进 + * 或 > + 空格)
-#    覆盖原"空格缩进"检查：凡符合此模式必不以空格起手
-#    空白行视为违规
+# 行首格式：每行必须匹配 ^\t*(\*|>)  (任意个 tab 缩进 + * 或 > + 空格)
 violations=$(grep -vnP '^\t*(\*|>) ' "$FILE" || true)
 if [ -n "$violations" ]; then
     while IFS= read -r line; do
@@ -113,14 +108,13 @@ echo ""
 # ============ Tier 2: 建议检查 (WARN) ============
 echo "--- 建议项 ---"
 
-# 6. 论文结构标题
 check_pattern WARN "论文结构标题" '^\t*\* (引言|相关工作|摘要)$' \
     "笔记逻辑结构应自行重新设计，禁止照搬原文结构，更不应以论文的章节名作为笔记组织标题"
 
-# 7. 禁止"作者认为/提出/发现"（第三人称归因）
+# 禁止"作者认为/提出/发现"（第三人称归因）
 # check_pattern WARN "第三人称归因" '作者(认为|提出|发现|指出|强调)'
 
-# 8. 引文数量
+# 引文数量
 # quote_count=$(grep -cP '^\t*> (?!created on)' "$FILE" || true)
 # if [ "$quote_count" -ge 1 ]; then
 #     check_pass "引文数量($quote_count)"
@@ -128,16 +122,9 @@ check_pattern WARN "论文结构标题" '^\t*\* (引言|相关工作|摘要)$' \
 #     check_warn "引文数量(0)" "没有引文——如果笔记中有高度压缩的关键论断，建议补充引文作为安全网"
 # fi
 
-# 9. 正文出现"本文/该论文/本工作"（第三人称主语）
 # check_pattern WARN "第三人称主语" '(本文|该论文|本工作)'
-
-# 11. 元概括句式
 # check_pattern WARN "元概括句式" '(这本质上是|核心贡献不是|揭示了一个机制)'
-
-# 无意义标签
-check_pattern WARN "无意义标签" '(关键|核心)(设计|创新|诊断)'
-
-# 12. 空洞强调词
+check_pattern WARN "无意义标签" '(关键|核心|主要|重要)(设计|创新|诊断|洞察|发现|观察|判断)'
 check_pattern WARN "空洞强调词" '(值得注意|值得一提|值得关注|有趣)的是'
 
 echo ""
