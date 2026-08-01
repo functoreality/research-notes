@@ -29,9 +29,13 @@
 		* 延拓相关：((n7n96e))传统谱方法的 Fourier continuation 技巧
 		* 相关：NO-复杂拓扑处理 也涉及((n7ne5l))参考域，((n7n92y))延拓
 	* 形状优化可涉及 解对区域变化的敏度分析；{n1sb6c}
-		* 维度 1 考察极限 $\Omega_t\to\Omega_0$，通过区域变换产生 $\Omega_t=T_t(\Omega_0)$，该区域变换常通过速度场 这一简单方式 给出 $T_t(x)=x+tV(x)$；{n1sb7o}
+		* 维度 1 考察极限 $\Omega_t\to\Omega_0$
 		* 维度 2 中用 $\Omega_0$ 作为 reference domain，因其区域变换已显式给出
-		* 考察 $u_t$（变换到参考域后）关于 $t$ 的导数
+		* 单参区域变化刻画，区域变换产生 $\Omega_t=T_t(\Omega_0)$，可考察其速度场 $T_t(x)=x+tV(x)$；{n1sb7o}
+			* 可进一步考察其 Jacobian 的变化速度
+			* eg. ((_q81b2p))结构力学对形状的敏度分析
+			* 相关框架((q81a31))参考域-区域可变-连续变化
+			* 考察 $u_t$（变换到参考域后）关于 $t$ 的导数
 		* 推导过程中可涉及 PDE 弱形式中各项的导数，包括内部积分（涉及 Jacobian 变换）、边界积分（包括直接积分、带 $\partial_nu$ 的积分等）
 		* 稍具体的内容记录于 `Haug1986DSASSbook`
 		* 我的 decoder width 理论文章还引了其他文献，包括 `Sokolowski92ISObook`，`Bochniak03LinearEB`
@@ -458,7 +462,7 @@
 * `1911.06598` 人工设计定义域形变以减小 Kolmogorov n-width
 	* "Overcoming slowly decaying Kolmogorov n-width by transport maps: application to model order reduction of fluid dynamics and fluid–structure interaction problems"
 		> created on 2022-03-24
-	* （我的记号）$d_n(\{u^\eta\})$ 衰减慢，针对特定问题人工设计区域变换 $F^\eta:D\to D$ 使 $d_n(\{u^\eta\circ F^\eta\})$ 衰减快
+	* （我的记号）$d_n(\{u^\eta\})$ 衰减慢，针对特定问题人工设计区域变换 $F^\eta:D\to D$ 使 $d_n(\{u^\eta\circ F^\eta\})$ 衰减快；{_q81b46}
 	* 例子：
 		* 圆柱扰流，圆柱周围画半径 7 倍区域，内外分别 POD 表达，外部无需区域形变，内部考虑旋转变换，并自适应选取随时间变化的角度
 		* 流固耦合（顺着水流漂的碎片）：场峰值平移到管道中间位置；考虑到不是周期边界，实际上是做的管道水平形变
@@ -547,7 +551,7 @@
 		> ~/documents/noSync/research/DSAofStructuralSystems.pdf
 	* 主要是 sec3.2；以下按 PDF 页码（总共 394）
 		* 与原文记号对应：$t:\tau,u:z,v:\bar z$
-	* 区域变换 $T:\Omega\to\Omega_t$，取为常速度场 $T(x)=x+tV(x)$
+	* 区域变换 $T:\Omega\to\Omega_t$，取为常速度场 $T(x)=x+tV(x)$；{_q81b2p}
 		* p206 记号 $\dot u=d_tu_t(x+tV(x))$，$u'=d_tu_t(x)$
 	* p207 方程形式 $a_{\Omega_t}(u_t,v_t)=l_{\Omega_t}(v_t)$，测试函数 $v_t$
 		* 设二次型具有形式 $a(u,v)=\int c(u,v)dx$
