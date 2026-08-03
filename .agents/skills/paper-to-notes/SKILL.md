@@ -264,7 +264,7 @@ description: >-
 
 ## 输出格式
 
-审查完成后，将报告输出到 `你的模型名称-plan-论文方法名-arXivID.md`。
+审查完成后，将报告输出到 `你的模型名称-plan-论文方法名-arXivID.md`，放在当前工作目录。
 **无需列出「笔记已有覆盖」**——这些内容用户自己知道。聚焦于「可补充什么」。
 
 ```markdown
@@ -311,4 +311,6 @@ description: >-
 
 ## 下一步
 
-输出分析报告后，阅读 `references/writing-workflow.md`，按其中步骤执行。
+输出分析报告后，自动进入 `references/writing-workflow.md` 步骤一：
+按 note-writing 起草文献笔记草稿并完成复核三步。
+此段全程自动执行，不需要请求用户同意；到草稿写入并复核完成后，才第一次暂停请求用户审阅。
