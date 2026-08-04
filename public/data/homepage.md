@@ -27,8 +27,8 @@
 
 注意：虽然这些笔记的文件名整体上概括了它里面的主要内容，不过你也别把它太当回事——在我的笔记方法里，当我对一个话题做了很多轮次的展开以后，所得到的内容可能已经完全偏离最开始讨论的出发点了。
 
-* INRarch NOarch PINN aisc1 dynamics numeric paramPDE
-* ML NNarch data generative optim triz4ml
+* paramPDE NOarch NOinput dynamics aisc1 PINN INRarch numeric
+* ML NNarch data optim generative triz4ml
 
 ## 文献笔记
 
@@ -71,7 +71,7 @@
 在那以后，我现在所拥有的文献笔记和主笔记，也会被一起归入旧笔记的行列。
 
 放眼世界，AI 时代的来临已经势不可挡。
-尽管我的笔记方法和思考方式似乎看起来有些独特；作为 AI 使用者（不是算法研究者）的我，暂时还没能成功地让 AI 帮我维护这些笔记。
+尽管我的笔记方法和思考方式似乎看起来有些独特；作为 AI 使用者（不是算法研究者）的我，暂时还没能成功地让 AI 完全接管维护这些笔记。
 不过，等到未来 AI 变得足够强大的那一天，人和 AI 的笔记协作，又会呈现出一番什么样的景象呢？
 
 深耕眼前的土壤，静待时间的回响。未来可期。诸君，共勉。
