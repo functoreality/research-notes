@@ -51,6 +51,16 @@
 			* 数据集((_o6ll0h))ConDiff，系数场对比度高
 			* 非线性 Poisson 方程 $\Delta u+e^u=f$，((_p1mf95))在微分几何、流体力学、量子场论中有应用
 			* Poisson 电场-孔形状((_q82g0z))
+		* 弹塑性力学
+			* plate 形变，数据集可用 MeshGraphNets（随体 Lagrange 网格，不均匀网格），据说场变量包括位置、von-Mises stress
+			* 可变形物体 Lagrange MPM 模拟数据((_q85h10))
+			* `Geo-FNO-2207.05209` 实验涉及弹性材料、塑性材料，未确认细节
+			* ((o44b37))CoDA-NO 考察不可压 NS 与弹性力学耦合，数据用 TurtleFSI 包生成
+			* 3D 工业级工程设计，((_papa12))线弹性、弹塑性、时变塑性
+			* ((_q2la6a))Poisson、线性弹性、超弹性数据，不规则区域固定，仅变 BC
+			* 极端载荷材料动力学，((_q3uf8s))扰动分层界面（PLI）和动态断裂/破坏演化（FRAC）
+			* 超弹性，涉及多种本构方程（真实预设+随机生成）((_q6rm52))，区域为方形内挖多洞；含生成代码
+			* 线弹性 von Mises-力角度/孔形状((_q82f9u))，多保真（粗细网格配对数据）
 		* 输运、波动等
 			* 对流 advection，数据集可用 PDE-bench（1D）
 				* Kolmogorov n-width((o1mj39))：{o1mj3b}
@@ -78,15 +88,6 @@
 			* 弹性力学波方程？
 			* Euler-Bernoulli beam equation 涉及空间 4 阶导数；{o6tf0t}
 				* 数据集可能来源：2405.20836 涉及该实验
-		* 弹塑性力学
-			* plate 形变，数据集可用 MeshGraphNets（随体 Lagrange 网格，不均匀网格），据说场变量包括位置、von-Mises stress
-			* `Geo-FNO-2207.05209` 实验涉及弹性材料、塑性材料，未确认细节
-			* ((o44b37))CoDA-NO 考察不可压 NS 与弹性力学耦合，数据用 TurtleFSI 包生成
-			* 3D 工业级工程设计，((_papa12))线弹性、弹塑性、时变塑性
-			* ((_q2la6a))Poisson、线性弹性、超弹性数据，不规则区域固定，仅变 BC
-			* 极端载荷材料动力学，((_q3uf8s))扰动分层界面（PLI）和动态断裂/破坏演化（FRAC）
-			* 超弹性，涉及多种本构方程（真实预设+随机生成）((_q6rm52))，区域为方形内挖多洞；含生成代码
-			* 线弹性 von Mises-力角度/孔形状((_q82f9u))，多保真（粗细网格配对数据）
 		* 反应项，常用于反应扩散 reaction-diffusion
 			* 数据集可用 PDE-bench：1D $u_t=Du_{xx}+ru(1-u)$，2D 为 Fitzhugh-Nagumo 方程（涉及 $u,v$）
 				* DeepONet 1D $u_t=Du_{xx}+ku^2+f$
@@ -116,7 +117,7 @@
 						* (('o3sk5p))(('q2pm24))CFDBench 数据质量待评估，如 CFL 条件是否满足等
 					* 简单数据集，PDE-bench 包括可压（1D-3D）、不可压（2D），MeshGraphNets 涉及圆柱绕流（2D），((_o39c0z))PDEArena 2D 不可压数据与 Φ-flow 生成代码
 						* PDEBench 2D INS 数据质量待评估(('ocdg09))，可能通过计算方程残差
-					* 用 Lagrange 粒子方法生成的数据集((_o6lg9z))LagrangeBench
+					* 用 Lagrange 粒子方法生成的数据集((_o6lg9z))LagrangeBench；((_q85h1a))SPH 流体数据
 					* 3D 高精度数据集((_o7dl1z))BlastNet
 					* FD-Bench((_p64e8o))，针对 2D 方形区域的多种方程，包括有非规则散点离散
 					* 3D 心血管血流数据集((_q14g1k))
@@ -145,6 +146,7 @@
 			* KdV, KS 方程：Lie 对称群（仅针对内部方程，不带 BC）可见((n8ve45))，用于做数据增广
 				* PDEArena 提供了((_o39c1b))1D KS 数据集与生成代码
 				* KS 导数时间 1 阶空间 4 阶，((o6tf0t))Euler-Bernoulli 方程时间 2 阶空间 4 阶
+			* 广义流体，((_q85h1i))沙粒流动的 Lagrange 模拟数据集
 			* 流体边界条件（一般“边界条件”见((nahe5m))）；{o99b8m}
 				* CFDBench 数据集涉及((_o99b7w))移动/静止边界，速度/压力 入口/出口边界
 			* 软件相关，((_o1ok9d))JAX-FLUIDS 以可微分形式实现传统算法，从而“提供 ML 和 CFD 之间无缝衔接”；{o1ok9p}
@@ -328,18 +330,21 @@
 				* 传统谱方法需要 dealias，结合 NO 的方法不需要((p34e4l))
 			* 资源：patch 结构；{q68m4l}
 				* 取单个 patch
-					* 用途—作输入，((n4sj7z))GAN判别器降计算量
+					* 用途—作输入、代表完整图片，目的为降本，((n4sj7z))GAN判别器降计算量
 					* 用途—作输出，INR 的微观有网格变种，((oam965))输出为 patch 而非单点值；{oam96b}
 					* 用途—同时作输入输出，如((q7jh93))boosting-仅修关键局部残差
 						* 输入范围可适当 pad 以大于输出，如((_q7jh9b))
 					* 划分方式，边界移动 连续or离散（即切分为若干不重叠 patch）
 						* COIN++ step1 训练 patch manifold 的参化映射时 patch 连续移动，step2 对各 patch 找其对应参数时 patch 离散移动((_p59b7r))
-				* patch 集合
+				* patch 划分，组成 patch 集合（边界离散）
 					* 用途：((n4rm8d))tokenize（包括((n37m6i))ViT）
 						* patch size 可变，见((oapa1r))空间分辨率压缩-压缩率可变
-					* 处理方式—((n7a92o))视为 graph、按 feature vec kNN 连边
-					* 处理方式—((n5bf17))patch manifold，边界移动可连续or离散
-					* 对所有固定大小 patch 编码：可认为((n8hj6h))CNN 卷积操作完成了这点，patch 切分情形可通过在卷积中设定 stride 达到
+					* 关系结构—((n7a92o))视为 graph、按 feature vec kNN 连边
+					* 处理方式—((n3qn83))集合作网络输入，包括((p8ag76))划分后处理
+					* 预处理—((q8a88n))mask-out 丢弃部分元素，用途包括计算降本
+				* 连续移动的 patch，组成((n5bf17))patch manifold
+					* 全量编码（表征提取）：可认为((n8hj6h))CNN 卷积操作完成了这点
+						* 退化为 patch 切分情形，可通过在卷积中设定 stride 达到
 				* 对象变种：((n98h1e))点云局部聚合也称为某种 patch
 				* 对象变种：((o33a2v))在隐空间打 patch
 				* 对象变种：连续物理场（未离散），((n5bf17))patch manifold

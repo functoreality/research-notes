@@ -1,3 +1,40 @@
+* GRN-2604.13030 视觉生成：多轮二分量化近无损离散化，推理时擦除重画修正误差，熵引导自适应步数
+	* "Generative Refinement Networks for Visual Synthesis", ECCV 2026
+		* Jian Han; Jinlai Liu; Jiahuan Wang; Bingyue Peng; Zehuan Yuan;
+		* ByteDance
+		> created on 2026-08-03，基于 OpenCode + deepseek-v4-flash
+	* 方法全称：Generative Refinement Networks（GRN）
+	* 离散表征：HBQ 逐次逼近量化，（我认为）相当于取定点实数各二进制位，近似无损 sec3.1；{_q85k2k}
+		* 基础表征（离散化对象）：VAE 特征，tanh 压缩到 $(-1,1)$
+		* 量化值计算：逐元素多轮二分量化，每轮以当前桶中心为阈值并更新桶中心，M 轮后近无损
+		* 粗到细结构：前序 bit 是语义核心、后序 bit 是高频细节，天然支持按位预测（GRNbit 直接预测二进制位）或按索引预测（GRNind 预测 $2^M$ 类索引）
+		* 误差控制：第 j 轮误差 < $1/2^j$，误差上界随轮数指数衰减，理论上可快速无损 sec3.1
+		* 压缩率：实验，不增 latent 通道即达连续 tokenizer 质量，ImageNet 重建 rFID 0.56 优于连续 SD-VAE 0.87，压缩率高 4 倍 tbl1
+		* 轮数（二进制位数）M 选取：轮数增多重建更好、生成变差，更多 bit 增加生成难度 secE.2
+		* tokenizer 训练：STE 直通估计器反传梯度，loss 为重建+LPIPS+GAN，与常规离散 tokenizer 一致 sec3.1
+		* （AI 评）本质是信号逐次逼近量化，自述受 Haar 小波启发；对比 LFQ 单次符号量化、RQ-VAE 有 codebook 残差，HBQ 是免 codebook 多轮递推
+	* 中间状态：模型输出完整图预测后，重新 mask 掉部分 token、换随机 token
+		* mask 表示：纯靠 token 取值，未引入额外二值通道表示是否已 mask
+			* 能力预设：网络仅依据 token 状态，掌握隐式区分 mask 与否的能力
+		* mask 比例：随步数单调减少（保留比例单调增多）{_q8ah4t}
+		* 多步 mask 关系：各步 mask 独立生成
+			* 结果，前步未 mask 的保留 token 本步或重新 mask
+		* mask 位置选择：纯均匀随机；改按置信度选会明显变差 secE.3；{_q8ah5c}
+			* 实验消融：FID 3.63 恶化到 10.64
+			* 原因解释：训推分布偏移，按置信度选破坏训练时「GT 与随机均匀分布」的输入假设
+	* 推理—单步：网络输入当前状态，输出全图预测，对其随机重 mask，sec3.2
+		* token 变化类型：填充（前步 mask 本步未 mask），精化（均未 mask），擦除（前步未 mask 本步 mask）
+		* （AI 评）「允许推翻已生成内容」与预测-校正、PDE-Refiner 迭代 refine 同族，但依赖生成任务无物理约束，PDE 代理预测不能随意推翻已算结果
+	* 推理—自适应步数：熵引导采样 sec4.5.3
+		* 生成难度度量：网络输出（全图预测）的分布平均熵，0~1 归一化
+		* 调整方式：熵低则步数少、信息保留率上升快，熵高则步数多、上升慢
+		* 早期步准备：warm-up 数步待熵稳定
+		* 效果：固定 50 步基线 FID 3.56 降到 3.47，平均 1.25 倍加速、最多 2.5 倍
+		* （AI 评）用模型预测不确定性代替误差估计器做自适应步长，可对照数值方法自适应时间步长
+	* 训练：人造中间状态（GT 随机 mask 部分 token）作网络输入，要求预测全图完整 GT
+		* （AI 评）与 Infinity BSC（训练时随机 flip bits 学会纠错）互补，GRN 把修正随机性放推理时
+	* 实验：ImageNet 256 类别生成 gFID 1.81（GRN-G 2B）同级最优，T2I、T2V 同量级领先 tbl3/4/5
+	* [公众号报道](https://mp.weixin.qq.com/s/TAYMBnKLbiG_gtkJpC8Ekw)
 * （备用）GLM5.2 放弃 GRPO 改回 PPO 相关讨论
 	* [2026-07-08](https://www.zhihu.com/question/2052108642686706557/answer/2052367150749427260)
 	> 之前像DeepSeek R1、OpenAI O系列思维链模型，那会针对的依然还是短程任务的优化。比如数学、代码单测等短而可验证的任务。

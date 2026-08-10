@@ -238,6 +238,10 @@
 		> recommended at `2022-11-02`(dbGrpMeet2)
 	* 推断速度受限，相较传统方法优势不大；因为动态根据粒子邻域构建 graph，kNN 计算耗时
 	* 实验（多相流），向容器中倾倒液体，晃动的容器中有水和固态立方体
+	* 数据集：粒子模拟数据，随开源仓库公开提供，用于 Lagrangian 动力学学习
+		* 沙粒；{_q85h1i}
+		* SPH 流体；{_q85h1a}
+		* MPM 可变形体；{_q85h10}
 * `1810.01566` 粒子方法物理系统模拟，用 GNN，控制问题（找初态达到给定终态）可用梯度优化解
 	* "Learning Particle Dynamics for Manipulating Rigid Bodies, Deformable Objects, and Fluids", ICLR2019
 		> created on 2022-11-03
