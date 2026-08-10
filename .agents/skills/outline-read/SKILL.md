@@ -1,16 +1,10 @@
 ---
 name: outline-read
 description: >-
-  Use this skill when reading or browsing tab-indented outline Markdown files.
-  These files use tab characters for hierarchical indentation with `((uid))`
-  cross-references and `{uid}` anchor definitions. If you open a .md file and
-  see lines starting with tab characters in a tree structure — especially with
-  `((...))` or `{...}` patterns — load this skill. The native read tool will
-  dump everything without folding, making deep hierarchies hard to navigate.
-  This skill provides a specialized CLI tool for structure-aware browsing with
-  smart fold/unfold, UID-based cross-file jumping, and TOC overviews. Trigger
-  when the user asks to browse, navigate, or explore outline notes, or
-  whenever you encounter tab-indented Markdown files yourself.
+  用于浏览采用 Tab 缩进且层级很深、全文读取后难以把握结构的大纲式
+  Markdown 笔记，也用于按 UID 跨文件跳转。它通过目录概览和分层折叠
+  定位局部内容。仅有 Tab 缩进不构成触发条件；文件短小或层级较浅时
+  直接全文读取。
 ---
 
 # outline-read — 大纲式 Markdown 笔记专用阅读器
