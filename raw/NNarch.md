@@ -644,7 +644,7 @@
 			* 相关：((o4hn6z))NaViT 变分辨率外还变长宽比
 		* 实现时的细节考量
 			* BERT 训练引入了 dropout((n37m4y))，但 GPT3 没有
-			* ((n4sn79))训练时加噪声以提高泛化能力
+			* 为提高泛化能力 ((o31f3k))自监督预训练-基于破坏重建
 			* ((_n7hk73))据说 MoE 为提高模型效率、容量的常用技术；{p8c969}
 				* 一般 MoE 见框架((p8ai85))多元素对象处理-分类处理、不同元素过不同网络
 			* 小型 LLM 深度比宽度重要((_o39l20))；{o39l2g}
@@ -666,7 +666,7 @@
 					* 等变性先验，((n3ha7e))训练后 ViT 等变性更好，CNN 等变性被 alias 破坏
 				* 另：((n8hj6b))ViT patch 的 token embedding 可用特殊卷积实现
 			* 预训练的 mask out 策略，MAE 等；{n37m7m}
-				* 相关框架：属于((o6mb23))CV自监督 范式之一，其局限性可见其中((oaff12))各方法比较
+				* 相关框架：属于((n8mn5a))自监督 范式之一，包括局限性讨论
 				* 方法例子：MAE，BEiT
 					* 据说二者区别，BEiT 只预测被 mask 的 patch，MAE 预测完整图片的所有像素（包括未 mask 的，似因为有 decoder 结构所以 nontrivial）
 					* 据说还有 iBOT，CAE，SimMIM
