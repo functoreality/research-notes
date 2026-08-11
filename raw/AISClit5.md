@@ -196,12 +196,6 @@
 		* alg2 IR（iterative refinement）采样方式，每步不是小幅度去噪，而是 从 tₙ 完全去噪得干净图像、重新加噪到 tₙ₋₁，类似地到 tₙ₋₂，循环直到完全去噪；{_q4ib3e}
 			* 原文 eqn(6) 各轮预测的干净图像 x₀⁽ⁿ⁾ 和最终采样所得的 x₀ 的差异（l2 距离期望）单调减小
 			* 各步重加噪 的噪声选取：每步都独立重新采样 alg2
-			* （评）采样分布不准：算法采样所得分布不同于预期数据分布
-				* 见 https://chatgpt.com/share/6a79c9f0-b870-83ec-93bf-15b11529d997
-				* 除非“完全去噪”是严格后验采样（涉及多步生成），而非仅调用单次去噪网络所得的后验期望；但这样没有意义，因为严格采样后重新加噪已经没必要了
-				* 原文合理性在于任务非精确采样，而是据低保真近似恢复真流场，本身需极小化 MSE
-					* 后验期望相比真实后验采样降低方差，但这对极小化 MSE（而非精确分布采样）是有益的
-				* $\Delta t\to 0$ 也无法修复，因本文每步重加噪所用噪声不共用，来自独立重采样
 * 2503.02023 FNO 优先拟合低频，靠 boosting FNO 拟合高频残差 解决
 	* "Reducing Frequency Bias of Fourier Neural Operators in 3D Seismic Wavefield Simulations Through Multi-Stage Training"
 		* Kong, Qingkai; Zou, Caifeng; Choi, Youngsoo; Matzel, Eric M.; Azizzadenesheli, Kamyar; Ross, Zachary E.; Rodgers, Arthur J.; Clayton, Robert W.; 

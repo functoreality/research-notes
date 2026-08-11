@@ -1,3 +1,26 @@
+* 我的 ChatGPT 对话记录：ECI/IR 全量去噪加噪采样法不恢复原数据分布，GRN unmask 有希望
+	* [2026-08-10](https://chatgpt.com/share/6a79eda2-96a0-83ec-88ef-225a54aae8be)
+	* IR 采样分布不准：算法采样所得分布不同于预期数据分布；{_q8an59}
+		* 除非“完全去噪”是严格后验采样（涉及多步生成），而非仅调用单次去噪网络所得的后验期望；但这样没有意义，因为严格采样后重新加噪已经没必要了
+		* 反例，数据与噪声分布均 $N(0,1)$，从而中间分布持续如此，但后验期望 $N(0,a)$ 会发生方差收缩
+		* 原文合理性：目标非精确采样，而是据低保真近似恢复真流场，本身需极小化 MSE
+			* 后验期望相比真实后验采样降低方差，但这对极小化 MSE（而非精确分布采样）是有益的
+		* $\Delta t\to 0$ 也无法修复，因 IR 每步重加噪所用噪声不共用，来自独立重采样
+	* GRN 无此问题：每步 unmask 确实是完整后验采样，而非（像 IR 那样）取后验分布的均值
+	* GRN 分布偏差来源：各元素独立采样，而非从联合分布采样
+		* 若改为联合分布（如各 token 自回归生成）则分布可以准确
+		* 后期误差变小，因此时各元素已近似独立
+			> 我觉得这个视角还解释了为什么它经验上可以非常好：到了 refinement 后期，$l_t\to 1$，
+			> 绝大多数 token 已经提供了 context，剩余 token 的 conditional uncertainty 会越来越局部，
+			> joint posterior 中尚未解释的跨 token correlation 可能越来越弱。
+			> 于是 factorized posterior approximation 在后期可能非常准确，多轮 refinement 又不断有机会纠正前面并行 sampling 造成的不协调。
+			> 这能让 FID 很好，但和“有限步严格等于目标分布”仍然是两回事。
+		* 作者对此无 overclaim
+			> （作者）没有声称或证明它是一个 exact sampler。
+	* alternating corruption/reconstruction 范式有理论收敛保证（稳定分布收敛到数据分布）{_q8an77}
+		> 而且有意思的是，早期的 generalized denoising autoencoder 理论其实恰好提供了一个非常适合分析 GRN 的数学框架，只是 GRN 这篇文章似乎完全没有引用这条理论线。
+		> Bengio 等人的核心 theorem 恰好就是：如果 reconstruction conditional 是一致估计且相应 Markov chain ergodic，那么 alternating corruption/reconstruction 的 stationary distribution 收敛到 data distribution。
+		> https://arxiv.org/abs/1305.6663
 * GRN-2604.13030 视觉生成：多轮二分量化近无损离散化，推理时擦除重画修正误差，熵引导自适应步数
 	* "Generative Refinement Networks for Visual Synthesis", ECCV 2026
 		* Jian Han; Jinlai Liu; Jiahuan Wang; Bingyue Peng; Zehuan Yuan;
@@ -23,10 +46,10 @@
 			* 实验消融：FID 3.63 恶化到 10.64
 			* 原因解释：训推分布偏移，按置信度选破坏训练时「GT 与随机均匀分布」的输入假设
 	* 推理—单步：网络输入当前状态，输出全图预测，对其随机重 mask，sec3.2
-		* token 变化类型：填充（前步 mask 本步未 mask），精化（均未 mask），擦除（前步未 mask 本步 mask）
+		* token 变化类型：填充（前步 mask 本步未 mask），精化（均未 mask），擦除（前步未 mask 本步 mask）{_q8b744}
 		* （AI 评）「允许推翻已生成内容」与预测-校正、PDE-Refiner 迭代 refine 同族，但依赖生成任务无物理约束，PDE 代理预测不能随意推翻已算结果
 	* 推理—自适应步数：熵引导采样 sec4.5.3
-		* 生成难度度量：网络输出（全图预测）的分布平均熵，0~1 归一化
+		* 生成难度度量：网络输出（全图预测）的分布平均熵，0~1 归一化；{_q8bc3p}
 		* 调整方式：熵低则步数少、信息保留率上升快，熵高则步数多、上升慢
 		* 早期步准备：warm-up 数步待熵稳定
 		* 效果：固定 50 步基线 FID 3.56 降到 3.47，平均 1.25 倍加速、最多 2.5 倍

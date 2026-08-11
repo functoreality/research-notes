@@ -33,7 +33,7 @@ description: >-
 
 ## 运行方式
 
-脚本位于 skill 目录的 `scripts/outline-read`，**不需要复制到笔记目录**。通过 `--dir` 指定笔记所在目录即可：
+脚本位于 skill 目录的 `scripts/outline-read`。使用时可通过 `--dir` 指定笔记所在目录：
 
 ```bash
 scripts/outline-read --dir /path/to/notes ML 9
