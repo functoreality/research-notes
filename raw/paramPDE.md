@@ -261,7 +261,7 @@
 			* 解反问题((o1hn0d))
 			* 参化 PDE 迭代求解器((n2rm3m))
 			* 机理未知的自然系统((p3rb0r))
-		* universal approximation 理论性质（UAP）：{n7na92}
+		* universal approximation 理论性质（((n7na7l))UAP）：{n7na92}
 			* `FNOvsDpONet-2111.05512` 提到了 DeepONet, FNO 的，((_n7na9k))均为 $O(1/m)$ 误差所需网络尺寸 $O(m^3\ln m)$
 			* CNN 的可见 `2207.01546`（其引言引的其他文献也可参考）
 			* `MIONet-2202.06137` 输入含多个函数分量时的 UAP 定理

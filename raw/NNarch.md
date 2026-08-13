@@ -77,6 +77,8 @@
 				* 对称群—置换 permute，实现可基于((n93k53))多元素规约，使 i 更新量由 {(i,j)} 对所有 j 规约给出；{q6o70c}
 					* 用途：((n2gf92))动力学-多体系统ODE，((n3qn83))网络输入集合-中间层-更新元素表示
 					* 相关：同样的信息交互目的下，若取消置换等变约束、加计算量约束，可见((p8ag76))集合元素划分后处理
+					* UAP((n7na7l))，Transformer((n37n4q))（无 attn-mask、无位置编码）满足，见 1912.10077；{q8dl37}
+					* 涉及二阶信息的映射 置换等变性叙述，如((q8dl4c))图映射（GNN 表达），其输入涉及额外二阶信息（邻接矩阵）
 				* 对称群—网格旋转，一套卷积核旋转多个角度同时作用于输入，((_p78a72))可用于交错网格情形
 				* 对称群—2D 方形旋转反射群 D4，((q7vg9v))用于生成 FNO 频域核
 				* 对称群—3D 平移旋转 SE(3)，分子空间构型预测需要；{n2me8g}
@@ -166,11 +168,13 @@
 			* 相关：((n5da0x))NO 设计时就基于空间多尺度
 		* ViT 的解释见((n7na8n))，例如((n7na8o))单样本前传的极限行为是 diffusion
 		* 理论逼近性质，UAP；{n7na7l}
+			* 二要素：目标函数空间，假设空间（网络 ansatz）
 			* 逼近性能度量：离散情形有 Rademacher 复杂度，连续情形可用函数空间范数
 			* 所用函数空间，鄂维南老师工作涉及的 Barron space, compositional function space
 			* 误差趋于 0 时的深度宽度增长阶，((o4tn1k))OptDNN 架构只需常数（有限）宽度
 				* 刘子鸣 KAN 也有相应 UAP((_o5a94p))，收敛阶与普通 MLP 有所不同
 			* ((n7na92))NO 的 UAP
+			* 等变映射 可被 Transformer 一致逼近((q8dl37))，((q8dl4c))等变图映射 有 Keriven–Peyré GNN
 			* 相关：((n4kl23))有效模型复杂度，将训练过程也纳入逼近能力考量
 		* 除架构还考虑学得的参数，解释训好的 NN 的工作机制等；{q6sm7m}
 			* 可视化；{ncab93}
@@ -606,6 +610,7 @@
 			* `[Transformer为完全图GNN]`，包括二社区处理长序列（大规模图）的方式，多头注意力理解；{n79n3o}
 			* ((_n3ud8m))Transformer 作为图灵完备NN
 			* 内部多子程序在运行，((_q6k811))文本复制、基础逻辑推理，乃至梯度下降（> 上下文学习？）
+			* UAP 定理，((q8dl37))等变网络 可被 无位置编码 Transformer 编码器 一致逼近
 		* 变种—条件引入，DiT 讨论的 4 种方式：((_o3lk9b))in-context condition、cross attention、adaLN 及其零初始化版本 adaLN-Zero；{o3lk9o}
 			* 相关：((n4te8y))生成模型-条件生成，((nbih2c))cross-attention
 			* adaLN-Zero（DiT 原文效果最好）：基于 pre-layernorm，Attn、FFN 层分别进行该操作；{o3ll25}
@@ -747,6 +752,10 @@
 		* Transformer 注意力计算，Graphormer 依赖于顶点距离，另有((_n7om6a))只计算 k-阶邻居的注意力
 		* ((n79n3o))普通 Transformer 可解读为完全图的 GNN
 		* graph 生成，((_p16e70))不是生成邻接矩阵，而是生成表示图的序列，划分节点集、边集
+		* 图映射，应满足置换等变性条件叙述见((q8dl4c))，对 Keriven–Peyré 型高阶等变 GNN 有 UAP 理论
+		* 图映射一般形式 $\R^{n\times n}\times\R^{n\times d}\to\R^{n\times c}$
+			* 置换等变性((q6o70c)) 要求 $(A,X)\mapsto Y$ 则 $(PAP^\mathrm{T},PX)\mapsto PY$；{q8dl4c}
+				* UAP((n7na7l))，Keriven–Peyré 型高阶等变 GNN 满足（中间表示允许高阶节点张量）1905.04943
 		* 注：许多 GNN 内容留在独立文件
 * 自动架构设计，AutoML 相关：{n4tc1l}
 	* AutoGluon 为 Amazon 开发的一个平台，自动生成一个较好的模型 `2022-03-16`(dbGrpMeet2)
