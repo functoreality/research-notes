@@ -13,6 +13,7 @@ research-notes/
 ├── public/data/notes.json     # 解析后的数据
 ├── src/                       # React/Astro 源码
 ├── scripts/                   # 解析脚本
+├── site.config.json           # 当前站点配置
 ├── .github/workflows/         # GitHub Actions 配置
 ├── .agents/skills/            # AI 智能体读写原始笔记的相关技能
 └── dist/                      # 构建产物（不提交）
@@ -27,6 +28,14 @@ npm run dev      # 启动开发服务器
 npm run build    # 构建生产版本
 ```
 
+阅读器也可以为外部的笔记目录服务。内容目录需要包含 `raw/`、
+`public/data/homepage.md` 和 `site.config.json`：
+
+```bash
+npm run site -- dev ../personal-notes
+npm run site -- build ../personal-notes
+```
+
 ## 功能
 
 - 层级折叠（支持键盘操作）
@@ -38,3 +47,6 @@ npm run build    # 构建生产版本
 ## 部署
 
 详见 [DEPLOY.md](./DEPLOY.md)
+
+复用当前阅读器发布另一套独立笔记时，参见
+[MULTI_SITE.md](./MULTI_SITE.md)。

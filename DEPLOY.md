@@ -44,16 +44,15 @@ git push -u origin main
 
 访问地址：`https://YOUR_USERNAME.github.io/YOUR_REPO/`
 
-## 五、修改 astro.config.mjs 中的 base
+## 五、修改 site.config.json 中的站点信息
 
-**重要**：如果仓库名不是 `research-notes`，需要修改 `astro.config.mjs`：
+**重要**：如果仓库名不是 `research-notes`，需要修改 `site.config.json`：
 
-```javascript
-export default defineConfig({
-  site: 'https://YOUR_USERNAME.github.io',
-  base: '/YOUR_REPO_NAME',  // 改成你的仓库名
-  // ...
-});
+```json
+{
+  "site": "https://YOUR_USERNAME.github.io",
+  "base": "/YOUR_REPO_NAME"
+}
 ```
 
 当前配置：

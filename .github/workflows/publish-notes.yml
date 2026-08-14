@@ -1,0 +1,72 @@
+name: Publish notes site
+
+on:
+  workflow_call:
+    inputs:
+      reader-ref:
+        description: Branch, tag, or commit used for the shared reader
+        required: false
+        type: string
+        default: main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.repository }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout notes
+        uses: actions/checkout@v4
+        with:
+          path: content
+
+      - name: Checkout shared reader
+        uses: actions/checkout@v4
+        with:
+          repository: functoreality/research-notes
+          ref: ${{ inputs.reader-ref }}
+          path: reader
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: reader/package-lock.json
+
+      - name: Install dependencies
+        working-directory: reader
+        run: npm ci
+
+      - name: Build site
+        working-directory: reader
+        run: npm run site -- build ../content
+
+      - name: Compress static assets
+        run: find reader/dist -name "*.json" -size +100k -exec gzip -k {} \;
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: reader/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

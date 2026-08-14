@@ -5,9 +5,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const RESEARCH_DIR = path.join(__dirname, '..', 'raw');
-const OUTPUT_DIR = path.join(__dirname, '..', 'public', 'data');
-const OUTPUT_FILE = path.join(OUTPUT_DIR, 'notes.json');
+const NOTES_DIR = path.resolve(
+  process.env.NOTES_INPUT_DIR || path.join(__dirname, '..', 'raw')
+);
+const OUTPUT_FILE = path.resolve(
+  process.env.NOTES_OUTPUT_FILE || path.join(__dirname, '..', 'public', 'data', 'notes.json')
+);
+const OUTPUT_DIR = path.dirname(OUTPUT_FILE);
 
 const LINK_PATTERN = /\(\(([_\w]+)\)\)/g;
 const MARKER_PATTERN = /\{([_\w]+)\}$/;
@@ -128,12 +132,12 @@ function buildGlobalIndex(files) {
 }
 
 function main() {
-  console.log('Parsing research notes...');
-  console.log(`Research directory: ${RESEARCH_DIR}`);
+  console.log('Parsing notes...');
+  console.log(`Notes directory: ${NOTES_DIR}`);
   
-  const mdFiles = fs.readdirSync(RESEARCH_DIR)
+  const mdFiles = fs.readdirSync(NOTES_DIR)
     .filter(f => f.endsWith('.md'))
-    .map(f => path.join(RESEARCH_DIR, f))
+    .map(f => path.join(NOTES_DIR, f))
     .sort();
   
   console.log(`Found ${mdFiles.length} markdown files`);

@@ -27,3 +27,6 @@ pnpm-debug.log*
 # generated data
 public/data/notes.json
 .worktrees/
+
+# Temporary location for the separate Personal Notes repository
+personal-notes/

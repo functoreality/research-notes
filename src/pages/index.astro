@@ -1,19 +1,23 @@
 ---
 import { App } from '../components/App';
+import { loadSiteConfig } from '../../scripts/site-config.mjs';
 
 const { file: initialFile, line: initialLine } = Astro.url.searchParams;
 const initialFileStr = initialFile?.toString() || undefined;
 const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : undefined;
+const siteConfig = loadSiteConfig();
+const base = import.meta.env.BASE_URL || '/';
+const basePath = base.endsWith('/') ? base : `${base}/`;
 ---
 
-<html lang="zh-CN">
+<html lang={siteConfig.lang}>
 	<head>
 		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/svg+xml" href={`${basePath}favicon.svg`} />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Research Notes</title>
-		<meta name="description" content="Personal research notes with hierarchical folding and interlinking" />
+		<title>{siteConfig.title}</title>
+		<meta name="description" content={siteConfig.description} />
 		<!-- 访客计数：Vercount 脚本，仅后台统计，前端无可见元素 -->
 		<script defer src="https://cn.vercount.one/js"></script>
 		<style>
@@ -50,6 +54,7 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 				color: #718096;
 				font-size: 13px;
 				line-height: 1.6;
+				white-space: pre-line;
 			}
 			@media (prefers-color-scheme: dark) {
 				#initial-loading {
@@ -73,7 +78,7 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 			<div id="initial-loading-content">
 				<div id="initial-loading-spinner">⋯</div>
 				<p id="initial-loading-text">正在努力加载笔记数据</p>
-				<p id="initial-loading-hint">数据量大概 11MB，两分钟之内应该能加载好<br/>耐心等我一会儿啦——</p>
+				<p id="initial-loading-hint">{siteConfig.loadingHint}</p>
 			</div>
 		</div>
 		<div id="root"></div>
@@ -81,6 +86,9 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 			client:only="react" 
 			initialFile={initialFileStr}
 			initialLine={initialLineNum}
+			loadingHint={siteConfig.loadingHint}
+			siteName={siteConfig.siteName}
+			visitorLabel={siteConfig.visitorLabel}
 		/>
 
 		<!--
@@ -97,7 +105,7 @@ const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : unde
 		<!-- 静态计数器元素：position:fixed 固定在视口底部，不依赖页面滚动 -->
 		<div id="visitor-counter" style="position:fixed;bottom:0;left:0;right:0;text-align:left;padding:0rem 0rem;color:var(--color-text-muted);font-size:.8rem;border-top:1px solid var(--color-paper-line);background:var(--color-paper);z-index:50;display:none">
 			<span id="busuanzi_container_page_pv" style="display:none">
-				这份科研笔记是第 <span id="busuanzi_value_page_pv"></span> 次有人来看啦
+				{siteConfig.visitorLabel}是第 <span id="busuanzi_value_page_pv"></span> 次有人来看啦
 			</span>
 			<!-- 隐藏的 site 级计数器，供 ?stats 统计面板读取 -->
 			<span id="busuanzi_container_site_pv" style="display:none;opacity:0">

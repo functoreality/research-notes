@@ -1,0 +1,10 @@
+{
+  "title": "Research Notes",
+  "description": "Personal research notes with hierarchical folding and interlinking",
+  "site": "https://functoreality.github.io",
+  "base": "/research-notes",
+  "lang": "zh-CN",
+  "siteName": "research-notes",
+  "loadingHint": "数据量大概 11MB，两分钟之内应该能加载好\n耐心等我一会儿啦",
+  "visitorLabel": "这份科研笔记"
+}

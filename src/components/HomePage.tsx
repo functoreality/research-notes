@@ -4,6 +4,7 @@ import type { NotesData } from '../types';
 interface HomePageProps {
   data: NotesData;
   onOpenFile: (file: string) => void;
+  siteName: string;
   visitorCount?: string | null;
 }
 
@@ -23,7 +24,7 @@ function readStats(): StatsData | null {
   return null;
 }
 
-export function HomePage({ data, onOpenFile, visitorCount }: HomePageProps) {
+export function HomePage({ data, onOpenFile, siteName, visitorCount }: HomePageProps) {
   const [content, setContent] = useState<string>('');
   const [stats, setStats] = useState<StatsData | null>(null);
   const statsPollRef = useRef(0);
@@ -100,7 +101,7 @@ export function HomePage({ data, onOpenFile, visitorCount }: HomePageProps) {
             恭喜你！这个统计面板只在 ?stats 时显示，被你发现啦！
           </div>
           <div style={{ marginBottom: '.4rem' }}>
-            本页访问量（仅 research-notes）：<b>{stats.pagePv}</b>
+            本页访问量（仅 {siteName}）：<b>{stats.pagePv}</b>
             <span style={{ fontSize: '.7rem', opacity: .6, marginLeft: '.3rem' }}>page_pv</span>
           </div>
           <div style={{ marginBottom: '.4rem' }}>

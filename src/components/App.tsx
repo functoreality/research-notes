@@ -31,9 +31,18 @@ function getStoredTheme(): Theme {
 interface AppProps {
   initialFile?: string;
   initialLine?: number;
+  loadingHint: string;
+  siteName: string;
+  visitorLabel: string;
 }
 
-export function App({ initialFile, initialLine }: AppProps) {
+export function App({
+  initialFile,
+  initialLine,
+  loadingHint,
+  siteName,
+  visitorLabel,
+}: AppProps) {
   const [data, setData] = useState<NotesData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -364,9 +373,13 @@ export function App({ initialFile, initialLine }: AppProps) {
           ) : (
             <>
               <p style={{ color: 'var(--color-text)', marginBottom: '0.5rem' }}>正在努力加载笔记数据</p>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '13px', lineHeight: 1.6 }}>
-                数据量大概 11MB，两分钟之内应该能加载好<br/>
-                耐心等我一会儿啦——
+              <p style={{
+                color: 'var(--color-text-muted)',
+                fontSize: '13px',
+                lineHeight: 1.6,
+                whiteSpace: 'pre-line',
+              }}>
+                {loadingHint}
               </p>
             </>
           )}
@@ -505,7 +518,7 @@ export function App({ initialFile, initialLine }: AppProps) {
                   zIndex: 100,
                   fontFamily: 'var(--font-body)',
                 }}>
-                  这份科研笔记是第 {visitorCount} 次有人来看啦
+                  {visitorLabel}是第 {visitorCount} 次有人来看啦
                 </div>
               )}
             </div>
@@ -580,7 +593,12 @@ export function App({ initialFile, initialLine }: AppProps) {
             toggleLine={folding.toggleLine}
           />
         ) : (
-          <HomePage data={data} onOpenFile={handleOpenFile} visitorCount={visitorCount} />
+          <HomePage
+            data={data}
+            onOpenFile={handleOpenFile}
+            siteName={siteName}
+            visitorCount={visitorCount}
+          />
         )}
       </main>
       

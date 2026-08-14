@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "parse": "node scripts/parse-notes.mjs"
+    "parse": "node scripts/parse-notes.mjs",
+    "site": "node scripts/run-site.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",
