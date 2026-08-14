@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { Tab } from '../types';
 
-const STORAGE_KEY = 'notes-tabs';
+const basePath = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '') || '/';
+const STORAGE_KEY = `notes-tabs:${basePath}`;
 const HOME_TAB_ID = 'home';
 
 const HOME_TAB: Tab = {
