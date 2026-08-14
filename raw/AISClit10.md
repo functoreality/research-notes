@@ -1,3 +1,51 @@
+* NN-SM 谱方法+NN 混合求解设计综述：按解表示、残差离散、子域分工三个非互斥层面组织网络与谱组件；模态量只辅助筛查频谱异常
+	* "Integrating Spectral Methods with Neural Network Architectures: A Review of Hybrid Approaches to Solving Differential Equation", Archives of Computational Methods in Engineering 2026
+		* Yolande Vanelle Ngueabou; Shina Daniel Oloniiju;
+		* Rhodes Univ
+		> created on 2026-08-13 by Codex + GPT-5.6-Sol-high
+	* 方法全称：hybrid neural network-spectral method
+	* 定位：系统综述 27 项 NN-SM 工作，另用 Bratu 方程对照 PINN 与 Chebyshev 配点法
+	* （AI 评）按耦合层面比按架构、谱耦合、训练策略并列，更易定位可复用的设计选择
+	* 三个非互斥耦合层面：可单独采用，也可在同一求解器中组合
+		* 构造解表示：谱基作固定输出基底，或由网络按 PDE 解族生成
+			* 固定输出基底：网络预测谱系数，既可拟合单实例，也可学习输入到系数的算子
+				> $u_\theta(x)=\sum_k\alpha_k(\theta)\phi_k(x)$，$\phi_k$ 为固定谱基。eqn(29)
+				* 单实例中直接优化 $\alpha_k$；解族学习中由网络按输入参数 $\xi$ 预测 $\hat u_k(\xi)$。eqn(42)
+			* 复杂域或局部结构下经典全局基难选：从 PDE 解族学习候选函数空间
+				* 实现：DeepONet trunk 候选函数 → SVD 筛选与正交化 → 层次基 → Galerkin 推进 sec8.3
+				* 在线求解：训练好的 DeepONet 只供基；文中案例由 Galerkin 推进到网络训练时间区间外
+		* 计算 PDE 残差：谱离散可替代高阶空间 AD，并在特定条件下减少物理域求积
+			* 避高阶空间 AD：配点处采网络输出，谱微分矩阵算空间导数，权重梯度仍走 BP
+				* CD-PINN 用 Chebyshev 配点；适合低维光滑解与规则域，结果对多项式阶数敏感 sec8.5；{_q8ef5u}
+			* 改写物理域求积：网络预测正交基系数，用 Parseval 把残差范数转到谱域
+				> $L_{\mathrm{spectral}}=\sum_k|\hat R_k(\theta)|^2$，$\hat R_k$ 为 PDE 残差的谱系数。eqn(43)
+				* 仅当微分算子在系数域有简单表示时，原文才主张其计算更高效 sec4.3
+				* （AI 评）变系数或非线性项仍可能需要卷积、伪谱变换或求积，并处理 aliasing
+		* 子域分工与接口耦合：按观测可用性分配网络与传统求解器，NeuroSEM sec8.6
+			* 区域分解：含稀疏或噪声观测的局部区域、无数据的主体区域
+			* 算法分配：局部区用 PINN 同化稀疏噪声 PIV，主体区用 Nektar++ 谱元法；{_q8ef1l}
+			* 在线耦合：PINN 连续预测单向供给谱元区界面 BC，局部网络不替代整个高精度求解器
+			* （AI 评）综述未交代界面通量约束、双向反馈或误差传播，不能据此判断耦合稳定性
+	* （AI 评）选型边界：学习基受训练解族覆盖限制；谱离散受光滑性、几何与阶数限制；子域法还需界面稳定性证据
+	* 三类频谱检查的对象不同，不能都作为解质量证据 sec8.6
+		* 有参考解时，逐模态误差定位未学到的频率范围
+		* （AI 评）无参考解时，系数衰减停滞只提示欠分辨或训练不足，不能鉴别原因或证明解正确
+		* （AI 评）Parseval 跨域能量只检查变换与归一化自洽，错误解也可满足该恒等式
+		* （AI 评）原文把谱模态收敛与系数衰减检查称为 cross-validation；这里记作输出质量诊断
+	* 真实观测验证稀缺，且综述所列 27 项语料的统计边界存疑
+		> 27 项工作中，26 项只用合成数据，仅 NeuroSEM 同时使用真实 PIV 与合成数据。sec8.3
+	* 公平比较缺口：多数工作未与传统方法统一比较稳定性、收敛、精度、成本与扩展性 sec9
+		> 对 1D Bratu 方程，$C$ 是非线性参数；文中 PINN 相对 $L^2$ 误差为 $10^{-4}$ 量级或更低，谱配点在 $N\geq12$ 时达到机器精度。Table 4-5
+		* （AI 评）该实验比较纯 PINN 与纯谱法，不是 NN-SM；也未统一 wall time 与目标误差，不能证明混合方法更优
+	* （AI 评）综述适合作概念地图，不宜直接采用其方法分类与统计结论
+		* FNO、谱基激活、ELM、PINN-SEM 子域耦合解决不同层级问题，Table 6 的横向类别不是正交设计轴
+		* sec6.4.1 声称排除 preprint，Ref. [34] 却明确列作 arXiv preprint，27 项语料的统计边界难复现
+	* 原文主张令两项误差相当，可配平谱模态数 $N$ 与网络宽度 $n$
+		> $\|u-u_{\mathrm{hybrid}}\|_2\leq\|u-u_N\|_2+\|u_N-u_{\mathrm{hybrid}}\|_2$。eqn(45)
+		* 原文令谱截断误差 $e^{-\beta N}$ 与神经网络逼近误差 $n^{-1/2}$ 相当，得 $n\sim e^{2\beta N}$
+	* （AI 评）容量配平失效：NN 误差界常数依赖目标 $u_N$ 并随 $N$ 变化，eqn(45) 不能直接作设计规则
+	* （AI 评）术语歧义：把 truncation error 写成 spectral bias，易与 NN 的低频优先学习混淆
+	* 可复现资料：综述未发布数据集或代码；Bratu 数据运行时生成，PIV 数据来自被综述工作。Data/Code Availability
 * Origo 自回归 PDE 基模算子分裂线性&非线性，非线性各块步进系数由超网络据多历史步预测
 	* "Origo: Interpretable Multi-physics PDE Foundation Model through Neural Operator Splitting", ICML 2026
 		* Sun, Li; Lv, Hongbo; Jiang, Zhikai; Sun, Zhongtian; Yang, Lanxu; Yu, Philip S.
