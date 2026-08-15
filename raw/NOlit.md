@@ -266,6 +266,7 @@
 		* 文末有发表版本链接
 		> 具体来说，提出了低保真、可解释的物理模拟器和神经网络生成器组合，该生成器经过端到端训练，以全局匹配昂贵的高保真数值求解器的输出。
 		> 在扩散、反应-扩散和电磁散射模型这三个示例测试用例上的实验表明，物理增强深度代理PEDS 替代项的精度，比数据有限的前馈神经网络集合（大约 10e3训练点），并将训练数据需求至少减少 100 倍，以实现 5% 目标误差。
+		* fig1 downsampled geometry；{_q8fm8k}
 * `PITT-2305.08757` （备用）将 PDE 形式输入 Transformer，似乎用于 为 NO 的时间迭代误差的修正提供信息
 	* "Physics Informed Token Transformer"
 		* Lorsung, Cooper; Li, Zijie; Farimani, Amir Barati; 
@@ -976,7 +977,7 @@
 		* 在给定网格分辨率 $\Delta$ 下，数值算子 $L^\Delta(y)$
 		* （评）含时问题故无法用多重网格加速计算；否则不一定要区分不同分辨率的数值算子
 	* fig2 multi-level 训练设定：网格 $\Delta_l$ 从粗到细 $l=0,1,\dots,L$
-	* alg3.2 第 $l$ 层网络学 $l,l-1$ 层数值算子预测的差
+	* alg3.2 第 $l$ 层网络学 $l,l-1$ 层数值算子预测的差；{_q8fm4w}
 		* 具体地，选训练参数集 $y_1^l,\dots,y_{N_l}^l$（$N_l$ 随 $l$ 递减，即细网格数据少）
 		* 网络拟合对象 $L^l(y_i^l)-L^{l-1}(y_i^l)$（> 不妨 $L^{-1}(y)=0$）
 		* 所有 $l$ 的网络相加得 NO 输出
@@ -985,7 +986,7 @@
 		* 这样做精度应该更高，粗层级网络的误差能在细层级网络得到补偿
 		* 且总计算量变小（调用前 $l-1$ 层 NN 代价应小于第 $l-1$ 层网格上数值求解）；不过由于各 $l$ 不能并行，不保证一定有速度提升
 		* 相关：不引入新 NN，只用高精度数据 fine-tune 原网络的做法见 `MLFT-2102.07169`
-	* 定理，估计这种 multi-level 训练的泛化误差，并说明比 single-level 优越
+	* 定理，估计这种 multi-level 训练的泛化误差，并说明比 single-level 优越；{_q8fm68}
 	* sec4 考虑 forward UQ，即 uncertainty propagation
 		* 设定：$y\sim\mu$，push-forward $\mu^\Delta=f^\Delta_\#\mu$ 为 $\R$ 上概率分布
 		* 之前文献的 DLMC 算法，用 NN 作为 $L^\Delta$ surrogate 从而 MC 时能采样更多样本来计算；原文有复杂度分析

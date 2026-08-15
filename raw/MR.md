@@ -752,12 +752,7 @@
 					* 用模拟数据的属于学本构关系 ((ncmj8o))constiRel，描述粗层级的物理规律
 					* 观测+模拟数据？
 				* 与 phy-in-NN 关系讨论见((nckf92))
-				* 数值格式作为 phy 的特殊类型，NN 增强传统数值求解器，NN in numeric；{nclm36}
-					* 相关：((n2rm3m))黑箱 NN 充当迭代算子，((nclm4c))传统数值方法，((ncbn67))numeric in NN
-					* 这里主要考虑非含时 PDE 及其数值格式，含时版本记录于((n3bh2y))fastPhyDyn
-					* Meta-MgNet 在((n2pf9o))多重网格 中用可学的磨光等算子
-					* `OneShotNO-2104.05512` 理论假设解算子可写为邻域预测迭代（可单样本学出）的形式
-					* 优化 PDE 离散所得线性系统的迭代算子？
+				* 数值格式作为 phy 的特殊类型，NN 增强传统数值求解器，((ncmk3t))NN in numeric
 				* 可解读为特殊的反问题/设计问题 `contTimeDynML:`；
 			* phy in NN 模型((nca99w))、半离散模型（区分在上方）
 				* PDE-Net 似乎不太区分观测和模拟数据？

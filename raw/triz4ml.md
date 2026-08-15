@@ -27,24 +27,18 @@
 					* 这或许可以((n3t97h))让预训练 INR 可对输入维数泛化
 					* 如 NLP 中 word embedding((n4rm8c))
 					* NLP 中((_n5im3j))MegaByte 不再像往常按（英文）单词划分 token，而是用固定长度字符 patch
-					* 图像 tokenize 方法被分为二类((_nc6n38))：简单 patch 序列、预训练的离散化 tokenizer；{o8ue5k}
+					* （旧）图像 tokenize 方法被分为二类((_nc6n38))：简单 patch 序列、预训练的离散化 tokenizer；{o8ue5k}
 						* 新框架见((p3va9b))输入场降低分辨率，区分更细致
 						* （推测）二类区别 1. 连续vs离散，前者各 token 可能取值空间连续，后者可能取值离散
 							* VQ 可视为对隐向量分布的一种正则化((n6sf8q))，包括 VQVAE,VQGAN
 							* 若有相应生成模型，前者为回归模型、后者为分类模型；见((oapf91))离散分布建模适合自回归、连续分布适合扩散
-							* 离散词表大小：((_oap992))Emu3 32k
 						* （推测）二类区别 2. 空间尺寸压缩方式，patch（单个输入像素影响单 token）、CNN（影响多相邻 token）
 							* 相关框架((p3va9b))空间尺寸压缩
-							* 混合方式：先编码为 ((n5bk3r))latent feature，再对此打 patch；Sora 用到；{o33a2v}
-								* 进行了两次((p3va9b))空间分辨率压缩，第一次 CNN，第二次 patch
-								* Meta MovieGen 类似，(('patm43))压缩率 CNN 时空均 8，patch 时间 1 空间 2
-								* 理论上也可 先 patch 再 CNN
-								* 第一次 grid-based INR，第二次逐 patch 用 CNN 解码器（不再是张量 reshape），压缩针对待表征对象而非现成数据：((p59e68))ACORN
+							* 混合方式：((o33a2v))先编码为 latent feature 再打 patch
 							* 空间压缩率见((oapa1r))
 							* 打 patch 如 ViT((n37m6i))，编程时((n8hj6b))可通过卷积层实现线性变换
 								* patch 独立编码可由线性层换为 MLP
 								* 相关：打 patch 后可考虑 ((n5bf17))patch manifold
-							* 网络架构，用于视频时((_oap995))MoVQGAN 编解码器中加入时间残差层，其卷积核三维
 						* 相关框架：((oaqb09))场表示为有空间结构的隐向量，情况更多样，也包括 连续vs离散、空间尺寸压缩方式
 						* 类似场景：((p8he9w))NO 输入层
 					* 处理集合输入的网络架构：((n3qn83))NO，((n4rb6l))hypernet
