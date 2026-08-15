@@ -266,6 +266,15 @@
 		* 一般框架((n3h983))equivariance 架构设计
 	* 混合架构，不同层用不同格式
 		* ((_n8vm6l))Galerkin Transformer 文中实验是 4 层 Galerkin、2 层 FNO
+	* 据先验机理：已知算子可表达为特定形式（针对特定任务，常通过理论分析），据此设计架构；{nclm6b}
+		* 对象（物理场）一般化见((nclk76))NN架构设计-软先验
+		* ansatz—多层复合，据此引入类 DenseNet 结构，见((_n86k2l))IAE-Net
+		* ansatz—数学表达式，`[Ying]-EIT-DL`, `[EIT/DOT用数学结构设计NO]`
+		* ansatz—各子域解算子匹配((q8g71l))，OneShotNO
+		* 组件—处理层—引入预设微分算子，卷积核引入矩约束，PDE-Net
+		* 组件—辅助输入—数值粗解((ncbn67))，属于((q7aj9t))NN输入增强-基于资源-参考解
+		* 相关：这算 numeric in NN，另见((ncmk3t))NN in numeric，((nca99w))phy in NN
+			* 警惕“NN”含义：若仅指原子层面的单个黑箱映射，则可能 NN 是传统算法的子系统；若作为宏观封装了各种运算的整体，则可能传统算法是 NN 的子系统
 	* 若涉及上采样层，建议((o8fe4l))上采样放到 NO 输入层，而非输出层；上采样还可避免 aliasing
 	* 性能比较，((_p64a15))ViT 效果好、FNO 性价比高，比较对象包括 有限维中介、CNN、INR、graph；{p64a1k}
 	* 相关：((nckf86))不使用纯黑箱架构，如整合低精度求解器、只学与高精度解误差
@@ -433,13 +442,6 @@
 		* 稀疏交互（针对点密度），跨越远距离，但每个局部仅单点参与；((o9pa33))用于注意力（MaxViT 的 grid attention）
 		* 补偿方式，引入范围限制后不完整，需补全，方式参考((p4b97v))注意力计算情形
 		* 相关：((p8ag76))集合元素分组处理，包括非均匀网格的一般情形
-	* 据先验机理：已知算子可表达为特定形式（针对特定任务，常通过理论分析），据此设计架构；{nclm6b}
-		* 多层复合形式算子 ansatz，针对其引入类 DenseNet 结构，见((_n86k2l))IAE-Net
-		* `[Ying]-EIT-DL`, `[EIT/DOT用数学结构设计NO]`
-		* `OneShotNO-2104.05512`，PDE-Net，((nclk76))可降低数据量需求
-		* 数值粗解用作网络辅助输入((ncbn67))，属于((q7aj9t))NN输入增强-基于资源-参考解
-		* 对象（物理场）一般化见((nca99w))NN架构-引入显式先验
-		* 相关：这算 numeric in NN，另见((ncmk3t))NN in numeric，((nca99w))phy in NN
 	* 一般意义上的全局、局部、单点 ansatz 相关；{o9aa14}
 		* ((n7de8p))图位置编码、结构编码，用于 graph Transformer
 	* 多类型层组合交替使用；{q5d901}

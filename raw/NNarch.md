@@ -119,11 +119,8 @@
 		* `ML2phy%` 对数据拟合后的函数进一步做符号回归也可能提高 OoD 性能，如 `2006.11287`
 		* 相关：((n3ag7c))引入硬先验（一般，不限于通过 NN 架构引入）
 		* 相关：这算 phy in NN，另见((nckl0b))NN in phy，((nckf92))二者关系讨论
-		* NO 架构，传统数值格式作为特殊的机理，numeric in NN((nclm6b))
 	* 引入软先验，常可降低数据需求；{nclk76}
-		* 如 `OneShotNO-2104.05512`，PDE-Net 相较 NO 数据需求小
-			* 又见((nclm6b))NO 用于特定任务，据理论推导得算子形式、用于设计 NO 架构
-			* 相应汇总 ((nckl08))phy+MLpersp；
+		* 特定对象—物理场输入输出：((nclm6b))NO 架构，传统数值格式作为特殊的机理，numeric in NN
 		* 在数据量较小的情况下，Hinton 的胶囊网络优于 CNN、又优于 ViT，而数据量大的情况反之？{n3ag7v}
 			* 相关：((n37m6d))CNN vs ViT
 		* AlphaFold2 Evoformer((_q6tf91))利用蛋白质演化特点，较基于通用 CNN 的 AF1 ((_q6tg0m))数据效率提百倍
