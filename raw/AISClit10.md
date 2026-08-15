@@ -1,3 +1,44 @@
+* CHONKNORIS-2511.19980 可算残差、Jacobian 与伴随作用时不学解算子，通常只学 Newton 逆正规因子，再迭代压低离散代数误差
+	* "Operator Learning at Machine Precision"
+		* Aras Bacho; Aleksei G. Sorokin; Xianjin Yang; Théo Bourdais; Edoardo Calvello; Matthieu Darcy; Alexander Hsu; Bamdad Hosseini; Houman Owhadi;
+		* Caltech; Illinois Tech; UW
+		> created on 2026-08-14 by Codex + GPT-5.6-Sol-high
+	* 方法全称：Cholesky Newton--Kantorovich Neural Operator Residual Iterative System
+	* 前提—方程已知：依赖残差、Jacobian 与伴随作用，是学习型非精确 Newton 求解器，不替代黑箱 NO
+	* 推理—按误差预算换算力：显式算残差、Jacobian 与伴随作用，保留线搜索与停止准则，只学习逆算子应用（sec2.4, alg1）
+		* CHONKNORIS 映射：输入 $(u,v_n,\lambda_n)$，每轮重新输出三角因子 $R_n$
+			* 监督目标：$R_nR_n^T\approx(J_n^*J_n+\lambda_n I)^{-1}$，$J_n=\partial_v\mathcal F(u,v_n)$（eqn9）
+		* 迭代更新：$r_n=\mathcal F(u,v_n)$，$v_{n+1}=v_n-\alpha_nR_nR_n^TJ_n^*r_n$（eqn11）
+		* 步长与正则化：线搜索调 $\alpha_n,\lambda_n$，每次试新 $\lambda_n$ 都重新预测 $R_n$（alg1）
+		* 停止方式：残差或更新量达到容差才停；收缩预算成立且迭代留在局部域时，增加迭代可继续换精度
+		> 选择逼近 $\mathcal Q$ 的 Cholesky 因子以强制正定性，这能稳定学习、保证下降方向、减少参数并支持高效三角求解。（sec2.4）
+		* 因子应用：通常预测逆算子因子后相乘；地震实验改为预测正规算子因子后做三角求解（sec3.4.3）
+	* 精度与理论失效条件：相对线性化残差保持收缩即可迭代消误差，但保证只在局部成立
+		* 误差预算：forcing term $\theta_k\leq\lambda_k/(\lambda_k+\sigma_*^2)+M^2\epsilon_{\lambda_k}$（thm4.2）
+			* $\sigma_*$ 是 $J$ 的一致最小奇异值，$M$ 控制 $\|J\|$，$\epsilon_{\lambda_k}$ 是代理算子误差
+		* 收敛阶：固定 $\theta<1$ 至少线性；$\lambda_k,\epsilon_{\lambda_k}\to0$ 得超线性（cor4.3）
+			* 二次收敛条件：$\theta_k=O(\|\mathcal F(v_k)\|)$
+		* 理论前提：局部球内 $J$ 一致可逆、Lipschitz 且所有迭代留在球内，不能直接替一般病态反问题兜底（assump4.1）
+		* （AI 评）标题精度归因应放在求解器闭环而非代理精度：网络只提供足够好的下降度量，精度由残差反馈与迭代预算产生
+	* 训练—近似覆盖预期访问状态：用精确 NK 前若干步轨迹 $(u,v_k)$ 生成 Cholesky 标签，避免在整个函数空间采样（sec2.4, alg1）
+		* 多正则化训练：同一轨迹状态可配多个 $\lambda$ 生成标签，使推理能随条件数和残差调节正则化
+		* （AI 评）理论要求局部球内代理误差受控，训练却只采精确 NK 轨迹；非精确轨迹偏离后没有闭环保证
+		* （AI 评）精确求解器仍承担离线标签成本；它省的是同分布重复求解，不是取消传统数值计算
+	* 跨 PDE 复用线性化求解能力：FONKNORIS 用 $J$ 的微分系数函数替换上述映射输入，每步仍接回同一 Newton 闭环（sec2.5）
+		* 一维实例输入 $(a_n,b_n,c_n,\lambda_n)$，前三项表示 $a_n\partial_{xx}+b_n\partial_x+c_n$，输出 $R_n$（eqn12--15）
+		* 跨 PDE 外推：nested Kriging 加权聚合 elliptic、Burgers、Darcy 三个 GP 专家的因子预测，再测未训练方程（sec3.3）
+		> FONKNORIS 学习从 Fréchet 导数的系数函数到其 Tikhonov 正则化逆算子 Cholesky 因子的映射。（sec2.5）
+		* （AI 评）可迁移要素是 Jacobian 系数族上的近似逆，不是 foundation model 标签；证据仅含一维局部二阶 PDE、同网格与相近系数分布
+	* 大规模因子压缩依据：max-min 排序揭示秩结构且使因子条目随空间距离衰减，据此截断可得稀疏不完全 Cholesky（appC）
+		* （AI 评）输出尺寸仍随网格增长且绑定离散化，附录的近线性稀疏复杂度尚未在大规模实验兑现
+	* 收敛代价与失效实例：误差均相对同一离散 NK 参考解衡量，难例靠大量迭代，粗糙介质参数网格细化后失效
+		* 前向：elliptic 常约 10 步；Darcy 需 1000 步才有 95% 测试例达到机器精度（sec3.2.4）
+		* 反问题：Calderón 跑 $10^3$ 步后超过 75% 测试例达到机器精度，wave scattering 约 40 步（sec3.4.4）
+		* 地震反演：$5^2,7^2,10^2$ 参数网格误差为 $2.0\times10^{-14},3.0\times10^{-12},1.2\times10^{-3}$（table1）
+		* （AI 评）报告的是相对同一离散 NK 参考解的代数误差；网格离散误差、模型误差与反问题可辨识性没有随之降到机器精度
+	* 复现数据：代码仓库给出实验 notebook、参数与 FWI 生成脚本，没有打包的预生成数据文件（sec6, GitHub 文件树）
+		* （AI 评）更准确的公开状态是合成数据可由代码复现；OpenFWI 是外部已有数据集，不是新数据贡献
+	* [公众号报道](https://mp.weixin.qq.com/s/_L0FyHgstTbaOg0RfD14pQ)
 * NN-SM 谱方法+NN 混合求解设计综述：按解表示、残差离散、子域分工三个非互斥层面组织网络与谱组件；模态量只辅助筛查频谱异常
 	* "Integrating Spectral Methods with Neural Network Architectures: A Review of Hybrid Approaches to Solving Differential Equation", Archives of Computational Methods in Engineering 2026
 		* Yolande Vanelle Ngueabou; Shina Daniel Oloniiju;
@@ -46,6 +87,7 @@
 	* （AI 评）容量配平失效：NN 误差界常数依赖目标 $u_N$ 并随 $N$ 变化，eqn(45) 不能直接作设计规则
 	* （AI 评）术语歧义：把 truncation error 写成 spectral bias，易与 NN 的低频优先学习混淆
 	* 可复现资料：综述未发布数据集或代码；Bratu 数据运行时生成，PIV 数据来自被综述工作。Data/Code Availability
+	* [公众号报道](https://mp.weixin.qq.com/s/AS91sItJ_nit7AGvs3eZ5g)
 * Origo 自回归 PDE 基模算子分裂线性&非线性，非线性各块步进系数由超网络据多历史步预测
 	* "Origo: Interpretable Multi-physics PDE Foundation Model through Neural Operator Splitting", ICML 2026
 		* Sun, Li; Lv, Hongbo; Jiang, Zhikai; Sun, Zhongtian; Yang, Lanxu; Yu, Philip S.
