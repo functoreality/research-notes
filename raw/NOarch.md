@@ -188,7 +188,7 @@
 			* CNN 编码器全局压缩
 				* 训练稳定性 好于原 ViT 的 patch 无重叠线性投影压缩((p6ga15))
 				* ((_pbf87s))观点认为 3D 及以上 CNN 好于 patch 压缩，因单 patch 格点多信息量大
-			* 逐 patch 编码：逐 patch 编码为（无结构）隐向量，全体隐向量组成网格
+			* 逐 ((q68m4l))patch 编码：各 patch 编码为基本隐向量，全体基本隐向量组成网格
 				* patch 划分方式：最开始无重叠；有重叠版本如((_p6rc1k))AlphaGenome
 				* 单 patch 压缩方式：
 					* 纯向量拉直 flatten
@@ -203,6 +203,7 @@
 				* 对 ViT，小压缩率（小 patch-size）增强架构的平移等变性先验，提升泛化；{p7bg4c}
 					* 来源：PDEformer-2 之后的 ViT 架构消融
 					* 相关：((oapa1r))patch-size
+				* 解读，patch 划分相当于((q8fb7o))区域分解
 			* 逐 patch 压缩，再合并各 patch 结果
 				* 若压缩为 1x1 单点，则退化为逐 patch 压缩为无结构隐向量
 				* 例：大网格（如 3D）压缩可 patch AE 编码降尺寸后过 CNN `2021-05-21`(CSImeet)
@@ -216,6 +217,7 @@
 				* 非固定压缩率
 					* 多级压缩结果共存：多尺度 patching，单图按不同 patch-size 生成多组 token；{n5da1n}
 						* 用例：((_ocke7e))VCNeF，((_n5d987))LSM
+						* 压缩结果为((oaqb09))有结构隐向量-各元素对应子域-多分辨率
 					* 不同前传不同：
 						* 方案—FlexiViT 缩放卷积核；((_q1ka4i))若还涉及解码，卷积核可与编码共用
 						* 方案—CSM((_q1ka4l)) 固定卷积核、变 stride，从而各 patch 可有重叠；需结合边界 pad

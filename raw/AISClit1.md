@@ -572,7 +572,7 @@
 		* p7:-1 区域界面条件可以包括多种，如连续性、流量连续性；
 		* fig2 不连续界面值取均值
 	* table1 与 PINN, cPINN 比较
-	> PINN 区域分解相关文献汇总放在 `PINN%`“区域分解”
+	> PINN-区域分解((n7nd86)) 有相关文献汇总
 	> idea：区域匹配可以使用类似 PFNN 的思路，无需引入惩罚项
 * `TOuNN`: #topology_optimization, #material, #design
 	* "TOuNN: Topology Optimization using Neural Networks"
