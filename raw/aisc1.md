@@ -174,7 +174,7 @@
 				* 有额外非设计参数情形可 $(\lambda,\mu)\mapsto u/O/G_\mu$ 或整合的 $\lambda\mapsto G$
 				* 隐式 surrogate：RL 相当于用 $\pi/Q$ 函数隐式表达了 surrogate((n77k8h))；{n77k8a}
 				* 算法式 surrogate：除用直接推断的形式（普通 surrogate），还可用算法形式（如 PINN 训练）
-					* 相关：`unifyMethod1:`“映射形式”；{n1gh25}
+					* 相关：((n3gd6q))广义映射形式；{n1gh25}
 					* 元学习加速 PINN 解正问题后，结果可用于这里的加速求解，目前想法在 `invDesign-metaPINN:` 第二点
 				* 传统算法而非 surrogate，极小化预测与观测差异，求导用伴随方程 Neptune-2509.00203
 			* surrogate 能力需求，通过适当选取架构、训练方式
@@ -499,7 +499,7 @@
 		* 一个可能相似的例子是((n2ak58))分子结构预测（找势能函数极小值点），当时用了扩散生成模型；{n2ak5q}
 		* 相关话题：
 			* 反问题，若系统含时、待恢复参数不含时、观测为连续多个时间步，可解读为单动力系统的守恒量求解问题（从而它也可按反问题理解）((n35e96))paramDynConserv
-			* 对含参动力学，反问题求解可用于帮助正问题（时间预测）`1TaskHypernet:`(metaL)
+			* 对含参动力学，反问题求解可用于帮助正问题（时间预测）((n3hg7a))1TaskHypernet
 * UQ uncertainty quantification；{o1ok77}
 	* 场景包括正反问题，((_o2dg14))参数随机性在系统中正向传播 vs BIP
 		* ((_p8g89s))美国激光约束聚变所用预测模型需 UQ，便于参数外推探索

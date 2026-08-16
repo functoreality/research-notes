@@ -262,7 +262,7 @@
 		* 这里输入在数据集上的 loss 梯度，而非直接输入数据集 $(x,y)$
 		* 集合编码采用 LSTM、memory-attention 两种方式，没用到 DeepSets
 		* 注意力机制的使用与 Transformer 相似，（用 Transformer 的术语）这里相当于 query、key 使用相同生成方式 $x\xmapsto{Q^*}r$
-		* {解读内层} hypernet，框架见 `1TaskHypernet:`：
+		* {解读内层} hypernet，框架见 ((n3hg7a))1TaskHypernet：
 			* 对 $X$ 区域分解，support set $D^s$ 里每个数据代表一片区域，$\Lambda=D^s$
 			* 每个数据训练一个特定的推断网络参数 $W_i^*$，在该数据点上表现好
 			* 各网络 $h_\lambda=b(W_i^*,-)$ 独立，但由于参数来自相同初值 $W$ 的微调，能体现 MTL 任务间关系

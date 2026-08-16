@@ -631,7 +631,7 @@
 	> TODO: summary, comparison tree, link, (broader impact?)
 	* 映射形式：$f:(x_{t-l+1},\dots,x_t)\mapsto(x_{t+1},\dots,x_{t+h})$
 	* > (mine) 关于这一形式：
-		* hypernet 的形式符合框架 `1TaskHypernet:`(metaL)
+		* hypernet 的形式符合框架 ((n3hg7a))1TaskHypernet
 		* 可解读为含参系统先升维转化为单系统，从而参数预测问题变成守恒量预测问题；单系统时间演化预测任务按守恒量分解为多任务 ((n35e96))paramDynConserv
 		* `2021-12-03`(CSImeet2) 讨论了该工作，可能比这里记的详细
 	* p3:0 系统参数可包括雷诺数、average vorticity/magnitude 等
