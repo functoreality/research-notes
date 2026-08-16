@@ -330,7 +330,7 @@
 * `2102.00940` "Meta-learning with negative learning rates" (ICLR2021) 证明在线性回归问题上，MAML 训练内层和推断时最优学习率不同，其中训练内层最优为负；未在图像等其他数据集上实验
 
 #### related non-metaL
-> `OneShotNO-2104.05512`(AISC) 针对 PDE 的 one-shot，利用 PDE 解特性，不需要其他一系列 PDE 的解
+> OneShotNO((q8g71l)) 针对 PDE 的 one-shot，利用 PDE 解特性，不需要其他一系列 PDE 的解
 * `pretrain-1904.04232`: #pretrain, #few-shot, #transfer-learning, (#open_source)
 	* 用 pretrain 的迁移学习范式（非元学习）处理小样本的 baseline；实验比较结论：用浅层网络时需要减小数据的类内 variation，但深网络区别不大
 	* " A Closer Look at Few-shot Classification", ICLR 2019

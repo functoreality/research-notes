@@ -70,7 +70,7 @@
 		* 不同但相关的方程的解（如降维）：`2022-07-22`(CSImeet2) 3D 飞机或许可先算 2D 翼形流场（传统方法或 NO），作为 3D 流场预测 NO 的输入
 		* 注：若 $\tilde u$ 与真解接近，NN 可只预测残差
 	* 网格泛化（默认指输入 $\lambda$ 的网格）
-		* 固定网格：`OneShotNO-2104.05512`，PDE-Net（`2021-12-31`(CSImeet2) 学的离散格式是针对特定分辨率的）
+		* 固定网格：((q8g71l))OneShotNO，PDE-Net（`2021-12-31`(CSImeet2) 学的离散格式是针对特定分辨率的）
 		* lattice/grid-size 可变：Meta-MgNet（局部卷积）
 		* mesh-topology 可变：线性算子情形可逼近 Green's func
 		* mesh-free：PINN 使用 meta-learning（如果问题给定的 $a$ 自带 mesh 则可能需要额外处理），以及 PINN 学 Green's func 情形
@@ -170,7 +170,7 @@
 			* ((_n2o88z))Krylov 迭代与 U-Net 交替，保留前者可用于正则化、防止解发散
 			* `Rizutti2019LearnedIS` Helmholtz 方程，若干步 Krylov 子空间迭代中加 U-Net 迭代，每步迭代所用 U-Net 不同；（固定总迭代步数后已与 NO 接近）
 		* 迭代步在局部执行，并结合全局通信；包括区域分解
-			* `OneShotNO-2104.05512` 计算/实验资源只够生成单样本时，据此推测类似 Jacobi 不动点迭代算子；所有局部组合起来得更新所有点的算子，此时类似 FPN 版解算子
+			* OneShotNO((q8g71l)) 计算/实验资源只够生成单样本时，据此推测类似 Jacobi 不动点迭代算子；所有局部组合起来得更新所有点的算子，此时类似 FPN 版解算子
 			* `2011.00568` 区域分解后交替进行每区域近似求解、区域间通信，区域近似解用已有数据的 kNN 插值获得（原文针对刚性的摄动问题；不涉及 NN）
 			* NEST((_q7vn5b))学出局部解算器、Schwarz 全局装配
 		* loss 有单步 loss，RL loss（考虑长期收益；分终态 loss 和多步平均 loss）{o1lg15}
