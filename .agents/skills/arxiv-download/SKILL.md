@@ -116,10 +116,10 @@ tar -xf {arXiv ID}-source/payload -C {arXiv ID}-source
 
 ### 5. 浏览器兜底
 
-只有命令行下载多次失败，或目标页面依赖 JavaScript 渲染时，才检查当前
-环境的可用技能列表中是否有 `helium-browser-control`。若可用，通过当前环境
-的 skill 加载机制加载它，例如调用 `skill(name="helium-browser-control")`，或
-读取其 `SKILL.md`，再按其流程启动浏览器、访问公开页面并下载所需 HTML、PDF 或 LaTeX 源文件。
+只有命令行下载多次失败，或目标页面依赖 JavaScript 渲染时，才考虑通过浏览器进行下载。
+一种可能的途径是：检查当前环境的可用技能列表中是否有 `helium-browser-control`。
+若可用，通过当前环境的 skill 加载机制加载它，例如调用 `skill(name="helium-browser-control")`，
+或读取其 `SKILL.md`，再按其流程启动浏览器、访问公开页面并下载所需 HTML、PDF 或 LaTeX 源文件。
 
 浏览器是兜底手段：它比 HTTP 下载更慢、更难复现，不能替代前面的直接获取。
 

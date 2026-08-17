@@ -1,5 +1,5 @@
-* CHONKNORIS-2511.19980 可算残差、Jacobian 与伴随作用时不学解算子，通常只学 Newton 逆正规因子，再迭代压低离散代数误差
-	* "Operator Learning at Machine Precision"
+* CHONKNORIS-2511.19980 （备用）解 PDE 靠残差迭代算子，所涉 Newton 逆正规因子学出
+	* "Operator Learning at Machine Precision", JCP 2026
 		* Aras Bacho; Aleksei G. Sorokin; Xianjin Yang; Théo Bourdais; Edoardo Calvello; Matthieu Darcy; Alexander Hsu; Bamdad Hosseini; Houman Owhadi;
 		* Caltech; Illinois Tech; UW
 		> created on 2026-08-14 by Codex + GPT-5.6-Sol-high
