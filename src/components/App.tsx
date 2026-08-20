@@ -11,6 +11,39 @@ import { useBacklinks } from '../hooks/useBacklinks';
 import type { NotesData, BacklinkResult } from '../types';
 
 type Theme = 'light' | 'dark' | 'system';
+type LocationTarget = { file: string; lineNum: number | null };
+
+function resolveLocationTarget(data: NotesData, search: string): LocationTarget | null {
+  const params = new URLSearchParams(search);
+  const uid = params.get('uid');
+
+  if (uid) {
+    const target = data.index.markerToFile[uid];
+    if (!target || !data.files[target.file]?.lines.some(line => line.lineNum === target.lineNum)) {
+      return null;
+    }
+    return target;
+  }
+
+  const requestedFile = params.get('file');
+  if (!requestedFile) return null;
+
+  const file = requestedFile.replace(/\.md$/i, '');
+  const noteFile = data.files[file];
+  if (!noteFile) return null;
+
+  const requestedLine = params.get('line');
+  if (!requestedLine) return { file, lineNum: null };
+
+  const lineNum = Number(requestedLine);
+  if (!Number.isSafeInteger(lineNum) || lineNum < 1) {
+    return { file, lineNum: null };
+  }
+
+  return noteFile.lines.some(line => line.lineNum === lineNum)
+    ? { file, lineNum }
+    : { file, lineNum: null };
+}
 
 function getSystemTheme(): 'light' | 'dark' {
   if (typeof window !== 'undefined' && window.matchMedia) {
@@ -29,16 +62,12 @@ function getStoredTheme(): Theme {
 }
 
 interface AppProps {
-  initialFile?: string;
-  initialLine?: number;
   loadingHint: string;
   siteName: string;
   visitorLabel: string;
 }
 
 export function App({
-  initialFile,
-  initialLine,
   loadingHint,
   siteName,
   visitorLabel,
@@ -180,22 +209,61 @@ export function App({
     setBacklinkResults([]);
   }, []);
 
+  const updateLocation = useCallback((target: LocationTarget | null) => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('uid');
+    url.searchParams.delete('file');
+    url.searchParams.delete('line');
+
+    if (target) {
+      url.searchParams.set('file', target.file);
+      if (target.lineNum !== null) {
+        url.searchParams.set('line', String(target.lineNum));
+      }
+    }
+
+    window.history.pushState({}, '', url);
+  }, []);
+
+  const navigateToTarget = useCallback((target: LocationTarget, updateUrl = true) => {
+    openTab(target.file, target.lineNum);
+    setHighlightLine(target.lineNum);
+    if (updateUrl) updateLocation(target);
+  }, [openTab, updateLocation]);
+
+  const navigateHome = useCallback((updateUrl = true) => {
+    switchTab(HOME_TAB_ID);
+    setHighlightLine(null);
+    if (updateUrl) updateLocation(null);
+  }, [HOME_TAB_ID, switchTab, updateLocation]);
+
   useEffect(() => {
     if (!data || initializedRef.current) return;
     initializedRef.current = true;
-    
-    if (initialFile) {
-      openTab(initialFile, initialLine || null);
-      if (initialLine) {
-        setHighlightLine(initialLine);
-      }
-    }
-    
-    // Focus main element after initial load
+
+    const target = resolveLocationTarget(data, window.location.search);
+    if (target) navigateToTarget(target, false);
+
     setTimeout(() => {
       mainRef.current?.focus();
     }, 100);
-  }, [initialFile, initialLine, openTab, data]);
+  }, [data, navigateToTarget]);
+
+  useEffect(() => {
+    if (!data) return;
+
+    const restoreLocation = () => {
+      const target = resolveLocationTarget(data, window.location.search);
+      if (target) {
+        navigateToTarget(target, false);
+      } else {
+        navigateHome(false);
+      }
+    };
+
+    window.addEventListener('popstate', restoreLocation);
+    return () => window.removeEventListener('popstate', restoreLocation);
+  }, [data, navigateHome, navigateToTarget]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -233,34 +301,21 @@ export function App({
   }, [showFileSelector]);
 
   const handleLinkClick = useCallback((file: string, lineNum: number) => {
-    openTab(file, lineNum);
-    setHighlightLine(lineNum);
-    
-    const url = new URL(window.location.href);
-    url.searchParams.set('file', file);
-    url.searchParams.set('line', String(lineNum));
-    window.history.pushState({}, '', url.toString());
-  }, [openTab]);
+    navigateToTarget({ file, lineNum });
+  }, [navigateToTarget]);
 
   const handleLinkNotFound = useCallback((marker: string) => {
     setToastMessage(`噢！${marker} 这条笔记好像没有公开`);
   }, []);
 
   const handleOpenFile = useCallback((file: string) => {
-    openTab(file, null);
-    setHighlightLine(null);
+    navigateToTarget({ file, lineNum: null });
     setShowFileSelector(false);
-    
-    const url = new URL(window.location.href);
-    url.searchParams.set('file', file);
-    url.searchParams.delete('line');
-    window.history.pushState({}, '', url.toString());
-  }, [openTab]);
+  }, [navigateToTarget]);
 
   const handleSearchResultClick = useCallback((file: string, lineNum: number) => {
-    openTab(file, lineNum);
-    setHighlightLine(lineNum);
-  }, [openTab]);
+    navigateToTarget({ file, lineNum });
+  }, [navigateToTarget]);
 
   const handleMarkerClick = useCallback((marker: string) => {
     const strippedMarker = marker.replace(/^\{|\}$/g, '');
@@ -268,25 +323,56 @@ export function App({
     
     if (strippedMarker.startsWith('_') && backlinks.length === 1) {
       const target = backlinks[0];
-      openTab(target.line.file, target.line.lineNum);
-      setHighlightLine(target.line.lineNum);
+      navigateToTarget({ file: target.line.file, lineNum: target.line.lineNum });
     } else {
       setBacklinkMarker(strippedMarker);
       setBacklinkResults(backlinks);
     }
-  }, [getBacklinks, openTab]);
+  }, [getBacklinks, navigateToTarget]);
 
   const handleBacklinkClick = useCallback((file: string, lineNum: number) => {
-    openTab(file, lineNum);
-    setHighlightLine(lineNum);
+    navigateToTarget({ file, lineNum });
     setBacklinkMarker(null);
     setBacklinkResults([]);
-  }, [openTab]);
+  }, [navigateToTarget]);
+
+  const handleTabSwitch = useCallback((tabId: string) => {
+    if (tabId === activeTabId) return;
+
+    if (tabId === HOME_TAB_ID) {
+      navigateHome();
+      return;
+    }
+
+    const targetTab = tabs.find(tab => tab.id === tabId);
+    if (!targetTab) return;
+
+    switchTab(tabId);
+    setHighlightLine(targetTab.lineNum);
+    updateLocation({ file: targetTab.file, lineNum: targetTab.lineNum });
+  }, [HOME_TAB_ID, activeTabId, navigateHome, switchTab, tabs, updateLocation]);
 
   const handleTabClose = useCallback((tabId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    const closingIndex = tabs.findIndex(tab => tab.id === tabId);
+    const isClosingActiveTab = tabId === activeTabId;
+    const remainingTabs = tabs.filter(tab => tab.id !== tabId);
+    const nextTab = isClosingActiveTab
+      ? remainingTabs[Math.max(0, Math.min(closingIndex - 1, remainingTabs.length - 1))]
+      : null;
+
     closeTab(tabId);
-  }, [closeTab]);
+
+    if (!isClosingActiveTab) return;
+    if (!nextTab || nextTab.id === HOME_TAB_ID) {
+      setHighlightLine(null);
+      updateLocation(null);
+      return;
+    }
+
+    setHighlightLine(nextTab.lineNum);
+    updateLocation({ file: nextTab.file, lineNum: nextTab.lineNum });
+  }, [activeTabId, closeTab, tabs, updateLocation]);
 
   useLayoutEffect(() => {
     const { loaded } = downloadProgress;
@@ -423,7 +509,7 @@ export function App({
       <header className="header-bar">
         <div
           className={`tab ${HOME_TAB_ID === activeTabId ? 'active' : ''}`}
-          onClick={() => switchTab(HOME_TAB_ID)}
+          onClick={() => handleTabSwitch(HOME_TAB_ID)}
           style={{ flexShrink: 0 }}
         >
           <span style={{ 
@@ -448,7 +534,7 @@ export function App({
             <div
               key={tab.id}
               className={`tab ${tab.id === activeTabId ? 'active' : ''}`}
-              onClick={() => switchTab(tab.id)}
+              onClick={() => handleTabSwitch(tab.id)}
             >
               <span style={{ 
                 maxWidth: '120px', 

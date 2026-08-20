@@ -44,6 +44,17 @@ npm run site -- build ../personal-notes
 - 全局搜索（⌘K）
 - URL 参数定位
 
+### 分享链接
+
+可直接复制浏览器地址栏中的链接，供他人打开同一份笔记内容：
+
+- `?file=AISClit8`：打开整个文件
+- `?file=AISClit8&line=657`：打开并高亮指定行
+- `?uid=_q26a91`：按笔记行末的唯一 UID 直接定位
+
+文件参数中的 `.md` 后缀可省略，也可保留。UID 不包含花括号，例如
+原文中的 `{_q26a91}` 应写成 `uid=_q26a91`。
+
 ## 部署
 
 详见 [DEPLOY.md](./DEPLOY.md)

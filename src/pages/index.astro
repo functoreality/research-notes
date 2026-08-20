@@ -2,9 +2,6 @@
 import { App } from '../components/App';
 import { loadSiteConfig } from '../../scripts/site-config.mjs';
 
-const { file: initialFile, line: initialLine } = Astro.url.searchParams;
-const initialFileStr = initialFile?.toString() || undefined;
-const initialLineNum = initialLine ? parseInt(initialLine.toString(), 10) : undefined;
 const siteConfig = loadSiteConfig();
 const base = import.meta.env.BASE_URL || '/';
 const basePath = base.endsWith('/') ? base : `${base}/`;
@@ -84,8 +81,6 @@ const basePath = base.endsWith('/') ? base : `${base}/`;
 		<div id="root"></div>
 		<App 
 			client:only="react" 
-			initialFile={initialFileStr}
-			initialLine={initialLineNum}
 			loadingHint={siteConfig.loadingHint}
 			siteName={siteConfig.siteName}
 			visitorLabel={siteConfig.visitorLabel}
