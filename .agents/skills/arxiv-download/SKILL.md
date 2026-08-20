@@ -82,6 +82,9 @@ html2text -nobs {arXiv ID}.html > {arXiv ID}-html.txt
 pdftotext {arXiv ID}.pdf {arXiv ID}-pdf.txt
 ```
 
+若 `html2text` 的转换结果效果不理想，也可以尝试其他方案，例如使用已安装的 Python
+库 `markdownify` 将 HTML 转换为 Markdown 再按需读取，或直接读取原始 HTML 文件。
+
 HTML 仍是首选，PDF 是覆盖最完整的保底格式。下载的大文件建议先在本地
 检索关键段落或分段读取，避免一次把全文塞回对话上下文。若转换工具不可用，
 使用当前环境已有的文件阅读或 PDF 处理能力按需读取，勿为此阻塞下载流程。
