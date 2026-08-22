@@ -170,30 +170,41 @@
 			* stochastic PDE SPDEBench-2505.18511
 		* 非匀质，多相耦合，多物理问题等；{n3298n}
 			* flag dynamics，数据集可用 MeshGraphNets（随体 Lagrange 网格，不均匀网格）；据说场变量包括位置、von-Mises stress
-			* 多相流，如水中大量气泡，据说在气泡数目很多时求解代价高；可能性：类似 DeepPot？
-				* ((_o1ok9y))JAX-FLUIDS 软件包实现了基于水平集法的传统求解算法；{o1ol07}
-					* 相关：((n8re2y))水平集
+			* 多相流，如水中大量气泡，据说在气泡数目很多时求解代价高
+				* 场景可包括((_q8mg8i))液滴、颗粒、气泡
+				* 传统格式要素—连续界面表示，处理不可混溶相的界面演化
+					* 可用界面追踪或相场法((_q8mg8k))
+					* 水平集((n8re2y))法：((_o1ok9y))JAX-FLUIDS 软件包基于此实现传统求解算法；{o1ol07}
+				* 可能方法，类似 DeepPot？
 				* ((_o99e4d))CFDBench 圆管流为水流入充满空气的管道
 				* ((_p2re9v))MPFBench 水滴、气泡数据集，以及 related work BubbleML 沸腾 & 实验数据集
+				* （相变？）数据集与 benchmark BubbleML-2307.14623（另见((n8i96v))科学计算数据集）；{n8i96u}
 				* 3D Rayleigh-Taylor Boussinesq DNS((_q7pc1d))
-			* 机翼结冰
-			* 流体+热 等，((_p4tb4x))FlowBench；((_q1ia34))冷热气泡对流碰撞
 			* 流固耦合：{q4qm4a}
+				* 机翼结冰
 				* 动态区域描述表征方式：((q4qm3q))ALE 含时形变网格 等
+					* 相关处理办法：((n3298l))INR 区域分解
 				* 求解算法：((_q4qm4o))分区耦合算法，依次算 固体形变、网格调整、流体运动
 				* 求解软件：不可压 NS + 弹性体方程，((_o44b34))CoDA-NO 用 TurtleFSI 包生成数据；{o44b37}
-			* 燃烧，((_p64f11))Open-CK 模拟工业园区火灾发展
-			* PDE-ODE 耦合，流体+化学反应，时间尺度差异大((_q1sa7d)) from REALM 套件
-			* DeepM&MNet 考虑的问题
-			* 天气预报，数据集包括((_o6lg6o))SuperBench, ClimSim, DynaBench, OceanBench, ChaosBench
-			* 相关处理办法：((n3298l))INR 区域分解
+			* 相变
+				* 机翼结冰（同是引入流固耦合）
+				* 液体沸腾产生气泡（同时引入多相流）
+			* 流体+热，((_p4tb4x))FlowBench；((_q1ia34))冷热气泡对流碰撞
+			* 流体+化学反应，PDE-ODE 耦合
+				* 时间尺度差异大((_q1sa7d)) from REALM 套件
+				* 燃烧，((_p64f11))Open-CK 模拟工业园区火灾发展
+				* DeepM&MNet 考虑的 电解液，航天器再入 N&O 反应
+				* 任务要素—((_q8mh0c))化学动力学代理，高效预测反应源项or化学演化
+				* 任务要素—((_q8mh0j))反问题，据观测反推反应相关参数
+			* 磁流体
+				* 经典算例（用于测传统算法可靠性）((_pcfj2j))
+				* 磁流体方腔流((_q1ia3c))
 			* 微观宏观不同物理耦合 导致多尺度；{o92b5b}
 				* 如((_o92b58))流体宏观粘度、湍流受微观分子动力学影响
 				* 相关框架((nckf50))多尺度（一般意义）
-			* （相变？）数据集与 benchmark BubbleML-2307.14623（另见((n8i96v))科学计算数据集）；{n8i96u}
 			* Multiphysics-Bench 涉及的耦合方程((_p6de6h))Electro-Thermal, Thermo-Fluid, Electro-Fluid, Magneto-Hydrodynamic, Acoustic–Structure, Mass Transport–Fluid
-			* 磁流体经典算例（用于测传统算法可靠性）((_pcfj2j))
-				* 磁流体方腔流((_q1ia3c))
+			* 特例—天气预报，涉及 大气-海洋-陆地-生物圈耦合，包括 气液相变（蒸发、降水）
+				* 数据集包括((_o6lg6o))SuperBench, ClimSim, DynaBench, OceanBench, ChaosBench
 		* 随机表达式的生成；{n9hm6g}
 			* ML 用于符号计算（不定积分等）((n8v95j)) 涉及
 			* 数据中识别 PDE((n9hm6a))用遗传算法对表达式二叉树采样

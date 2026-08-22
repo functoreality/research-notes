@@ -1,3 +1,151 @@
+* STCast-2509.25210 全球骨干按月份分专家，区域细化用地理先验从全球取信息
+	* "STCast: Adaptive Boundary Alignment for Global and Regional Weather Forecasting", CVPR 2026
+		* Hao Chen; Tao Han; Jie Zhang; Song Guo; Lei Bai;
+		* HKUST，上海 AI lab
+		> created on 2026-08-20 by Codex + GPT-5.6-Terra-high
+	* 方法全称：Spatial-Temporal Weather Forecasting
+	* 训练两阶段：先训含 TMoE 的全球骨干，区域阶段仅训 SAA、冻结其余主结构，再融合全球区域特征
+		* 状态更新：$X_g^{t+1}=\Phi_g(X_g^t)$，$X_r^{t+1}=\Phi_r(X_r^t,X_g^t)$（sec3.1）
+	* 数据：ERA5 1979--2019；全球 70 变量、$1.4^\circ$，东亚区域 5 个地表变量、$0.25^\circ$（appendix，Dataset Details）
+	* 区域受全球影响范围：SAA 跨尺度融合模块不预设相邻扩张区，而是给全部全球位置到目标区域的注意力加距离先验
+		* 几何先验：按经纬向弧长构造区域外距近似，区域内权重为 1，区域外 $f(d)=\exp(-\alpha d^2)$（eqn1--4）
+		* 融合记号：原文令全球特征作 $Q,K$，区域特征作 $V$，以 $f(d)$ 调制线性交叉注意力，复杂度 $O(n)$（eqn5）{_q8mh2j}
+		* （AI 评）原文称该融合输出区域预测，eqn(5) 却未明说输出 token 的排布，复现时需对照实现确认
+		* 训练：每个 SAA block 将初始 $f(d)$ 与注意力图逐元素相乘，训练中细化远程影响（sec3.2）
+		* 消融：10 日区域 normalized RMSE 以 Xavier uniform 替代距离先验初始化，$0.4921\to0.7192$（table2）
+		> SAA 将可训练的先验分布用于引导优化，并逐步细化以捕获全球与区域大气型之间的潜在相关性。（sec3.2）
+		* （AI 评）这里的边界不是数值 PDE 的界面条件，而是跨尺度信息选择核；适合学远程耦合，不能替代通量连续性或边界稳定性约束
+	* 输入月份已知时分配专家：TMoE 用月份的环状邻近关系约束 Top-K MoE router
+		* 路由先验：以输入时刻月份为峰值的可学习环状离散高斯，编码为 $M$；{_q8mi4t}
+		* 路由得分：eqn(7) 写 $I=\operatorname{Softmax}(\operatorname{Conv}(X^t)+M)$，文字却说 index 与 $M$ 拼接
+			* （AI 评）原文 concat/add 不一致，复现应以代码为准
+		* （AI 评）高斯只偏置相邻月份共享专家，不保证 Top-K 专家集合重合
+		* 消融：12 专家、高斯编码比同数 one-hot 月份编码的全球 10 日 normalized RMSE 低 $0.0148$，参数同为 654.8M（table4）{_q8mi4d}
+		* （AI 评）仅当标签在推理时可得且标签距离可信，才能迁移到其他周期或有序条件；环状只适于周期条件
+	* 实验范围：区域预报只验证东亚，区域阶段仅训 SAA（sec4.1，appendix，Implementation Details）
+		* （AI 评）空间泛化：全球区域分布能否跨目标区域、跨气候带复用没有证据
+		* （AI 评）冻结主干排除了全球表征随区域目标共同适配，结果仅验证固定全球特征上的信息选择
+	* [公众号报道](https://mp.weixin.qq.com/s/I5gTxXLGa2hTwGDJEk9-Xg)
+* AI流体综述，湍流闭式、ROM、控制，多相状态表示与燃烧反应代理，按流型组织的综述索引
+	* "Intelligent fluid flows: A survey of deep learning methods for turbulent flows, multiphase flows, and combustion", Neurocomputing 2026
+		* Sidharth S. Menon; Mahdi Lavari; Amelia Kokernak; Joel Mathew; Charulatha A. Jagtap; Jagannath Jayachandran; Aswin Gnanaskandan; Ameya D. Jagtap;
+		* WPI, Brown Univ
+		> created on 2026-08-20 by Codex + GPT-5.6-Terra-high
+	* 定位：PINN、算子学习、混合模型、生成模型在三类流动中的应用索引
+		> 先介绍 PINN、算子学习、混合建模和生成模型，再讨论湍流、多相流和燃烧中的应用。（Abstract）
+	* 按方法找工作：PINN、算子学习、混合模型、生成模型均须在下列三流型任务下回查
+	* 湍流工作：闭式、ROM、主动控制和多尺度质量
+		> 湍流部分涵盖闭式建模、降阶模型和主动流动控制。（Abstract）
+		* 查 RANS 闭式：例，以流动状态预测 Reynolds 应力，补全平均方程的未解析应力项
+		* 查 ROM、控制：原文将其列为湍流应用任务，具体模型设计须回查所引原始工作
+		* （AI 评）查多尺度质量：评估、训练与物理标度分开
+			* 评估：频带误差查误差的尺度分布，能谱查能量的尺度分布，流动统计量查统计一致性
+			* （AI 评）训练：谱感知损失或正阶 $H^s$ 损失可提高高频误差权重
+			* （AI 评）存在惯性区间时，Kolmogorov 标度可作统计诊断，不能替代解误差或守恒检查
+		* （AI 评）应用部分按流型组织，跨体系复用时应回到“补何种缺失映射”框架
+	* 多相工作：按状态表示与预测任务比较
+		* 连续界面表示：界面追踪或相场法，处理不可混溶相的界面演化；{_q8mg8k}
+		* 分散相对象：液滴、颗粒、气泡动力学，先核查其状态是否适合连续界面表示；{_q8mg8i}
+		* 场重建任务：预测高保真流场，不等同于选择界面状态表示
+		* （AI 评）比较原始工作时再核查界面演化约束，不能由“多相流”标签判断可迁移性
+	* 燃烧代理：化学动力学代理与反问题
+		* 代理任务：以流场状态预测反应源项或化学演化，降低昂贵子过程的求解成本；{_q8mh0c}
+		* 反问题任务：据观测反推反应相关参数，不能直接等同于源项代理；{_q8mh0j}
+		* （AI 评）迁移时仍分别核查闭式耦合稳定性与化学刚性、守恒
+	* （AI 评）跨流型选可迁移工作：分别比较缺失映射、状态表示和子过程代理，勿把流型名称当方法类别
+	* [公众号报道](https://mp.weixin.qq.com/s/KuYXQiHhSxA602Vz92nigA)
+* 2604.23528 有限配点 PINN 的低残差假解，靠伪时间差商+重采样揭露
+	* "When PINNs Go Wrong: Pseudo-Time Stepping Against Spurious Solutions"
+		* Sifan Wang; Shawn Koohy; Yiping Lu; Paris Perdikaris;
+		* Yale; UPenn; Northwestern
+		> created on 2026-08-20 by Codex + GPT-5.6-Terra-high
+	* 方法全称：Adaptive pseudo-time stepping
+	* 定位：PINN loss 失效归因+自适应伪时间训练法
+	* 低训练残差却解错：有限 collocation 的经验残差可把物理解与伪解并列为全局极小 sec2.2
+		* 固定点伪解：各训练点邻域贴真解或零解，其余位置可退成平凡解，经验 PDE、IC、齐次 BC 项均为零 thm2.1；{_q8me9g}
+		* 随机重采样不自动排除：特设宽 $h$ 的过渡层使新增点 PDE loss 的期望仍为 $O(h^{-1})$，优化未降到该尺度仍会漏掉 sec2.2, rmk2.2
+		* （AI 评）论文未给 $h$ 与 batch 数的覆盖准则，只说明随机抽样本身不能保证排除这类窄层伪解
+		* （AI 评）伪解存在无需诉诸条件数或梯度冲突，实际训练会否吸入它仍可与谱偏置、参数化和优化病理耦合
+		> 固定有限 collocation set 上的经验 PINN loss 可有对应平凡或伪解的许多不同全局极小。sec2.2, thm2.1
+	* 伪时间残差：让伪解在新点上暴露，而非仅把原 loss 优化得更好 sec2.3；{_q8mf0y}
+		* loss：$L_{pts}=\mathbb {E}_x|[u_\theta-u_{k-1}]/\tau+\mathcal {R}[u_\theta]|^2$，BC、IC 项不变 eqn(2.38)
+		* 训练闭环：冻结 $u_{k-1}$，当前参数对该 loss 做一步更新得 $u_k$，下一步再冻结新 $u_k$ sec2.3, alg1
+		* 角标含义：$k$ 是训练中的人工伪时间，不是含时 PDE 的物理时间 $t$ sec2.3, rem2.4
+		* 新配置点上的 interior loss 期望：特设伪解经显式一步更新后从 $O(h^{-1})$ 变 $O(h^{-1}+\tau^2h^{-3})$ thm2.5
+		* 固定点反而可得更小训练 loss 却预测更差，重采样版 loss 较大却逼近真解 fig2--3
+		* 证明用显式伪时间更新展示放大，实际训练最小化的是隐式松弛 loss，前者只是机制代理 sec2.3
+		* （AI 评）gPINN 以空间或时间残差导数抑制尖峰，这里依赖前一模型改残差、再重采样使窄缺陷可见，代价是保存前一模型
+	* 无真解选伪时间步：以输出到残差的局部变化率替代调参 sec2.4；{_q8mf19}
+		* 大 $\tau$ 更强地暴露缺陷，却会使松弛目标难稳；不同 $\tau$ 的训练 loss 可近似、相对 $L^2$ error 却差很多 fig5
+		* 符号：$e^k=u^k-u^*$，$J_*$ 是解处 residual Jacobian
+		* 理想松弛迭代：$e^k\approx(I+\tau J_*)^{-1}e^{k-1}$ eqn(2.54--2.57)
+		* 该局部收缩条件只给选 $\tau$ 的动机，实际估计器不恢复全谱也不保证稳定
+		* 同一新批次：$\Delta u=u_k-u_{k-1}$，$\Delta r=\mathcal {R}[u_k]-\mathcal {R}[u_{k-1}]$
+		* 不显式求 $J$：$\widehat\tau=\gamma\|\Delta u\|_2/(\|\Delta r\|_2+\epsilon)$ eqn(2.62--2.65)
+		* 两个时间尺度：每个 iteration 重采样，$\tau$ 每 1000 iteration 更新
+		* 选步稳定化：EMA 平滑，后期按 residual 降幅 cosine shrink $\gamma$ sec2.4, fig9
+		* 方程组：按残差分量各设 $\tau$ sec2.4
+		* （AI 评）这是解空间残差算子的方向刚性估计，不是参数优化器的自适应学习率，两点比值只见当前方向
+		* （AI 评）$\Delta u$ 很小、随机批次噪声大或 $J$ 强非正规时估计会不稳，$\epsilon$、EMA、间隔更新只是工程缓冲
+	* 强基线下仍有效：10 个含激波、混沌、反应扩散与高 Re 流的前向 PINN benchmark 均优于基线，且优于所测步长网格内最优固定 $\tau$ table1
+		* 基线已含 PirateNet、因果训练、自适应 loss weighting、SOAP，伪时间是与这些组件叠加的残差改法 sec3
+		* （AI 评）伪解定理只处理代表性齐次构造，实验显示净增益但未直接测过渡层残差，不能把所有改善都归给该机制
+	* 复现数据：GitHub `sifanexisted/jaxpi2` 公开各 benchmark 的参考解文件与 PINN 代码，2026-08-20 核验
+		* 例：方腔流 `ldc_Re100.mat` 至 `ldc_Re5000.mat`，Rayleigh--Taylor `rayleigh_taylor.npy`
+		* 参考解由 Chebfun、PyClaw、SU2、JAX-Fluids、IncompressibleNavierStokes 等生成 appC，仓库未见对应传统求解器脚本
+* 2604.16721 （备用）已知常参 PDE 区间外推，状态先编码，末层稀疏组合状态项和含参项
+	* "Late Fusion Neural Operators for Extrapolation Across Parameter Space in Partial Differential Equations"
+		* Eva van Tegelen; Taniya Kapoor; George A.K. van Voorn; Peter van Heijster; Ioannis N. Athanasiadis;
+		* Wageningen University & Research
+		> created on 2026-08-20 by Codex + GPT-5.6-Terra-high
+	* 方法全称：Late Fusion Neural Operator
+	* 参数外推，意图避免状态特征混入参数效应：$u_t\mapsto h$，再以 $(h,\beta)$ 给出状态增量 $\delta u$
+		* 推理，严格单步自回归：$\delta u=\Theta(h(u_t),\beta)\Xi$，$u_{t+\Delta t}=u_t+\delta u$，无额外历史窗口或测试时微调
+		* 结构定义，$h_j$、$\delta u$ 都是网格场，$\Theta$ 在各点列候选项，$\Xi$ 对候选项加权。eq5-8
+		* 分工，状态编码器输出供候选库组合的隐特征，参数不作为其输入通道
+		* 导数类比，$h$ 可视作数值格式中导数和非线性交互中间量的类比，未获显式物理命名。sec3, sec6
+		* 参数作用，$\Theta$ 枚举 $h_j$、$\beta_i h_j$、多项式等候选项，$\Xi$ 在末层决定其贡献
+		> 经典数值格式先由当前状态近似空间导数，再把导数和方程参数结合以近似时间导数；这里仿照该二阶段结构，但不提供方程形式或导数。sec3
+		* 适用边界，参数在一条轨迹内恒定，实验均用固定 $\Delta t$ 的单步更新再 rollout。sec4
+		* （AI 评）若参数作用难由候选库覆盖，或刚性和长 rollout 使累积误差主导，尚无实证支持
+		* （AI 评）参数只经可分组的输出库影响增量，可检查贡献是否符合已知参数依赖，不等于已验证 $h$ 解耦
+	* 训练，以稀疏正则抑制候选项在训练区间拟合：数据 MSE 加 $\lambda_{\rm sparse}\lVert\Xi\rVert_1$，检验其外推影响
+		* 库复杂时外推更依赖 $\lambda_{\rm sparse}$，对流消融中最小的 6 项库最好，较大库的 seed 方差也更大。sec5.3
+		* （AI 评）库是人为给出的参数和隐特征交互 ansatz，稀疏性并不使隐状态自动成为导数或方程项
+	* 设计约束与机制检查，判断参数是否只作用于对应过程：拆分 $\Theta\Xi$ 的含参和无参贡献，再对照已知 PDE 结构
+		* 对流的参数相关贡献近似空间导数，参数无关贡献近零；二维反应扩散中 $k$ 只直接作用的 $u$ 方程保留含参贡献。sec5.5
+		* （AI 评）透明分组不保证物理语义，需在多输入、参数和 seed 下量化各组与目标过程的对应稳定性，尚未恢复符号方程
+	* 评测，控制 FNO 骨干来比较整套参数化方案：对流、Burgers、一维和二维反应扩散重采参数，设训练和区间外测试
+		* 同一 FNO backbone 下，四个方程的 ID、OD RMSE 都优于参数作输入通道的 FNO 和 CAPE-FNO。table2
+		* 难度，对流速度 $(0,0.5)\to(0.5,1)$，Burgers 黏性 $(0.01,0.02)\to(0,0.01)$；一维、二维反应扩散也在扩散或 $k$ 上外推。table1
+		* 对流 CNO 上也有同方向收益，支持接口可迁移到该骨干的该任务。sec5.4
+		* （AI 评）主对比同时改输出头、候选库和稀疏正则，缺少只移动参数注入位置的消融，不能单独归因于后置融合
+		* （AI 评）实验不给模型方程式，却用已知合成 PDE 的项复杂度定制库；尚未验证同一库或自动选库能否兼顾覆盖与外推
+	* 数据，参数外推基准：公开仓库含 1D 对流、Burgers、1D 和 2D 反应扩散的 train、ID test、OD test `.pt` 文件
+		* 公开位置：`https://github.com/evantegelen/LateFusionNeuralOperator`。sec4, Data Availability
+		* 可复现性，截至 2026-08-20 所查默认分支含训练、评测、模型、配置和预处理，未见原始 PDE 轨迹生成脚本
+* jNO-2605.10159 JAX 库：统一符号程序接 FEM/PINN/NO/PDE基模微调
+	* "jNO: A JAX Library for Neural Operator and Foundation Model Training"
+		* Leon Armbruster; Rathan Ramesh; Georg Kruse; Christopher Straub
+		* Fraunhofer IISB
+		> created on 2026-08-20 by Codex + GPT-5.6-Terra-high
+	* 方法全称：jax Neural Operators
+	* （Luna-xhigh 版 TLDR）用可追踪符号程序统一 PDE 求解、PINN、神经算子和基础模型微调，再按目标降为点值残差、弱形式、FEM 系统、含时块或训练路径
+	* 回查点：怎样一次写含区域、边界、导数语义的 PDE，再改模型或求解路由
+		* 方程图：区域变量、模型调用、导数、强/弱形式、监督 loss、诊断先只建符号节点，执行时才绑定 batch 并编译（sec. 2.1）
+		* 统一前提：图共享的是带网格 tag、坐标、边界和微分/变分语义的方程表达
+			> 网格、tag、变量和符号表达保留在同一 DSL，后端选择推迟到组装时。（sec. 2.3）
+		* NO/PINN 路由：Domain 以 $(B,T,\ldots)$ 对齐坐标、参数 tensor 和 tag，模型输出接监督项与 PDE residual（sec. 2.2, 2.4）
+		* 边界接入：tag 选取边界点或边界积分区；硬 Dirichlet 条件用输出包络，弱形式保留边界项（sec. 2.2, 2.5）
+		* FEM 路由：NN 未知场作 trial 求弱残差；FEM 未知场和测试函数组装 $(A,b)$ 或残差/Jacobian，含 $u_t$ 时给时间块（sec. 2.3）
+		* 编译收益：结构相同的模型调用、导数和公式子树合并一次，多 loss 共用中间量，再交给 XLA JIT、分片和 gradient checkpoint（sec. 2.1, 2.6）
+	* 训练配置：冻结、mask、优化器、LoRA 贴在模型节点上；它们利用方程图的模型边界，但不属于 PDE 语义本身（sec. 2.1, 2.4）
+	* （AI 评）作者定位是 NO/基础模型训练库；这里把可迁移部分重述为 PDE 的可编译中间表示，不把训练 API 当作图语义
+		* 计算图编码 PDE 时，可据此复用方程后更换网络、离散或观测项，避免把这些改动散为 glue code
+	* 适用边界：不是新算子、弱形式或 LoRA 算法
+		* 统一 DSL 的价值依赖各后端 lowering 保持方程语义；sec. 4 报告单元/集成测试和示例，但未系统比较跨后端语义一致性、实现工作量或组合覆盖率
+		* （AI 评）统一图没有消灭 glue code，而是将其集中到变量绑定、边界 tag、离散、shape 语义及测试矩阵；只有反复混合这些工作流时才值得承担该复杂度
+	* 已整合的 PDE 基模：PDEformer-2，Poseidon，MORPH，Walrus，MPP，BCAT，DPOT；{_q8l71z}
 * CHONKNORIS-2511.19980 （备用）解 PDE 靠残差迭代算子，所涉 Newton 逆正规因子学出
 	* "Operator Learning at Machine Precision", JCP 2026
 		* Aras Bacho; Aleksei G. Sorokin; Xianjin Yang; Théo Bourdais; Edoardo Calvello; Matthieu Darcy; Alexander Hsu; Bamdad Hosseini; Houman Owhadi;

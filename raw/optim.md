@@ -114,7 +114,8 @@
 			* 训练类型阶段，((nbfg12))基础模型 微调学习率小于预训练；{nbfg1p}
 			* ((n7db60))MAML 的常规训练，在元训练、元推断阶段用不同学习率，前者甚至用负学习率¹
 				* ¹梯度上升还出现在((n7de41))flooding 技巧，用于提高泛化能力；{n7de4l}
-			* 优化器自适应选取学习率 `D-Adaptation-2301.07733`，可用于 SGD、Adam、Lion 等；作者提供了 pip PyTorch 包；被 ((_nbim9l))MPP 使用
+			* 优化器自适应选取学习率 `D-Adaptation-2301.07733`，可用于 SGD、Adam、Lion 等；作者提供了 pip PyTorch 包；被 ((_nbim9l))MPP 使用；{q8mf1p}
+				* 手段可类比：((q51m5f))TSONN 自适应选伪时间步长
 			* 元学习选取学习率；{n7db6i}
 				* 如((n7db46))按超参数搜索处理
 				* 动态生成当前学习率：((n7db6l))根据历史 loss，((n7db75))根据当前参数、梯度情况
