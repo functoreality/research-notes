@@ -1,8 +1,45 @@
-# 笔记写入操作指南
+---
+name: main-note-integration
+description: >-
+  Use this skill when the user wants to integrate a reviewed literature note
+  and its paper-to-notes transfer plan into AI-for-PDE main notes. This covers
+  assigning literature-note UIDs, adding source-linked and context-translated
+  content to main notes, and proposing keywd.md updates. Trigger when the user
+  asks to "迁移到主笔记", "写入主笔记", "整合文献笔记和迁移计划", or provides
+  a plan file together with a literature-note draft or entry and asks to apply it.
+  Do not use it for writing a literature note from a paper alone, or for broad
+  refactoring of existing main-note structures.
+---
+
+# 主笔记集成
+
+本 skill 将已经消化的单篇论文内容纳入笔记系统。它既可在 `paper-to-notes`
+完成计划和文献笔记草稿后的同一会话中继续执行，也可在新会话中接收已有文件。
+
+## 输入与边界
+
+开始前确认以下输入：
+
+1. 迁移计划：通常为 `论文方法名-arXivID-plan-模型名.md`。
+2. 已经审阅并允许正式写入的文献笔记：可以是临时草稿，也可以是已在
+   `raw/` 中的正式条目。
+3. 笔记根目录及目标主笔记文件。
+
+如果当前会话刚完成 `paper-to-notes` 的 Writing Workflow，前两项已在上下文中，
+无需重复索取。若用户明确要求迁移，即视为允许执行本 skill 的文献笔记正式写入和
+主笔记写入；`keywd.md` 的新增关键词仍按第四节单独向用户说明并取得同意。
+
+文献笔记为临时草稿时，先吸收已确认的反馈，将它写入正式文献笔记并补齐 UID，
+再迁移主笔记。文献笔记已经是正式条目时，不得重复追加，只检查其是否为每条待迁移
+断言提供了合适的来源 UID，缺失时才补充。
+
+本 skill 只向既有主笔记框架增补来自一篇论文的内容。发现需要改变旧内容的组织维度
+或重排多个既有分支时，说明原因并暂停，交由未来的主笔记重构工作流处理。
 
 > 本文件描述写入笔记系统时的**具体操作方法**（UID 生成、文件选择、插入位置、链接规则等）。
 >
-> **何时阅读**：执行 `paper-to-notes` skill 的「步骤四：写入主笔记」时参考。文献笔记的写作规范（格式、风格、压缩原则等）见 `../note-writing/SKILL.md`。
+> 文献笔记的写作规范（格式、风格、压缩原则等）见
+> `../literature-note-writing/SKILL.md`。
 
 ## 一、准备工作
 
@@ -39,6 +76,9 @@
 
 ## 二、写入文献笔记
 
+本节只在输入是临时草稿，或现有正式条目缺少待迁移内容的来源 UID 时执行。
+已经正式写入且来源完备的条目直接进入第三节。
+
 ### 2.1 选择文件和追加位置
 
 根据论文主题匹配对应文献笔记系列：
@@ -53,7 +93,8 @@
 
 ### 2.2 标题行格式
 
-> 标题行的写作原则和完整规范见 `../note-writing/SKILL.md` 第 3 节。
+> 标题行的写作原则和完整规范见
+> `../literature-note-writing/SKILL.md` 第 3 节。
 > 此处仅列出格式要点和示例。
 
 格式：`* 方法名-arXivID 一句话描述`
@@ -71,7 +112,8 @@
 
 ### 2.3 正文结构
 
-> 正文的写作原则（压缩、归因、评注、引文等）见 `../note-writing/SKILL.md`。
+> 正文的写作原则（压缩、归因、评注、引文等）见
+> `../literature-note-writing/SKILL.md`。
 > 此处仅列出文件骨架模板和项目特定约定。
 
 ```markdown

@@ -6,17 +6,20 @@
 
 ## 步骤一：起草文献笔记草稿（自动执行段）
 
-- 加载 `../note-writing/SKILL.md`（`note-writing` skill），根据论文起草一篇文献笔记
+- 加载 `../literature-note-writing/SKILL.md`（`literature-note-writing` skill），
+  根据论文起草一篇文献笔记
 - **将分析阶段得出的目的手段链转化为笔记的组织骨架**：
 	- 顶层目的是什么？拆为哪些子问题？每个子问题对应什么手段？
 - 计划中认为值得迁移到主笔记里的内容，在文献笔记里均应有相应记录（写完后检查）
 - 作为草稿，写入当前工作目录下的**临时文件** `论文方法名-arXivID-lit-你的模型名称.md`，不要直接写入笔记系统的正式文件
-	- 文件名中“论文方法名-arXivID”写法同 `note-writing` 对文件首行的要求；若发现先前 plan 文件命名错误，请重命名
-- 要求遵循 `note-writing` skill 中的写作规范
+	- 文件名中“论文方法名-arXivID”写法同 `literature-note-writing`
+	  对文件首行的要求；若发现先前 plan 文件命名错误，请重命名
+- 要求遵循 `literature-note-writing` skill 中的写作规范
 - 无需包含具体的 `{_UID}` 标记（在步骤二正式写入时分配）
 - 文献笔记内不应包含 `((UID))` 交叉引用（除非有极特殊的理由，所有交叉引用仅限于主笔记）
 
-完成 note-writing skill 的复核三步（定性、脚本、子 agent 审视）后，**首次暂停并请求用户审阅**。
+完成 literature-note-writing skill 的复核三步（定性、脚本、子 agent 审视）后，
+**首次暂停并请求用户审阅**。
 解释文献笔记整体逻辑结构，等待用户确认或提出修改意见。用户可能要求修改后再审阅。
 
 注：自进入本步骤起至复核完成，均为自动执行段，不需要请求用户同意；首次暂停点即此处。
@@ -25,7 +28,7 @@
 
 1. 如果用户要求正式写入，结合用户反馈建议，对草稿进行评审和改写
 2. 将最终版本**追加**到对应的正式文献笔记文件（如 `raw/AISClitN.md`）的开头（不是结尾）
-3. 运行 `../note-writing/scripts/check-note.sh "$FILE"` 验证格式
+3. 运行 `../literature-note-writing/scripts/check-note.sh "$FILE"` 验证格式
 4. 写入后再次暂停并请求用户审阅
 
 如果用户要求直接写入主笔记，则跳过步骤二、直接进入步骤三，后续追加 UID 也直接在临时文件中进行。
@@ -34,4 +37,7 @@
 
 用户确认文献笔记后，将分析报告中有迁移价值的内容写入主笔记。
 
-> 此步的具体操作见 `references/note-operations.md`，包括：主笔记插入位置定位、跨语境翻译、层级结构规则、主笔记 UID 分配、keywd.md 更新等。
+> 此步加载 `../main-note-integration/SKILL.md`（`main-note-integration` skill）。
+> 它处理主笔记插入位置定位、跨语境翻译、层级结构规则、主笔记 UID 分配、
+> `keywd.md` 更新等。若文献笔记已在步骤二正式写入，它只检查和补充必要的 UID，
+> 不会重复追加该条目。

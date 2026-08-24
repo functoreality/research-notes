@@ -1,6 +1,6 @@
 # 文献笔记盲审指南
 
-本文档是 note-writing skill 的参考文件，用于指导“未来读者盲审”子 agent 的审视工作。
+本文档是 literature-note-writing skill 的参考文件，用于指导“未来读者盲审”子 agent 的审视工作。
 
 ## 角色定位
 

@@ -1,5 +1,5 @@
 ---
-name: note-writing
+name: literature-note-writing
 description: >-
   Use this skill when the user asks to write literature notes on an academic
   paper, or when you need to create or edit literature notes in this
@@ -471,13 +471,13 @@ PINN 难训归因…；解决，ansatz 加不训的常数偏置…
 - 不足成立，但建议方案非最优，有另一方案可以更好地解决同一不足
 请务必拉满自己的强大判断力，做出足够合理、有充分依据的改动，一切以提高笔记质量为目的。
 
-**A. 未来读者盲审（不加载 note-writing skill）**
+**A. 未来读者盲审（不加载 literature-note-writing skill）**
 
 子 agent 启动后先读取盲审要求 `references/blind-review-guide.md`（位于本 skill 目录下）
 了解审视方法论与报告方式，再对笔记执行审视。
 需告知子 agent 盲审要求文档的完整路径、待审笔记的完整路径。
 
-**B. 写作准则审视（加载 note-writing skill）**
+**B. 写作准则审视（加载 literature-note-writing skill）**
 
 加载本 skill（给完整路径），以 skill 中的写作原则为透镜审视笔记。
 重点关注脚本无法检查的思想质量维度。
