@@ -398,6 +398,7 @@
 					* 降信息混合复杂度，信息混合有多类方式
 						* 注意力类：((palf57))降注意力复杂度-token打包
 						* FNO 类：打包结果视为抽象空间网格点，用 FNO1D，如((_p8ge26))Opt_RNO；{p8ge27}
+							* 相关框架：((q8na8l))元素分类处理；此处使用固定类别数、全类归属和软打包
 					* 转均匀网格((p8fb1n))，可用均匀网格处理的 ansatz；{p8ge31}
 						* 元素类型：低维坐标点
 						* 划分边界：通常非全局归属
@@ -422,21 +423,17 @@
 		* 特例—区域分解((q8fb7o))，坐标点为元素，划分结果为区域；{p2qf2a}
 			* 解读同样适用于((o2cg00))散点 NO 类 Transformer 架构
 			* 以下维度类比((n2pe8f))INR区域分解，同样分 区域个数固定vs可变，软vs硬，预设vs可学
-		* 划分类数，输入数量改变情形：固定总数 vs 固定压缩率（数量正比于原元素数）vs 其他
-			* 固定总数 eg. Transolver、Opt_RNO（散点 NO 打包），((ocnf1k))LSM（patched NO 打包）
-				* Transolver((_o2cg04))引入 meta-token，称为物理注意力；{o2cg0f}
-					* 一般框架((o2cg00))逐点NO-基于Transformer
-				* 原 token 与 meta-token 相互转换：
-					* 逐元素线性变换得 logits，沿 meta-token 维度 softmax 得权重：Transolver
-						* 反向变换，原版 Transolver 正向变换权重沿原 token 维归一化，((q5da50))logits 改沿 token 维度 softmax
-					* 交叉注意力：((ocnf1k))LSM，LRSA-2604.03582
-			* 固定压缩率 eg. MMET（散点 NO 打包）
-			* 可变压缩率，利用序列顺序结构，((pam004))文本久远部分内容提压缩率
-		* 划分边界：硬（属于单类）、软（属于多类）、全（全局归属，仅权重大小差异）
-			* 全 eg. Transolver、Opt_RNO（散点 NO 打包）
-			* 硬，汇总方式包括 等变网络、简单 concat
-				* 简单 concat eg. ((_p8aj2m))MMET（散点 NO 打包）
-				* 相关：((p4dc1z))GB-INR 离散部分插值方式，也分 加权和、简单 concat 两种
+		* 通用划分维度：以下共享设计见元素分类处理
+			* 类别数量：见((q8qn3n))元素分类处理-类别数量-单次输入
+			* 归属范围：硬、软与全类归属见((q8qn3p))元素分类处理-分类结果
+			* 类内聚合：集合网络与按序拼接见((q8qn3o))元素分类处理-打包-类内聚合
+		* 打包实现：原 token 与类别 token 可用分类权重或交叉注意力相互转换
+			* Transolver：((_o2cg04))引入 meta-token，称为物理注意力；{o2cg0f}
+				* 一般框架：见((o2cg00))逐点 NO-基于 Transformer
+				* 正向变换：逐元素线性变换得 logits，沿 meta-token 维度 softmax 得分类权重
+					* 反向变换：原版复用正向权重并沿原 token 维归一化，((q5da50))改为沿 token 维对 logits 做 softmax
+				* 相关框架：((q8na8l))元素分类处理；此处使用固定类别数、全类归属和显式分类器
+			* 交叉注意力：((ocnf1k))LSM、LRSA-2604.03582
 		* 划分方式：预设与可学路由见((q8ph8w))元素分类处理-实现路由
 		* 混合功能：划分目的为降低信息交互复杂度情形，需确保划分后信息仍可全局混合
 			* 多标准分组（硬划分）{pbfa2u}
