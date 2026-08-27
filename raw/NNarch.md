@@ -254,7 +254,7 @@
 			* 又见((n8kh2l))ResNet 与 ODE 解读，((n32f3o))DE启发的NN架构设计
 		* 逐渐在残差网络后追加新层((o2gh56))，针对 PINN
 		* `2022-11-28`(lectures) ANE，ReLU 网络视为 FEM moving mesh，根据误差分布动态新增神经元，初始化使成为要加的 FEM 基底；{n37g53}
-		* 相关框架：((n37g4c))NN 初始化，((ocaf68))INR 区域分解-动态新增区域-参数初始化
+		* 相关框架：((n37g4c))NN 初始化，((ocaf68))元素分类处理-类别演化-状态继承
 * 1TaskHypernet 形如 $h(x;l(x))$ 的 hypernet：将单任务学习改写成多任务形式，包括 MoE；{n3hg7a}
 	* 相关：同手段（超网络）的目的（作 NN 架构）换为元学习，见((n3gd5l))hyperNet
 	> 日后建立“单任务转化为 MTL/元学习”汇总时可以把这个链接过去

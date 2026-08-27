@@ -871,7 +871,6 @@
 	* "Partition of unity networks: deep hp-approximation" Kookjin Lee, Nathaniel A. Trask, Ravi G. Patel, Mamikon A. Gulian, Eric C. Cyr
 		> `2022-12-14`(dbGrpMeet2)
 	* ansatz $f_\theta(x)=\Phi_\xi(x)^\mathrm{T}CP(x)$，$\theta=(\xi,C)$，$\Phi_\xi:X\to\R^N$ 单位分解映射
-		* 输入仍为原空间坐标 $x$，未先映射到 FEM 标准单元；{_q8s67u}
 		* $P(x)$ 预先选定的基底，如不超过 $m$ 次的多项式；乘上单位分解后使该基底被 localize；{_q8s66d}
 		* 传统数值分析中用 meshing 方式构造矩阵 $C$
 		* （评）传统上应该生成 mesh 后获得（硬）单位分解 $\Phi$，基底 $P(x)$ 取定，只需拟合各单元内的各系数、组装成为 $C$，$C$ 常为瘦高矩阵；标题的 hp-approximation 应该是这个意思
