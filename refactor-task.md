@@ -19,9 +19,9 @@
 直接材料：
 
 - `refactor-plan.md` 中已有但不完整的新框架草案
-- `raw/INRarch.md` 第 4 至 142 行附近
-- `raw/NNarch.md` 第 270 至 309 行附近
-- `raw/NOinput.md` 第 394 至 470 行附近
+- `raw/INRarch.md` {n2pe8f} 子树
+- `raw/NNarch.md` {n2pj82} 子树
+- `raw/NOinput.md` {p8ag76} 子树
 
 以上行号仅作初始定位。正式分析时应结合大纲层级、UID 链接和连续原文
 确认实际内容边界，不能把给定行号机械地当作迁移边界。
