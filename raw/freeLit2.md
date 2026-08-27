@@ -551,7 +551,7 @@
 	* INR modulation 参化方式、元学习训练主网络参数方式均类似 `functa-2201.12204`
 		* 注：两篇文章一作是同一个人，不过其他作者好像都不一样
 	* sec2.3 大规模图像打成 patch，训练用随机¹ patch，测试时所有图像分割为 patch 组合、每块分别算 modulation，最终用这一组 modulation 表达图像；{_p59b7r}
-		* ¹patch 位置为连续随机变量，不是分割为 patch 组合后随机选几块
+		* ¹patch 位置为连续随机变量，不是分割为 patch 组合后随机选几块；{_q8s66c}
 	* sec2.4 浮点数进一步 quantize 压缩：
 		* COIN 将 NN 权重压缩到 16 位（> 半精度？），再低会严重影响性能
 		* 发现 modulation 允许更激进的 quantization 至 5 位：各位大小裁剪至 $3\sigma$ 区间后，均匀划分该区间
