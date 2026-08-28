@@ -761,7 +761,7 @@
 		* Rafael Bischof, Michael Kraus
 		> created on 2023-04-02
 	* 摘要：发现相对于 uniform penalty，用 resolute regularization 效果更好，它可以为能力不足的网络赋予零重要性；{_n42n4f}
-	* fig2 ansatz $u=\sum\lambda_i(x)u_i(x)$
+	* fig2 ansatz $u=\sum\lambda_i(x)u_i(x)$；{_q8s77w}
 * `2303.07127` 元学习加速 PINN，通过学优化器（逐分量，作为基于 Adam 的改进）
 	* "Improving physics-informed neural networks with meta-learned optimization"
 		* Alex Bihlo

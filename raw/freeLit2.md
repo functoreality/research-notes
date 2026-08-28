@@ -935,8 +935,8 @@
 		* 34. 据 $x_l$ 从该 feature 网格线性插值，得目标坐标点 feature $\gamma\in\R^C$
 		* 456. $\gamma$ 输入小型 MLP（decoder）得最终 INR 输出值
 	* p5:l-1 推理阶段，每区域只调用一次昂贵的 coord encoder，然后多次调用便宜的 decoder
-	* sec3.3 在线多尺度分解，动态调整各区域分块大小
-		* 大意概括：周期性解 ILP，为当前所有块选择 merge、stay 或 split；{_ocaf6h}
+	* sec3.3 在线多尺度分解，动态调整各区域分块大小；{_ocaf6h}
+		* 大意概括：每步决策如何调整分块方式，通过解优化问题
 		* 自变量：当前所有块的下一步动作，merge、stay、split
 		* 因变量：eqn(8) 执行该动作后，预期的下一阶段误差
 		* 约束：

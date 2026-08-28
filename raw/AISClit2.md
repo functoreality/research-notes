@@ -879,7 +879,7 @@
 	* 单位分解网络 $\Phi_\xi(x)$（> 相当于可学区域分解）{_ocae9z}
 		* 构造 1：RBF-Net，各 RBF 的中心位置、方差为可学参数
 		* 构造 2：ResNet，最后一层用 softmax
-	* 优化算法 alg1 regularized LSGD（最小二乘 GD），二分量依次迭代，最小二乘更新 $C$、再 GD 更新 $\xi$
+	* 优化算法 alg1 regularized LSGD（最小二乘 GD），二分量依次迭代，最小二乘更新 $C$、再 GD 更新 $\xi$；{_q8s77x}
 		* regularized 表示加入额外正则化项 $\lambda\|C\|_F^2$，若 LSGD 连续几步未更新则减小 $\lambda$
 		* alg2 two-phase LSGD，执行完 alg1 后再做无正则化项的 LSGD
 	* 实验，拟合连续函数、分片光滑函数
