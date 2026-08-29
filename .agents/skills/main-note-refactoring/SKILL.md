@@ -59,8 +59,7 @@ description: >-
 ### Purpose Means Analysis
 
 设计或显著调整目标框架、进行内部结构审查时，如该 Skill 可用，
-完整阅读 `/home/yzh/.codex/skills/purpose-means-analysis/SKILL.md` 及其要求的
-当前场景 reference。
+完整阅读 `purpose-means-analysis` Skill 及其要求的当前场景 reference。
 
 采用直接目的手段关系、展开轴、抽象层级、桥接层、局部完备性和共享手段判断。
 不把分析报告格式、`or`、`末端`、`暂缓` 等标记写入正式笔记，
