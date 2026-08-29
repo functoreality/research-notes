@@ -28,7 +28,7 @@
 注意：虽然这些笔记的文件名整体上概括了它里面的主要内容，不过你也别把它太当回事——在我的笔记方法里，当我对一个话题做了很多轮次的展开以后，所得到的内容可能已经完全偏离最开始讨论的出发点了。
 
 * paramPDE NOarch NOinput dynamics aisc1 PINN INRarch numeric fieldRep
-* ML NNarch Transformer data optim generative triz4ml
+* ML NNarch Transformer elementRouting data optim generative triz4ml
 
 ## 文献笔记
 
