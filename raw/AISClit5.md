@@ -695,10 +695,6 @@
 			> 具体来说，受反问题直接采样方法的启发，不同频率的1D边界数据通过基于偏微分方程的特征图进行预处理，以产生作为不同输入通道的2D谐波扩展。
 			> 然后，通过引入可学习的非局部核，直接采样被重新定义为一种改进的注意力机制。
 	* 未看细节；从部分公式的形式推测是 用注意力机制近似了积分算子；{_ock96n}
-* LNOP-2410.20100 （备用）LNO 针对含时 PDE 预训练，编解码器通用，隐空间时间推进简单联训、下游微调
-	* "Latent Neural Operator Pretraining for Solving Time-Dependent PDEs"
-		* Wang, Tian; Wang, Chuang; 
-		> created on 2024-11-17
 * RoPINN-2405.14369 PINN loss 空间点带邻域随机扰动，扰动在“信赖域”内，其半径根据相邻迭代步信息估计
 	* "RoPINN: Region Optimized Physics-Informed Neural Networks", NIPS2024
 		* Wu, Haixu; Luo, Huakun; Ma, Yuezhou; Wang, Jianmin; Long, Mingsheng; 

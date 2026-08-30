@@ -278,6 +278,14 @@
 			* batch 中不同样本加细 patch 数不同，需在序列中补充 pad tokens
 		* 方式比较 eqn(9)+1：mul 实现简单、代码修改小、支持 AViT、序列长度不增
 			* Mix 序列变长，不支持 AViT，但更能捕捉跨尺度相关性
+* LNOP-2410.20100 （备用）LNO 针对含时 PDE 预训练，编解码器通用，隐空间时间推进简单联训、下游微调
+	* "Latent Neural Operator Pretraining for Solving Time-Dependent PDEs"
+		* Wang, Tian; Wang, Chuang; 
+		> created on 2024-11-17
+	> 我们考虑的是一种混合数据集，其中包含了多个物理系统。
+		> 这些系统都遵循二维空间中的时变偏微分方程，包括纳维-斯托克斯方程、浅水方程、伯格斯方程以及反应扩散方程。
+		> 所有这些微分方程所描述的系统都是时变系统，其响应取决于不同空间位置之间的相互作用。
+		> 因此，我们可以利用神经网络来解决问题——神经网络能够提取出这些微分方程空间状态的表示形式，并近似计算这些表示形式随时间的变化情况。
 * Text2PDE-2410.01153 隐扩散模型生成 PDE 完整时空解
 	* "Text2PDE: Latent Diffusion Models for Accessible Physics Simulation"
 		* Zhou, Anthony; Li, Zijie; Schneier, Michael; Buchanan Jr, John R; Farimani, Amir Barati; 
@@ -699,6 +707,10 @@
 	* sec3.5:1 与 AFNO 区别：1. 有额外 time-aggregation layer，2. 频域注意力未引入稀疏性要求（AFNO 有 soft-thresholding）
 	* 网络参数量可扩充到 0.5B
 	* 数据集混合了 PDEBench，PDEArena，CFDBench 等
+* MoE-POT-2510.25803 （备用）DPOT 架构引入 MoE；{_q7jb08}
+	* "Mixture-of-Experts Operator Transformer for Large-Scale PDE Pre-Training", NeurIPS 2025
+		* Wang, Hong; Xin, Haiyang; Wang, Jie; Yang, Xuanze; Zha, Fei; Dong, Huanshuo; Jiang, Yan; 
+		> created on 2025-11-17
 * CCM-2605.14546 （备用）PDE 基模微调至单参方程，权重更新量分解为 特定方程符号适配 + 特定参数适配，线性内插用于新参数求解
 	* "Discovering Physical Directions in Weight Space: Composing Neural PDE Experts"
 		* Wang, Pengkai; Liu, Pengwei; Wang, Yuanyi; Chen, Guanyu; Ren, Xingyu; Li, Xiaolong; Hao, Zhongkai; Kong, Yuting; Zhang, Qixin; Ni, Dong; 

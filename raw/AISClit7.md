@@ -207,10 +207,6 @@
 		> 由于求解器生成的标签很昂贵，我们在极小极大（PGD风格）公式中嵌入了一个主动/对抗样本选择循环：
 		> 在学生固定的情况下，我们（通过投影梯度最大化）搜索最大化学生与教师差异的输入扰动（受物理动机的平滑度/能量约束），将这些最坏情况的例子添加到训练池中，并更新学生。{_pcfa5l}
 		> 利用可微分谱求解器，如Exponax，可以将求解器梯度反向传播到对抗搜索中，在周期/谱设置下稳定和加强样本挖掘。
-* MoE-POT-2510.25803 （备用）DPOT 架构引入 MoE；{_q7jb08}
-	* "Mixture-of-Experts Operator Transformer for Large-Scale PDE Pre-Training", NeurIPS 2025
-		* Wang, Hong; Xin, Haiyang; Wang, Jie; Yang, Xuanze; Zha, Fei; Dong, Huanshuo; Jiang, Yan; 
-		> created on 2025-11-17
 * HYCO-2509.14123 （备用）NO 数据 + PDE loss 双驱动，分别训二模型、要求其达成共识；未确认细节
 	* "HYCO: Hybrid-Cooperative Learning for Data-Driven PDE Modeling"
 		* Liverani, Lorenzo; Steynberg, Matthys; Zuazua, Enrique; 
