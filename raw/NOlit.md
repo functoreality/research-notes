@@ -160,20 +160,6 @@
 	* sec3.1.2 无监督预训练的 proxy tasks，MAE、超分辨率，fig2 基于 mask、blur 后的解重建超分辨率完整解；{_o6mb1c}
 	* sec3.1.4 架构用 MAE 里的 ViT，非对称设计（解码器规模小于编码器）；{_o6mb1i}
 	* in-context learning 方式未看细节；{_o6mb5w}
-* `CoDA-NO-2403.12553`
-	* "Pretraining Codomain Attention Neural Operators for Solving Multiphysics PDEs"
-		* Rahman, Md Ashiqur; George, Robert Joseph; Elleithy, Mogab; Leibovici, Daniel; Li, Zongyi; Bonev, Boris; White, Colin; Berner, Julius; Yeh, Raymond A.; Kossaifi, Jean; Azizzadenesheli, Kamyar; Anandkumar, Anima; 
-		> 2024-03-27 Pf 群 lhu 推荐
-	* fig2 为每个场分量添加相应位置编码（variable-specific positional encoding，VSPE）{_o44b4y}
-		* fig3 若新方程有新的分量，只需引入新的 VSPE 微调，网络架构无需修改
-	* fig 网络架构，各变量由原来的 mesh 变换到均匀的 latent grid，之后在该均匀域上算注意力等，最后从均匀 latent grid 解码到原 mesh；{_p26f2d}
-	* fig3 预训练任务与迁移的下游任务 区别较大
-		* PDE 设定：前者为纯流体，后者为流固耦合（有两个额外分量）
-		* 任务设定：前者为流场补全，后者为时间推进预测
-		* 输入输出：前者输入 masked $u,v,p$ 分量、输出 mask 部分预测结果，后者输入 5 分量的当前时间步、预测下一时间步
-		* 网络架构：前者 encoder + reconstructor，后者 encoder + predictor
-	* p6:r-2 数据集包括流体、流固相互作用，均用 TurtleFSI 包生成；{_o44b34}
-		* 流固相互作用为不可压 NS + 弹性体方程
 * `Transolver-2402.02366` 基于 Transformer 实现输入网格可变，注意力计算局限于自适应学出的区域之间
 	* "Transolver: A Fast Transformer Solver for PDEs on General Geometries"
 		* Wu, Haixu; Luo, Huakun; Wang, Haowen; Wang, Jianmin; Long, Mingsheng; 

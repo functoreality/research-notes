@@ -1,8 +1,3 @@
-* 2511.20798 （备用）Walrus 激活值特征提取，发现涡度、扩散、时间推进等，改网络激活可调整预测结果
-	* "Physics Steering: Causal Control of Cross-Domain Concepts in a Physics Foundation Model", NeurIPS 2025
-		* Fear, Rio Alexa; Mukhopadhyay, Payel; McCabe, Michael; Bietti, Alberto; Cranmer, Miles; 
-		> created on 2026-01-24
-	* [知乎翻译](https://zhuanlan.zhihu.com/p/1981077068402926776)
 * 2507.09264 基于 ViT 的 NO 可调 patch 大小
 	* "Controllable Patching for Compute-Adaptive Surrogate Modeling of Partial Differential Equations"
 		* Mukhopadhyay, Payel; McCabe, Michael; Ohana, Ruben; Cranmer, Miles; 
@@ -69,11 +64,6 @@
 		* eqn(7) 电场 E,D 有类似关系
 	* sec4.1 GNN 所用图结构，节点为所有 k-simplex，邻居有 4 类，分别做消息传递；{_q17f8p}
 		* （评）设 b,c ∈ ∂a, e ∈ ∂b ∩ ∂d，则 b 的 4 类邻居分别对应 a,e,c,d
-* PI-MFM-2512.23056 PROSE 用 PINN loss 训，针对 1D 含时 PDE；{_q14j3e}
-	* "PI-MFM: Physics-informed multimodal foundation model for solving partial differential equations"
-		* Zhu, Min; Sun, Jingmin; Zhang, Zecheng; Schaeffer, Hayden; Lu, Lu; 
-		> created on 2026-01-04
-	* [作者公众号全文翻译](https://mp.weixin.qq.com/s/LT1ZBWpIYhbRlMAGeJ7cvg)
 * SpiderSolver NO 不规则区域蛛网划分、打包算注意力，再加边界附近逐点注意力
 	* "SpiderSolver: A Geometry-Aware Transformer for Solving PDEs on Complex Geometries", NeurIPS 2025
 		* Kai Qi, Fan Wang, Zhewen Dong, Jian Sun
@@ -221,12 +211,6 @@
 	* "Mixture-of-Experts Operator Transformer for Large-Scale PDE Pre-Training", NeurIPS 2025
 		* Wang, Hong; Xin, Haiyang; Wang, Jie; Yang, Xuanze; Zha, Fei; Dong, Huanshuo; Jiang, Yan; 
 		> created on 2025-11-17
-* 2511.09729 （备用）1D equation-aware NO，设计方程通式、网络只输入系数
-	* "Generalizing PDE Emulation with Equation-Aware Neural Operators" by Google, NeurIPS 2025 AI-driven Machine Learning and the Physical Sciences Workshop
-		* Zhu, Qian-Ze; Raccuglia, Paul; Brenner, Michael P.; 
-		> created on 2025-11-17
-	* sec2 1D 方程时间推进，设计完整方程形式、模型只输入系数，所有 7 项 $u,u^2,u_x,uu_x,u_{xx},u_{xxx},u_{xxxx}$
-	* sec3.1 泛化到没见过的参数，sec3.2 没见过的 PDE
 * HYCO-2509.14123 （备用）NO 数据 + PDE loss 双驱动，分别训二模型、要求其达成共识；未确认细节
 	* "HYCO: Hybrid-Cooperative Learning for Data-Driven PDE Modeling"
 		* Liverani, Lorenzo; Steynberg, Matthys; Zuazua, Enrique; 

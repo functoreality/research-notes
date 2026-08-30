@@ -146,27 +146,6 @@
 		> created on 2026-04-04
 	* 摘要摘录
 	* 
-* 2603.15431 （备用）Poseidon OoD 用 PDE 残差 loss 微调，针对 Poisson 方程
-	* "Physics-informed fine-tuning of foundation models for partial differential equations"
-		* Medvedev, Vlad; Armbruster, Leon; Straub, Christopher; Kruse, Georg; Rosskopf, Andreas; 
-		> created on 2026-04-02
-* LegONet-2603.07882 含时 PDE 算子分裂、各项学独立网络，不同 BC 的网络独立
-	* "LegONet: Plug-and-Play Structure-Preserving Neural Operator Blocks for Compositional PDE Learning"
-		* Zhang, Jiahao; Wang, Yueqi; Lin, Guang; 
-		> created on 2026-03-31
-	* 摘要摘录
-		> 我们介绍了类似乐高的运算子网络（LegONet），这是一个组合框架，通过定义在共享边界适应谱表示上的即插即用、结构保持的算子块构建偏微分方程求解器。
-		> LegONet 将边界处理与机制学习分离，通过构造满足边界条件。
-		> 它还将机制学习与时间积分分离，使预训练块能够在无需重新训练的情况下组装成新的求解器。{_q42b25}
-		> 我们还推导出有限视距误差分解，将块错配与分裂误差区分开来，并为长视野预测提供机制层面的诊断。
-	* BC 仅学齐次的，非齐次情形通过变换化归为齐次情形 eqn(2)-1
-		> 对于非齐次边界数据，我们应用一个提升 u=ulift+u0 ，使 u0 得满足齐次约束，
-	* 训练、推理方式差异 sec1:-1
-		> LegONet 还将培训与部署区分开来。
-		> 分组通过系数空间中的瞬时算符匹配离线预训练：我们采 𝐚 样可接受态，评估可信离散化以获得参考目标，并学习每个分组，使得 Fi𝜽(𝐚) 匹配无轨迹拟合的参考机制更新。
-		> 部署时，通过选择底板、选择相关块并通过对称斯特朗分割推进所得的简化动力学，创建一个新的偏微分方程实例。
-		> 因此，重新配置算符或边界设置变成了选择与组装的问题，而非重新训练的问题。
-		> 这种模块化视角也使得长视野行为更具解释性：我们的有限视野分析将滚动错误分为块错配和拆分误差，使失败可以归因于学习机制或组合方案。
 * Flowers-2603.04430 NO 架构，基于坐标扭曲（Lagrange 视角），多头逐点预测位移场
 	* "Flowers: A Warp Drive for Neural PDE Solvers"
 		* Muser, Till; Spitzer, Alexandra; Lassas, Matti; de Hoop, Maarten V.; Dokmanić, Ivan; 
@@ -484,10 +463,6 @@
 			> 左：测试数据;右：训练数据。
 			> 每个点对应一对模型-案例;标记区域编码相关系数（圆圈越大表示相关越高），标记颜色编码滚动平均的相对 ℓ2 误差。
 			> 训练误差采用与测试相同的多步评估协议计算。
-* 2512.16074 DeepONet 引入类 DeepSet 超网络学示例样本对，称为非注意力的上下文学习；{_q1qf13}
-	* "In-Context Multi-Operator Learning with DeepOSets"
-		* Chiu, Shao-Ting; Nambiar, Aditya; Syed, Ali; Siegel, Jonathan W.; Braga-Neto, Ulisses; 
-		> created on 2026-01-26
 * ECHO-2512.04974 百万散点网格 NO、拟合含时 PDE，编码先连续卷积到均匀细网格再离散卷积降分辨率
 	* "Efficient Generative Transformer Operators For Million-Point PDEs"
 		* Koupaï, Armand Kassaï; Boudec, Lise Le; Gallinari, Patrick; 

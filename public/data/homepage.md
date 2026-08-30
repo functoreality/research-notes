@@ -40,7 +40,7 @@
 
 如果你从这里开始，或许可以在一定程度上重现出我添加笔记的过程——我是如何为一篇论文整理文献笔记，从里面抽取出有价值的关键信息，然后，在主笔记里找到一个合适的位置，把它链接过去的。
 
-* PDEFMlit2 PDEFMlit1
+* PDEFMlit3 PDEFMlit2 PDEFMlit1
 * AISClit10 AISClit9 AISClit8 AISClit7 AISClit6 AISClit5 AISClit4 AISClit2 AISClit1
 * NOlit dynSysLit ROMlit
 * TfLit2 TfLit

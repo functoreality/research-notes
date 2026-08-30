@@ -332,24 +332,6 @@
 		Experimental Details 36
 			Navier-Stokes Equations 36
 			Implementation Details 37
-* MOFS-2508.01211 NO 基于少样本学习泛化到新 PDE，包含文本条件输入
-	* "Multi-Operator Few-Shot Learning for Generalization Across PDE Families"
-		* Li, Yile; Zhe, Shandian; 
-		> created on 2025-08-17
-	* 摘要摘录
-		* 关注点：跨 PDE 泛化，多模态，少样本适配新算子
-			> 现有的神经算子方法需要每个特定PDE的大量训练数据，并且缺乏跨PDE家族进行泛化的能力。
-			> 在这项工作中，我们提出了MOFS：一个用于多算子少镜头学习的统一多模态框架，旨在通过几个演示示例推广到看不见的PDE算子。
-		> 我们的方法集成了三个关键组成部分：
-			> （i）共享傅里叶神经算子（FNO）编码器的多任务自监督预训练，以重建掩蔽的空间场并预测频谱，
-			> （ii）从输入-输出场的统计摘要中导出的文本条件算子嵌入，以及
-			> （iii）具有门控融合和跨模态梯度注意力的记忆增强多模态提示。
-		> 我们采用了一种两阶段训练范式，
-			> 首先在可见算子上学习即时条件推理，
-			> 然后应用端到端的对比微调来对齐视觉、频率和文本模式中的潜在表征。
-	* （评）原文没给示意图
-	* p3:l 文本输入，自然语言描述 PDE 名称，及输入、输出场的统计分布；{_p8hb06}
-		> This is a <dataset name> PDE sample. The input coefficient field has mean µ_a , std σ_a , min a_min , and max a_max . The output solution field has mean µ_u , std σ_u , range [u_min , u_max ], and gradient magnitude mean µ_∇u with std σ_∇u .
 * 2507.09733 （纯备用，未复核是否涵盖了作者对科学计算相关文献的了解）
 	* "Universal Physics Simulation: A Foundational Diffusion Approach"
 		* Camburn, Bradley; 

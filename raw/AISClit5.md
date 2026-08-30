@@ -713,33 +713,11 @@
 			> 我们提出使用“多个相邻优化步之间的梯度方差”近似“局域梯度方差”
 				* 称 Adam 有类似思想；原文有相应理论分析
 		* 优化泛化平衡（略）
-* Text2PDE-2410.01153 隐扩散模型生成 PDE 完整时空解
-	* "Text2PDE: Latent Diffusion Models for Accessible Physics Simulation"
-		* Zhou, Anthony; Li, Zijie; Schneier, Michael; Buchanan Jr, John R; Farimani, Amir Barati; 
-		> created on 2024-11-16
-	* fig1 隐扩散模型用来生成物理模拟，输入现象的文本描述，生成完整时空流场；{_obgf3o}
-	* fig2 mesh encoder/decoder，任意形状 mesh 先插值到均匀网格再处理，最后插值回来；插值器可学习；{_obgf49}
-		* sec3.1 数学形式，编码器形如积分算子，解码器离散为 Riemann 和
 * （备用）材料断裂基础模型
 	* "Developing a Foundation Model for Predicting Material Failure", NIPS2024 FM4Science workshop
 	* 非均匀网格编码器：按散点输入，其信息用 Transformer 交叉注意力机制提取，坐标按位置编码加入；{_obea6r}
 		> 编码器利用交叉注意力机制将所有输入作为1D序列处理（具有多维位置编码——见附录A.1），使其与域大小无关，如图5的示例预测所示。此层随输入大小线性缩放。
 		> 编码器的一个关键方面是它的位置嵌入，它将网格箱映射到它们各自的中心点。这是至关重要的，因为它允许模型处理结构化（笛卡尔）和非结构化网格（例如，在我们的例子中是三角形元素）。
-* 2410.01137 NO 额外引入自然语言描述的方程性质信息，通过 LLM 编码后交叉注意力；NO 基于 FactFormer
-	* "Explain Like I'm Five: Using LLMs to Improve PDE Surrogate Models with Text"
-		* Lorsung, Cooper; Farimani, Amir Barati; 
-		> created on 2024-10-23
-	* 文本模态使用描述性文本（而非公式）{_oane8t}
-		> Burgers方程模拟了一个可以产生冲击波不连续性的保守系统。Burgers方程是一个一阶拟线性双曲型偏微分方程。
-		> 该系统具有Neumann边界条件。Neumann边界条件具有恒定的梯度。在这种情况下，边界上的梯度为∂uneumann。
-		> ……
-	* fig1 文本信息用已有 LLM 编码；主网络用交叉注意力整合该部分文本信息；{_oanf11}
-		* LLM 实验中为 LLaMA 3.1 8B
-	* fig2 交叉注意力结构，物理场 feature 先 convolutional patch embed，再用于交叉注意力，再 convolutional upsample 恢复原始 shape
-		* （评）PDEformer 新架构或可参考？
-	* 按自回归方式预测，仅单步输入
-	* 似乎仍是每方程单独训练
-	* 训练数据集：热方程，Burgers，CNS；后者训完后似乎又用于浅水波微调
 * M²M-2410.11617 （备用）NO 认为不同区域时间尺度不同，靠 MoE 为不同区域分配不同子 NO
 	* "M$^{2}$M: Learning controllable Multi of experts and multi-scale operators are the Partial Differential Equations need"
 		* Liang, Aoming; Mu, Zhaoyang; Lin, Pengxiao; Wang, Cong; Ge, Mingming; Shao, Ling; Fan, Dixia; Tang, Hao; 

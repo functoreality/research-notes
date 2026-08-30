@@ -1,73 +1,3 @@
-* PhysBiasBench-2605.29283 评估 PDE 基模泛化：因子化至 8 PDE、3 混和、5×5 设定动态-IC 测试网格
-	* "Do Physics Foundation Models Learn Generalizable Physics? A Bias-Aware Benchmark Across Physical Regimes and Distribution Shifts"
-		* Chu, Mengdi; Liu, Yang; Biswas, Ayan; Shen, Han-Wei;
-		* Ohio State Univ, Los Alamos National Lab
-		> created on 2026-07-19 by OpenCode + DeepSeek-V4-Pro
-	* 动机：PDE 基模声称统一泛化，但评估压缩成单一平均分，看不清模型是否学到了可迁移物理、还是只在特定条件下表现好
-		* 5 架构（DPOT、GPhyT、MORPH、MPP、Poseidon）
-			* 每种 4 变体（scratch + pretrained S/M/L），共 20 模型
-		* 8 PDE：Fisher-KPP、Gray-Scott、Swift-Hohenberg、
-			* Burgers、Kolmogorov、Kuramoto-Sivashinsky、Decay、Wave
-		* 数据由 APEBench/Exponax 过程式生成，100 帧 dense 轨迹，再时间子采样构造动态尺度
-	* 因子化评估设计 sec3
-		* 评估轴独立可控：架构、变体（pretrain+size）、PDE 族、训练混和、测试 regime（5×5 种设定）、预测 horizon
-			> 25 个测试 regime 由动态尺度和初始条件复杂度偏移产生，覆盖分布内、分布偏移和 OOD 设置。
-			* 每种设定称为 cell
-		* 动态尺度轴：dense 轨迹时间子采样
-			* 小 stride → 小帧间变化，大 stride → 大帧间变化
-			* 训练内三档（small/medium/large），测试扩展 OOD-small/OOD-large
-		* IC 复杂度轴：APEBench 生成器参数控制初始场空间复杂度
-			* 五档：OOD-simple/simple/medium/complex/OOD-complex
-		* 5×5 网格形成四类偏移：Compositional ID（未见过的 in-range 组合）、Dynamic OOD、IC OOD、Joint OOD
-			> 水平移动改变动态尺度而保持 IC 不变；
-			> 垂直移动改变 IC 而保持动态尺度不变。
-		* 训练混和作为实验变量而非固定背景
-			* 三组等量数据，改变简单/均衡/复杂 regime 配比
-			* Mix-simple、Mix-balance、Mix-complex
-	* 诊断指标 sec3.4
-		* PDEBias：模型在 PDE p 上的误差除以该模型所有 PDE 的均值，>1 表示该 PDE 相对更难
-		* ShiftDamage：测试 cell 误差 / 同模型同 PDE 的 train-seen cell 均值，衡量相对退化；{_q7kh65}
-		* RolloutAmplification：E_roll / E_1-step，分离即时精度和时序稳定性；{_q7kh64}
-			* roll 典型选取 10-step
-			* （评）E_1 是首步误差不是单步误差，前者输入只考虑动力学初态，后者输入遍历所有非末态
-		* PretrainingGain：(scratch_M − ft_M) / scratch_M，配对尺寸比较
-		* ModelSizeGain：(ft_S − ft_s) / ft_S，s∈{M,L}，S baseline 衡量缩放收益
-	* 主要发现
-		* RQ1 物理 regime 偏差：同一模型在 train-seen 条件下，不同 PDE 误差差 1-2 数量级；{_q7kh66}
-			* Fisher-KPP 最易（中位数 0.011），Wave/Kolmogorov 最难的几个
-			* pretrain 和 scaling 改变误差量级但不消除 PDE 偏好模式
-		* RQ2 horizon 依赖：首帧误差与 rollout 误差放大几乎不相关（Spearman ρ=0.04）；{_q7kl5r}
-			* Poseidon 首帧最差（0.072）但 rollout 放大最低（2.09×），MORPH 相反（9.11×）
-			* （AI 评）所有模型统一按自回归 rollout 评估，尽管 Poseidon 原生以 Δt 作 modulation 输入
-				* 设计上可直接预测大 Δt 后状态，不必逐帧迭代；自回归非其最优使用方式
-				* 在此不利条件下仍 rollout 最稳，反而更有力
-		* RQ3 分布偏移：Dynamic-OOD 比 IC-OOD 严重得多，最高到 8× baseline；{_q7kl1g}
-			* pretrain 大模型反而加大 normalized ShiftDamage：
-				* scratch 3.24× → L 6.28×，train-seen 提升远大于 OOD 提升
-		* RQ4 训练混和：复杂训练数据改善绝对精度，但 OOD 相对 gap 反而拉大（Mix-simple 4.33 → Mix-complex 4.98）{_q7kh63}
-			* 数据在重新分配能力而非统一提升
-		* RQ5 pretrain + scaling：
-			* 37.5% 架构-PDE pair pretrain 负迁移；{_q7kh68}
-			* 25% 更大模型劣于 S；{_q7kl88}
-			* DPOT 和 Poseidon 在 Fisher-KPP 上严重逆缩放（−173%）
-				* 但大模型在其他 PDE 上正向，缩放按 regime 重新分配能力
-		* RQ6 失效指纹：各架构因不同机制失败；{_q7kh67}
-			* DPOT OOD 最敏感（ShiftDamage 8.66×），MORPH rollout+缩放最不稳，MPP pretrain 负迁移最高（75%）
-	* 讨论 sec5
-		> 困难情形是有组织的：动态尺度偏移始终困难，
-		> 长 horizon 误差在不同架构间增长方式不同，
-		> 预训练或缩放可能强化已有 regime 偏好而非消除它。
-		> 建议下一步不是扩大数据或规模，而是学物理表征以跨 regime/时间尺度/分布偏移更可靠地迁移
-	* （AI 评）评估方法论本身比实验结论更有价值
-		* 核心贡献是「把评估维度因子化，让模型能力的条件依赖可诊断」这一设计思想，而非具体的数据结论
-		* 对比现有 benchmark：PDEBench/The Well 等提供更多方程但评估仍按平均分
-			* PhysBiasBench 的区别：把评估本身当作实验设计，每个轴独立操纵
-		* 动态尺度通过时间子采样定义的做法简洁有用：不需要改方程参数，只改数据采样方式就创造 OOD。可迁移到其他 benchmark 设计
-		* 局限：只覆盖 2D 规则网格、周期性 BC
-			* 统一自回归协议可能不利非自回归设计的模型
-				* 如 Poseidon Δt-as-input、GPhyT NeuralODE 输出，自回归不是它们的最优使用方式
-			* 对非自回归 PDE 求解（如 PINN、FNO 直接映射）适用性待检验
-		* 与 largeNN 中「scaling law 对 AI4Sci 未必适用」的判断一致，提供了系统性实验支撑
 * PDEInvBench-2605.25353 反问题数据，网络输入单个完整解输出参数（标量为主），推理时微调有增益，导数拼接有益，IC 多样性收益远大于参数覆盖
 	* "PDEInvBench: A Comprehensive Dataset and Design Space Exploration of Neural Networks for PDE Inverse Problems", TMLR 2026
 		* Divyam Goel; Nithin Chalapathi; Sanjeev Raja; Aditi S. Krishnapriyan;
@@ -148,21 +78,6 @@
 			> (2)利用该方法求解偏微分方程的效率，比单纯使用 WoS 方法高出 1000 倍；
 			> (3)该研究还提供了该领域至今所缺乏的评估体系。
 	* （评）暂未检索到 PDEZoo 公开位置，不排除是纯代码动态生成
-* CCM-2605.14546 （备用）PDE 基模微调至单参方程，权重更新量分解为 特定方程符号适配 + 特定参数适配，线性内插用于新参数求解
-	* "Discovering Physical Directions in Weight Space: Composing Neural PDE Experts"
-		* Wang, Pengkai; Liu, Pengwei; Wang, Yuanyi; Chen, Guanyu; Ren, Xingyu; Li, Xiaolong; Hao, Zhongkai; Kong, Yuting; Zhang, Qixin; Ni, Dong; 
-		* 香港 PolyU、浙大、清华、南洋理工
-		> created on 2026-07-18
-	* 所用基模：FNO，DPOT
-		> （摘要）在不同的 FNO 尺度上进行的进一步实验、基于 DPOT 架构的模型测试以及各种消融实验都表明
-	* fig2
-		* 场景：方程有单个实值参数（如 NS 粘度，反应扩散 r）
-		* 最低最高值分别训网络，分别提取权重更新量，求二者平均、差值
-		* 新参数下权重更新量据此线性组合得到 $\theta(\lambda)=\theta_0+\Delta^++\lambda\Delta^-$
-	* （未确认细节）三种坐标选择方式 + 适用场景 eqn(9–11)
-		* CCM-Coord：物理元数据直接映射（DiffReact，r=1.00）
-		* CCM-Scale：物理坐标有序但权重空间尺度不匹配（NS2D，r=0.99）
-		* CCM-Prefix：短 rollout 前缀（K=4）在坐标库中选 α（RDB，r=0.79 标量元数据不可靠）
 * HyCOP-2605.00820 含时方程算子分裂，不同块分别用 传统算法、NN 模块，分裂方式由策略网络动态生成
 	* "HyCOP: Hybrid Composition Operators for Interpretable Learning of PDEs"
 		* Zhao, Jinpai; Panda, Nishant; Lin, Yen Ting; Valseth, Eirik; Oyen, Diane; Dawson, Clint; 

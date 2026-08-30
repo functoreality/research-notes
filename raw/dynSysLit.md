@@ -547,72 +547,7 @@
 		* 输入前 T=4 时间步
 		* 插值获得的输出时间步个数 $T'=[dt]$，训练时只比较这些位置处的 loss（不同样本时间推进幅度不同，使用的 label 时间步个数也不同）
 		* 实验 baseline 设定，训练时输入也 T=4，输出 T'=1,..,8；测试时取 T'=8
-* PITA-2505.10930 自回归式 PDE 基础模型 为降低误差累积，引入类似系统识别的额外 loss；by 陈景润
-	* "Physics-informed Temporal Alignment for Auto-regressive PDE Foundation Models"
-		* Zhu, Congcong; Xu, Xiaoyan; Han, Jiayue; Chen, Jingrun; 
-		> created on 2025-06-11
-	* 摘要摘录
-		> 自回归偏微分方程（PDE）基础模型在处理时变数据方面显示出巨大的潜力。
-		> 然而，这些模型受到自回归预测中根深蒂固的捷径问题造成的误差累积的影响。
-		> 对于分布外数据，这一挑战变得尤为明显，因为预训练性能可能接近具有长期动态的下游任务的随机模型初始化。
-		> 为了解决这个问题，我们提出了物理信息时间对齐（PITA），这是一种受逆问题求解启发的自监督学习框架。
-		> 具体来说，PITA通过将物理信息约束整合到自我监督信号中，将每个给定PDE轨迹上不同时间步发现的物理动力学对齐。
-		> 该对齐是从观测数据中得出的，不依赖于已知的物理先验，表明对分布外数据具有很强的泛化能力。
-	* fig2 工作流
-		> 所提出的框架将自回归预测和PDE发现与自监督学习相结合：
-		> （1）预训练PDE模型以初始时间状态{ut}t=1,..,T_in 为输入，以自回归方式预测未来状态{u_t}t=t_in+1,..,+t_ar 为输出；
-		> （2）然后对压缩输入序列执行数据驱动的PDE发现，以推断控制方程。{_p6bf2k}
-		> 时间对齐是通过将预测中发现的物理定律与地面真值序列中获得的物理定律进行匹配来实现的；
-		> （3）损失函数由三部分组成，即数据损失L_data、物理损失L_phy和一致性损失L_con，采用基于不确定性的策略动态调整权重。
 * 2507.03863 NO 自回归抑制误差累积，每步时间推进网络用 bagging 降误差；{_p9586d}
 	* "Enhanced accuracy through ensembling of randomly initialized auto-regressive models for time-dependent PDEs"
 		* Khurjekar, Ishan; Saha, Indrashish; Graham-Brady, Lori; Goswami, Somdatta; 
 		> created on 2025-09-05
-* 2509.02846 PDE 时间推进“测试时计算”，每步 ensemble 预测、结果中取最符合物理的
-	* "Towards Reasoning for PDE Foundation Models: A Reward-Model-Driven Inference-Time-Scaling Algorithm"
-		* Mansingh, Siddharth; Amarel, James; Arnab, Ragib; Mohan, Arvind; Singh, Kamaljeet; Kunde, Gerd J.; Hengartner, Nicolas; Migliori, Benjamin; Casleton, Emily; Debardeleben, Nathan A.; Biswas, Ayan; Oyen, Diane; Lawrence, Earl; 
-		* 单位：美国 Los Alamos 国家实验室
-		> created on 2025-09-05 导师推荐
-	* （评）目的手段链条：降 rollout 误差 → 提单步预测质量 → (质量定义,提升方式)
-		* 提升方式 → 束搜索，生成后筛选 → (生成机制,筛选机制)
-			* 生成机制 → ensemble → 随机输出的网络 → 随机网络 → 推理引入随机性 → 激活值引入 → dropout
-			* 筛选机制 取决于前层目的，在这里是 如何定义“预测质量”
-		* 质量定义
-			* 物理机理：守恒律 or（我认为可能）PDE 残差 loss
-			* 网络预测 → 引入对比学习，类似 RLHF 打分网络
-	* p4:1 每步推理引入“全局奖励信号”提取最合物理样本，体现守恒律 or PDE loss；其选取重要
-		> 虽然当代LLM中的推理提供了一种迭代方式，通过提供一些可解释性的局部变化来提高性能，但在PDE模拟中更难构建类似的局部奖励信号。
-		> 在之前关于PDE改进的工作中，仍然缺少局部奖励的概念[7]。
-		> 本文提出的TTC方法的核心是从物理守恒定律或可学习的替代损失函数中提取全局信号。
-		> 使用全局奖励信号，在给定一批合理的预测的情况下，人们应该能够区分“更好”遵守质量/动量守恒等物理守恒定律的样本。
-		> 在具有贪婪策略的自回归推出的每个时间步上选择“最佳”样本，有助于整个轨迹预测在全球范围内遵守守恒定律。{_p9779l}
-		> 然而，正如结果所表明的那样，这取决于奖励函数的质量。
-	* p5:0 用 PDEgym 的可压 Euler 数据，预训练 4 类、下游两类
-		> In this study, we specifically utilize four datasets from PDEGym for pretraining: CE-RP, CE-CRP, CE-KH, and CE-Gauss.
-		> For downstream, we use the CE-RPUI and CE-RM dataset,
-		* （评）称为“PDE 基础模型”，但其实是同一种方程，只是用不同的 IC 分布
-	* p5:-1 输出引入随机性。动机：beam search，方法：推理保留 dropout
-		> 随机性：与需要在PDE FMs中重新思考的LLM推理的一个关键区别是，使用模型随机性为同一输入生成多个预测。
-			> 在LLM中，由于内部标记化和一种热编码，默认情况下模型是概率性的。
-			> 在大多数PDE的ML模型中，情况并非如此，因为它们在本质上通常是确定性的。
-		> 因此，为了利用波束搜索等技术，我们必须在基础PDE FM中明确引入固有的随机性，同时不影响模型的整体精度。
-		> 将随机性引入任何模型的一种直接方法是通过dropout机制。
-			> 我们没有像机器学习的标准那样在训练后禁用dropout，而是在推理时间内保持dropout处于活动状态，这样FM就可以通过采样不同的dropout掩码对同一输入产生不同的预测。
-	* p6 判别函数（原文“奖励函数”）选取
-		* 用守恒律：eqn(6-8) 质量、动量、能量 守恒，只考虑全局总物理量变化，用相对变化率（除以当前物理量绝对值）{_p98c1w}
-		* 可训判别器：eqn(9)-1 训额外模型，称为“过程奖励模型”；{_p98k9u}
-			* 输入：当前状态 + NO 预测的下一步，其中 NO 仅预训练 or 已微调
-			* 输出：预测误差大小等级，只追求“分级”（类似 RLHF 打分模型）而非定量预测
-				> 除了分析奖励函数外，我们还在基础模型的输出上训练了一个可学习的过程奖励模型（PRM）[14]。
-				> PRM提供标量值分数，对给定当前快照的下一个快照预测的质量进行分级。
-			* 训练数据：NO 在训练集上推理，采样 100 个后选误差最大、最小、中位数的结果
-				> 为了训练PRM，我们对预训练/微调模型的每个初始条件采样100个下一步预测（更多细节包含在结果部分）。
-				> 根据所选指标（在我们的例子中为MSE）对样本进行排名，并与地面真相进行比较。
-				> 我们选择并保存与具有最大、中值和最小分数的预测相对应的三元组样本。
-			* 训练 loss：对比学习 loss，要求结果预测 score 对三类的两两差别最好都大于 α
-				> 然后，我们引入了一个对比的三重边际损失来训练PRM：LPRM=max(0，rmin−rmedian+α)+max(0、rmedian−rmax+α)
-				* p7:0 取 α=0.1
-				* p7:0 该 loss 表现好于 RLHF 常用的 Bradley-Terry 模型导出的 loss
-	* （评）fig4 看起来增大 B 的收益很有限？或者是我把图片理解错了？
-		* fig1d MSE 最多降到原来的 90%，有些时候还会提高？
-		* fig3 用可训判别函数时能降到 75%，基于守恒律的则只能 93%
