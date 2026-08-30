@@ -430,3 +430,322 @@
 		* （逐头）流体特征 $x_f:D$（散点位置）$p_f:D$（格点位置）
 			* 注：所有格点同时有 $p_f,p_s,p_b$，散点处只有流体点有 $x_f$；{_q4tg14}
 		* PCM 模块 $Q=Lin([p_s+g_a,p_b+g_a])$，KV 则 concat s,f,b
+* 2602.19265 PINN、NO 谱偏差，可用（PINN）二阶优化器、（NO）谱感知 loss 缓解
+	* "Spectral bias in physics-informed and operator learning: Analysis and mitigation guidelines"
+		* Khodakarami, Siavash; Oommen, Vivek; Daryakenari, Nazanin Ahmadi; Beekenkamp, Maxim; Karniadakis, George Em; 
+		> created on 2026-04-25
+	* 摘要摘录
+		> 通过神经网络以及柯尔莫哥洛夫-阿诺德网络（KAN），包括物理知情神经网络（PIN）、物理知情 KAN（PIKANs）和神经算符，求解偏微分方程（PDE）已知存在谱偏移，即解中的低频成分学习速度显著快于高频模式。
+		> 虽然谱偏置常被视为神经结构的内在表征限制，但它与优化动力学和基于物理的损耗公式的相互作用仍不充分。
+		> 本研究系统探讨了物理学和算子学习框架中的谱偏置，重点关注网络架构、激活函数、损耗设计和优化策略的耦合作用。
+		> 我们通过频率解析误差指标、巴伦范数诊断和高阶统计矩量化频谱偏倚，实现椭圆、双曲和色散偏微分方程的统一分析。
+		> 通过多种基准问题，包括科特韦格-德弗里斯方程、波动与稳态扩散-反应方程、湍流重建以及地震动力学，我们证明了光谱偏置不仅仅是表征性的，更是根本性的动力学问题。
+		> 特别是，二阶优化方法显著改变了频谱学习阶，使所有偏微分方程类型的高频模态能够更早更准确地恢复。{_q4pg64}
+		> 对于神经算子，我们进一步表明谱偏差依赖于神经算符的架构，并且可以通过谱感知损失的表述有效缓解，而不增加推理成本。{_q4pg69}
+* 2602.12349 学 Green 函数，分解为 解析有奇点+可学无奇点 分量，并讨论 BC 施加方式
+	* "Variational Green's Functions for Volumetric PDEs"
+		* Teixeira, Joao; Grinspun, Eitan; Benchekroun, Otman; 
+		> created on 2026-04-25
+	* 摘要摘录
+		> 格林函数表征偏微分方程的基本解;它们对于形状分析到物理仿真等任务至关重要，但在任意几何离散化上评估时仍然计算量过大。
+		> 我们介绍变分格林函数（VGF），这是一种学习线性自伴偏微分方程算子（包括泊松、屏蔽泊松和双谐函数）格林函数光滑且可微的表示的方法。
+		> 为解决格林函数特有的尖锐奇异点，我们将格林函数分解为解析自由空间分量和学习修正分量。{_q4pg34}
+		> 我们的方法利用变分基础 自然施加诺依曼边界条件，并通过射影层对神经场输出施加狄利克雷边界条件。
+		> 所得的格林函数计算快速，可根据源应用微分，并且可以基于参数化几何的其他信号进行条件。
+* AMR-Transformer-2503.10257 NO patchify 自适应加密
+	* "AMR-Transformer: Enabling Efficient Long-range Interaction for Complex Neural Fluid Simulation"
+		* Xu, Zeyi; Liu, Jinfan; Chen, Kuangxu; Chen, Ye; Hu, Zhangli; Ni, Bingbing; 
+		> created on 2026-04-25
+	* 摘要摘录
+	* sec2.1  AMR Tokenizer，自适应加密
+		> 传统 ViT 将输入均匀切成大小相同的 patch，AMR Tokenizer 改用基于四叉树（2D）或八叉树（3D）的层次分解。
+		> 给定输入场 I（形状 H×W×c），tokenizer 从粗到细逐层递归：
+			> 若某区域的物理特征"活跃度"超过阈值，则继续四等分细化并存储；
+			> 否则以当前分辨率直接作为一个 token，不再细分。
+		> 每个存储的 patch 以该区域内速度场的均值和位置编码（当前深度、中心坐标）拼接成 token 特征向量，最终输出一批大小不均匀、覆盖全域的 patch 表示 I_p（形状 N×K×c）。
+		> N 随场景复杂度自适应变化，无需手动指定分辨率。
+		> 为了让 tokenizer 能"预见"下一时刻的活跃区域，模型还通过前向欧拉法对当前速度场做一步外推，得到虚拟的 t+dt 速度场，将两个时刻的活跃区域取并集作为最终细化区域，避免遗漏快速运动的边界。{_q4pf9m}
+	* sec2.2 网格加密条件，4 准则联合判断；{_q4pg04}
+		> 2.2  N-S 约束感知快速剪枝模块
+		> "哪些区域需要细化"由四个基于 Navier-Stokes 方程物理量的准则联合判断：
+			> 速度梯度（Velocity Gradient）：识别激波前沿、流动分离等速度突变区域；使用当前深度的梯度分位数做自适应阈值，确保每层粒度下都能选出相对"最复杂"的区域。
+			> 涡量（Vorticity）：捕捉旋涡、湍流混合等旋转流动结构。
+			> 动量（Momentum）：标记主流射流、闸门溃坝等强输运区域。
+			> 开尔文-亥姆霍兹不稳定性（K-H Instability）：检测剪切界面上的剪切强度，用于解析层间混合和波形涡结构。
+		> 对每个 patch，只要上述四个量中任意一个超过对应阈值，就触发细化。
+		> 四个阈值因子在训练时从预定范围内随机采样，使模型对各种精度-效率权衡都具有泛化能力，且允许推理时手动调节阈值后处理以灵活平衡精度和速度。
+* HPM-2410.11382 NO 架构，单层内同时用频域（谱卷积）、原空间域（Transolver）信息交互
+	* "Holistic Physics Solver: Learning PDEs in a Unified Spectral-Physical Space"
+		* Yue, Xihang; Yang, Yi; Zhu, Linchao; 
+		> created on 2026-04-25
+	* [公众号报道](https://mp.weixin.qq.com/s/O29DIWzJ990AAURxOWfDqQ)
+	* 耦合函数 $H(x,\phi)$ 同时输入空间域、频域状态
+		> HPM 的核心思路是引入一个耦合函数 H，将逐点物理状态 x 和域级谱基函数 Phi（Laplace-Beltrami 算子特征函数）融合为自适应谱特征函数，记作 H(x, Phi)。
+		> 由此定义的整体物理变换（HPT）如下：
+		> 前向变换将输入特征投影到整体谱空间：HPT(x) = H(x, Phi)^T * x，得到谱表示 x_hat（维度 h * d_v）。
+		> 逆变换将谱表示还原到物理空间：HPT_inv(x_hat) = H(x, Phi) * x_hat。
+		> H 同时包含了全局的频域结构（来自 Phi）和每个空间点的局部物理状态（来自 x），使得不同位置可以对不同频率成分施加不同的权重。
+	* FNO、线性注意力均为退化情形
+		> 从退化情形可以看出两种现有方法实际上是 HPM 的特例：
+		> 当 H(x, Phi) = Phi 时退化为 FNO 类固定谱算子；
+		> 当 H(x, Phi) = psi(MLP(x)) 时退化为线性注意力机制。
+	* 消融后采用特定形式 sec2.2
+		> 论文探索了五种耦合形式，最终选定逐点 Softmax 乘法耦合：
+		> H(x, Phi) = Softmax(MLP(x)) ⊙ Phi；{_q4pb9r}
+			> 其中 ⊙ 表示逐元素相乘。
+			> Softmax 保证各频率成分的权重之和为 1，在不同频率之间形成竞争机制；
+			> 逐点设计保留了精细的空间自适应性；
+			> 与 Phi 相乘则保留了谱结构先验。
+		> 在五种形式的消融实验中，逐点 Softmax 乘法（4.38e-3）优于 Sigmoid 乘法（4.86e-3）、全局平均池化版本（5.47e-3）、加法耦合（4.69e-3）和拼接耦合（5.24e-3），证实了逐点操作和频率竞争机制的必要性。
+	> 2.3  整体物理求解器的构建
+		> HPM 采用与 Transolver 一致的宏观架构：输入投影层 P，L 层 Holistic Physics Block（每层包含 HPM 做 token mixing 和 FeedForward 做 channel mixing，均带残差和 LayerNorm），以及输出投影层 V。
+		> 谱基函数 Phi 统一采用 Laplace-Beltrami 算子（LBO）的特征函数，通过 robust-laplacian 库计算，可处理规则网格和不规则三角网格两种物理域。多头设计下，多个并行 HPM 分别处理不同频率子空间后拼接。
+		> 理论上，HPM 可以等价为可学习的积分神经算子形式，具备对连续算子映射的万能逼近能力。
+* Brep2Shape-2602.07429 CAD 编码方案，兼顾直观性与精确性，双流 Transformer 分别处理边、面
+	* "Brep2Shape: Boundary and Shape Representation Alignment via Self-Supervised Transformers"
+		* Sun, Yuanxu; Ma, Yuezhou; Wu, Haixu; Zeng, Guanyang; Chen, Muye; Wang, Jianmin; Long, Mingsheng; 
+		> created on 2026-04-25
+	* [公众号报道](https://mp.weixin.qq.com/s/OceGhf4NJVoZIh2kEgOEjw)
+	> 边界表示（B-rep）是CAD的工业事实标准，由参数化曲面、曲线及它们之间的拓扑关系共同描述一个三维实体。
+	> 把深度学习用到B-rep上有两条主流路线，但都不令人满意。
+		> 一是连续方法，例如BRT，直接以参数化控制点作为输入，数学上精确，但控制点本身是多项式基的系数，与三维空间几何严重解耦，网络很难"看懂"。
+		> 二是离散方法，例如UV-Net、BRepNet，把每个面在参数域上离散成2D网格再喂给CNN/GNN，直观但牺牲精度，对采样密度敏感。
+		> 论文把这种割裂称作"表示鸿沟"：精确的不直观，直观的不精确。
+		> 作者的核心问题是：能不能用一个自监督预训练任务，在保留参数精度的前提下，让网络学到与三维几何对齐的、可泛化的B-rep表示。
+	> 2.2  双流Transformer与令牌化
+		> 面与边的几何属性差异很大（2D流形 vs 1D曲线），强行混在一个序列里会互相干扰。
+		> 作者用两个独立的Transformer分别对Bézier基元做实体内编码，加[CLS]聚合得到面令牌和边令牌，再分别送入面流和边流的Dual Transformer。{_q4pb7c}
+		> 两个流并行更新，参数不共享。
+* 2602.13873 条件流匹配 据部分观测恢复完整场，训练数据本身仅部分情形 人工额外 mask
+	* "Ambient Physics: Training Neural PDE Solvers with Partial Observations"
+		* Majid, Harris Abdul; Daras, Giannis; Tudisco, Francesco; McDonagh, Steven; 
+		> created on 2026-04-25
+	* 设定（我的记号）：$x=(a,u)$（a 系数 u 解），观测位置对应 mask 算子 $A_x$
+	* 预期功能：条件生成，从 $p(x|A_xx)$ 中采样
+		* 方式：条件 rectified flow $\hat{x}=x_\theta(x_t,t;A_x,A_xx)$
+			* 注：流匹配为 OT 设定，故预测瞬时速度 等价于 预测完全去噪解
+	* 数据资源：$\{A_xx\}$ 数据集，本身各样本也都只有部分观测
+		* 场景设定：真实场景无法获得完整观测
+		* （评）推测各样本对应的 $A_x$ 不同；否则意味着部分位置不存在任何观测数据，不太可能学得出来，除非网络架构本身的 inductive bias 够用
+	* 朴素训练 loss：$\|A_x\hat{x}-A_xx\|$
+		* 导致退化：网络输入本身有 $A_xx$，网络前传会直接利用，导致仅观测位置去噪结果准确，未观测位置不受任何约束
+	* 方案—人工额外掩码，记 $B_x=B_xA_x$ 由观测数据进一步子集限制获得；{_q4pa48}
+		* 训练 loss $\|A_xx_\theta(x_t,t;B_x,B_xx)-A_xx\|$；即：条件输入小子集 $B_x$ 上观测，惩罚大子集 $A_x$ 上观测结果的匹配度
+	* 推理采样 时利用完整观测信息，即 尽管模型输入仅 $B_x$，但还是希望利用完整的 $A_x$ 信息
+		* 方案—人工子采样方式取 ensemble：取 $p(x|A_xx)=\mathbb{E}p(x|B_xx)$，其中 $B_x$ 随机生成
+		* （评）我觉得推理直接把 $A_x$ 输入网络即可；尽管模型训练时输入的都是 $B_x$，但从架构可输入性考察的话，$A_x,B_x$ 均可作为网络输入，没有区别
+			* 原文解释：提升 robustness，提供 UQ
+* DOIT-2602.16198 扩散模型改采样过程、使生成结果位于某子集中，每步更新 MC 采多轨迹、筛选可行方向
+	* "Training-Free Adaptation of Diffusion Models via Doob's $h$-Transform"
+		* Zhu, Qijie; Ye, Zeqi; Liu, Han; Wang, Zhaoran; Chen, Minshuo; 
+		> created on 2026-04-24，两天前组会群 lyp 推荐
+	* 摘要摘录
+		> 适应方法一直是释放预训练扩散模型在多种应用中变革力量的主力。
+			> 现有方法通常将适应目标抽象为奖励函数，并引导扩散模型生成高奖励样本。
+			> 然而，这些方法可能因额外训练而产生较高的计算开销，或依赖于对奖励的严格假设，如可微性。
+			> 此外，尽管这些理论在实证上取得了成功，但理论上的正当性和保证很少被确立。
+		> 本文提出 DOIT（Doob-Oriented Inference-time Transformation），这是一种无训练且计算高效的适应方法，适用于通用且不可微分的奖励。
+		> 我们方法的核心框架是一个测量传输表述，旨在将预训练的生成分布传输到高奖励目标分布。
+			> 我们利用 Doob 的 h -变换实现这一传输，从而对扩散采样过程进行动态校正，并实现高效的基于仿真的计算，而无需修改预训练模型。
+			> 理论上，我们通过对动态杜布修正中的近似误差的表征，建立了目标高回报分布的高概率收敛保证。
+	* sec3.2 生成结果要求在特定集合（正概率测度）中
+		* 如要求 R(x₀) ≥ r₀（设定目标函数下限取值）{_q8ba80}
+	* fig1 采样过程调整，每步 t → t' 更新幅度的确定方式
+		* （原型版）从 xₜ 出发 Monte Carlo 执行多次独立生成，记录每次生成的完整轨迹（或者至少 $x_{t'}$）{_q8ba79}
+			* 实用版：每次只到 $x_{t'}$，之后单次调用网络预测完全去噪结果（相当于后验均值）作为最终 $\hat{x}_0$ alg2；{_q8bb2g}
+		* 从生成结果中筛出成功样本
+			* 真实使用的版本是 按终态 reward 加权，alg1,2；{_q8ba7n}
+		* 取所有生成轨迹的 $x_{t'}$（或其单步去噪量），从中选出成功样本的取平均，作为最终的当前步去噪量；{_q4oh28}
+* PIRF-2509.20570 （袁铭泽、金鹏飞等）扩散模型要求满足 PDE，PDE 残差 loss 视为 RL reward
+	* "PIRF: Physics-Informed Reward Fine-Tuning for Diffusion Models"
+		* Yuan, Mingze; Jin, Pengfei; Li, Na; Li, Quanzheng; 
+		> created on 2026-04-24
+	* 摘要摘录
+		> 我们通过将物理启发生成框架为稀疏奖励优化问题，将对物理约束的遵守视为奖励信号，提出了一种新视角。
+		> 该表述统一了以往方法，采用基于奖励的范式，并揭示了一个共同的瓶颈：依赖扩散后验抽样（DPS）式的价值函数近似，这种近似引入了不可忽略的误差，导致训练不稳定和推断效率低下。
+		> 为克服这一问题，我们引入了物理知情奖励微调（PIRF）——一种通过计算轨迹级奖励并直接反向传播其梯度来绕过价值近似的方法。
+		> 然而，简单的实现会带来低采样效率和数据忠实度受损的问题。
+		> PIRF 通过两个关键策略缓解了这些问题：
+			> （1）利用基于物理奖励的时空局部性，采用分层截断反向传播方法;
+			> （2）基于权重的正则化方案，提升效率，优于传统基于蒸馏的方法。
+	* 迭代生成视为 MDP，用 RL 方式微调；{_q4og30}
+	* 终步 loss 视为稀疏 reward，用于 RL 微调模型；{_q4og1o}
+	* 在微调阶段引入；预训练仍按标准扩散生成
+	* 仅微调末层，因 PDE 残差只涉及局部：网络浅层偏重局部，深层偏重全局；{_q4og14}
+* AmbientPhysics-2602.13873
+	* "Ambient Physics: Training Neural PDE Solvers with Partial Observations"
+		* Majid, Harris Abdul; Daras, Giannis; Tudisco, Francesco; McDonagh, Steven; 
+		> created on 2026-04-04
+	* 摘要摘录
+	* 
+* Flowers-2603.04430 NO 架构，基于坐标扭曲（Lagrange 视角），多头逐点预测位移场
+	* "Flowers: A Warp Drive for Neural PDE Solvers"
+		* Muser, Till; Spitzer, Alexandra; Lassas, Matti; de Hoop, Maarten V.; Dokmanić, Ivan; 
+		> created on 2026-03-29
+		* [公众号AI4Physics报道](https://mp.weixin.qq.com/s/cQrY4iCTirG5AVv7oekVzA)
+	* fig1 多头 self-warp 层，每个头输入 u、输出 Vu(x + ρ(u(x)))（可微插值）{_q3tf4e}
+		* 位移场 ρ 由逐点 MLP 生成，代码用 1x1 卷积实现
+		* H 头结果 concat
+		> 非局部性仅通过采样引入：每个头在每个空间位置只采样一个远程坐标，H个头共采样H个点。这使得计算复杂度与网格点数成线性关系，而非二次关系。
+		* block 输出 GELU(GroupNorm(Warp[u] + Wu))
+	> 2.2 三个物理视角的理论动机
+		> 流图视角：对标量守恒律 dt(u) + div(G(u)) = 0，解在激波形成前是初始条件沿逆流图的pullback：u(t,x) = Phi^{-1}* u(s,·)。位移量仅依赖于局部状态u(t,x)——这恰好就是Selfwarp所做的。
+		> 波动方程与几何光学视角：对变速波动方程，几何光学近似下解是沿射线的多条到达路径的叠加。每条射线对应一个头，从不同方向的源坐标采样——多头warp自然对应这种角度积分的离散近似。
+		> 动力学理论视角：当头数趋于无穷、层数解释为时间步时，架构收敛到一个广义Boltzmann型方程，头索引对应提升相空间中的传输模态。
+		> Flowers在时间无关的Helmholtz方程上也取得了强劲表现（VRMSE 0.0463，FNO为0.0987），作者坦言这"令人困惑"——warp的理论动机来自传输和波动，对非输运问题为何有效缺乏解释。
+	> 2.3  架构：多尺度U-Net骨架
+		> Flower块（残差pullback块）由GroupNorm、多头warp、1x1卷积跳跃连接和GELU激活组成。
+		> 这些块嵌入标准的U-Net多尺度框架中：输入先拼接坐标场并逐点提升通道数，经编码器（stride-2卷积下采样）、瓶颈层、解码器（转置卷积上采样+跳跃连接），最后逐点投影到输出通道。
+		> 基准模型Flower-Tiny：160通道、40个头、4个尺度层级，约1730万参数。
+	> 作者明确承认的局限：
+		> 第一，不理解学到的warp何时对应物理上有意义的传输，对非双曲型物理问题缺乏理论解释。
+		> 第二，自回归rollout的稳定性仍不理想，尚不清楚如何系统性地改善。
+		> 第三，在扩散主导的问题（如Gray-Scott反应扩散、active matter）上，Flowers虽然优于同规模基线，但未能达到Poseidon和Walrus等预训练大模型的水平。
+		> 第四，三个理论视角是直觉构建而非因果解释。
+* GeoPT-2602.20399 变区域流体 NO 无标签预训练、只用几何信息，要求预测常速粘附输运粒子轨迹，认为该人造任务好于预测 SDF
+	* "GeoPT: Scaling Physics Simulation via Lifted Geometric Pre-Training"
+		* Wu, Haixu; Guo, Minghao; Li, Zongyi; Dou, Zhiyang; Long, Mingsheng; He, Kaiming; Matusik, Wojciech; 
+		> created on 2026-03-09
+		* 另可参考 [公众号报道](https://mp.weixin.qq.com/s/ZeL8FRDm-IT1nGM2mKCCpg)
+	* 方程类型：流体，给定区域形状、无穷远速度，预测稳态流场（不含时）
+	* fig1 几何信息辅助的不同方式 实验效果比较
+		* 几何预训练：预测 SDF 作为预训练任务；甚至明显不如最 naive 做法（直接从头训）
+			* sec5:4 预测矢量距离 远好于 SDF（符号距离）{_q3af9x}
+		* 网络架构额外输入几何特征：用混元 3D VAE 提取特征后，作为 NO 额外输入（condition）；比最 naive 做法（默认架构从头训）还差一点；{_q3ab4v}
+		* 本文方法有明显优势（收敛加速、数据需求降低）
+	* 预训练任务：构造合成动力学，要求预测各空间点 未来若干时间步的位置 eqn(5)；{_q3ag09}
+		* 网络输入：速度（单个向量，全局统一）+ 各散点位置，分量数 3 + 3P
+		* 网络输出：各散点未来位置，3TP
+		* （评）输入与正式训练时的输入含义基本一致；输出含义和 shape 不一致，正式训练为各点速度 3P
+		* 合成动力学：区域内为常速度场，碰到边界就停止 eqn(4)
+			* 动机：近似真实场景，真实速度场中的 tracer 输运方程 eqn(3)
+			* 解读：相当于 学输运方程，带 sticking boundary
+	* 预训练数据分布：
+		* 全局速度：球内均匀分布 eqn(4)
+		* 区域形状：纯几何形状数据集（规模明显大于仿真数据集）
+			* ShapeNet 子集，选出相关领域的（车、飞机、船），10k+ 样本；尽管与工业模型不同
+		* （另外还有）散点的空间分布
+	* 注：本文预训练方法架构无关；实验主要用 Transolver，也涉及 Galerkin Transformer、GNOT、UPT
+* 2509.25788 变区域 NO 预训练只用几何信息，预测 occupancy field；{_q5cg5n}
+	* "From Cheap Geometry to Expensive Physics: Elevating Neural Operators via Latent Shape Pretraining"
+		* Zhang, Zhizhou; Wu, Youjia; Zhang, Kaixuan; Wang, Yanjia; 
+		> created on 2026-05-12
+	* "From Cheap Geometry to Expensive Physics: A Physics-agnostic Pretraining Framework for Neural Operators", ICLR 2026
+	* fig2 输入计算域内点云，输出 INR 在计算域外 query point（如机翼内部）输出 0
+		* INR 实现为 Transformer-based NO，branch net 输入几何（点云过编码器后的输出），trunk net 输入坐标点
+	* fig3 数据的散点分布，输入点云可用 mesh（接近边界处加密）、计算域内均匀分布
+		* 输出点云（label 位置），方形域内均匀分布 or 对计算域 mesh 散点加随机扰动（从而接近边界处加密）
+* 2601.11428 FNO 失效模式大规模评估，5 数据集各训 200 个模型后验证
+	* "Forcing and Diagnosing Failure Modes of Fourier Neural Operators Across Diverse PDE Families"
+		* Shikhman, Lennon; 
+		> created on 2026-02-25
+	* （以下为 sec4 讨论）
+	* 仅保留低频，导致细尺度表征不足；{_q2pf5n}
+		> 也许最明显的问题是 FNO 的频谱限制 。
+		> 尽管采用傅里叶表示，给定的 FNO 具有固定数量的模态，因此其分辨率也固定，超过该分辨率无法表示函数。
+			> 当我们要求它以比训练更高的分辨率或更粗糙的输入工作时，它根本无法生成缺失的高频成分。
+			> 这表现为分辨率偏移的中度退化因子和高傅里叶模式下明显的误差集中（如图 3 和图 6 所示）。
+		> 值得注意的是，这并非 FNO 独有——许多神经网络对低频表现出频谱偏向（Tancik 等 ，2020）。
+		>  缓解这一问题的方法包括使用多分辨率数据或专门设计为层级尺度设计的架构，以填充逐渐高频的细节。
+			> 我们的结果强烈鼓励采用此类多尺度技术，尤其是当期望能够跨分辨率推广或输出具有比训练中更细微特征的输出时。
+	* OoD 泛化不足
+		> 另一个广泛的问题是分布转移下的泛化 。
+		> 分布外边界条件（泊松、布莱克–斯科尔斯）和参数值（NLS、布莱克–斯科尔斯）的巨大误差表明，神经算符在训练分布支持下根本受限。
+			> 它们并不固有地了解底层偏微分方程，无法在未遇到的系统中求解。
+			> 这类似于标准神经网络在分配外输入时失效的情况。
+		> 然而，在偏微分方程求解的语境下，可能会诱人地假设模型已经“学会了方程”;我们的实验提醒我们，学习算子可能是一个狭隘的解，利用训练集中的模式。
+			> 例如，Black–Scholes FNO 很可能学会了利用训练收益的平滑性，甚至线性性，但却没有处理不连续性的概念。
+		> 解决这一问题可能包括在更丰富的函数集上显式训练（这会增加数据需求），或将已知的线性或边界条件原则嵌入模型架构中。
+			> 一些近期研究尝试为神经求解器配备边界条件处理 （Kovachki 等，2021）， 但这仍是一个具有挑战性的领域。
+	* 自回归误差累积
+		> 我们观察到的展开不稳定性，
+			> 尤其是在 Navier–Stokes 和 K–S 中，凸显了使用学习替代者用于动力系统时的一个常见陷阱。
+			> 这一点在气候/天气模拟中广为人知 （Pathak 等 ，2022）， 这里也得到了重申：一步精度并不保证多步稳定性。
+		> 诸如添加物理约束或在网络中使用隐式时间积分器等技术可以改善这一点，
+			> 但从根本上说，如果系统是混沌的，任何模型都需要频繁重新对齐地面真实情况，或者纳入概率预测来解释偏离轨迹。
+			> 我们的确定性 FNO 只是沿着自己的轨迹前进。
+		> 一个有前景的方向是将学习与控制或滤波的理念结合起来，持续修正漂移。
+	> 一个令人惊讶的观察是 degradation 因子略低于 1。
+		> 我们在 K–S 和 Black–Scholes 中的小扰动中看到了这一点，起初这让我们感到困惑。
+		> 这意味着受扰输入的模型误差比原始输入略低。
+		> 分析后，我们的理解是，这并不意味着模型在噪声数据上表现更好（这里没有白吃的），而是在这些情况下，轻微的扰动并未增加难度，甚至可能消除原始输入中某些最坏情况的特征。
+			> 例如，如果原始输入存在模型难以处理的特定模式，添加噪声可能会稍微扰乱该模式，使模型的近似（通常更平滑或偏向简单模式）反而更接近扰动输入的真实解。
+			> 换句话说，模型可能因不必精确拟合一个锐利特征而受益，如果该特征被噪声模糊。
+		> 然而，从统计学上看，差异很小;这些降解因子的置信区间包括 1 或略低于 1，表明这些效应充其量只是次要效应。
+		> 主要结论是，我们未发现对输入扰动表现出高度不稳定行为的证据——这是一个令人鼓舞的信号，表明这些神经算符不会引入不可预测的高灵敏度，实际上相当稳定（很可能是由于隐式正则化）。
+* MAD-SNO-2601.11222 线性椭圆方程解可由全空间基本解表出，NO 学 D2N+N2D map 即可
+	* "Operator learning on domain boundary through combining fundamental solution-based artificial data and boundary integral techniques"
+		* Wu, Haochen; Wu, Heng; Lu, Benzhuo; 
+		> created on 2026-02-24
+	* eqn(4) 若 PDE 有两类边界 D,N，NO 只需学 $u|D,u_n|N\mapsto u_n|D,u|N$；{_q2oa5d}
+	* eqn(6-13) 考虑的 Laplace（或带源的 Poisson）边值、Helmholtz 方程都有已知的（全空间）基本解
+	* sec2.3 造数据，用基本解（而非传统求解器）构造解使满足内部方程，即可训 D2N+N2D map
+		* 可证明这样构造的解在 $L^2(\partial\Omega)$ 稠密，从而训练有效
+		* eqn(17) Laplace 方程，训练数据 u 为 $\Delta u=\sum c_i\delta_i$ 的全空间解，各 Dirac 函数权重和为 1；{_q2oa7j}
+		* 注：前序工作 MAD（Mathematical artificial data）已经这么造解
+* PhIS-FNO-2602.02264 PINO 训练课程学习，先保证满足 BC，再逐步引入内部 loss；跨阶段时 Adam 重置
+	* "Unsupervised Physics-Informed Operator Learning through Multi-Stage Curriculum Training"
+		* Marcandelli, Paolo; Mathur, Natansh; Markidis, Stefano; Siena, Martina; Mariani, Stefano; 
+		> created on 2026-02-23
+	* sec1 主要贡献 2：PINO 训练课程学习，跨阶段时 Adam 应重新初始化；{_q2nf0f}
+		> 2. 基于课程的优化。
+		> 我们引入了一种多阶段训练策略，先在边界约束下优化网络，然后逐步纳入域内的物理残差损耗。
+		> 每次转变时，优化器会被重新初始化——作为一种自我迁移学习——稳定收敛并防止梯度偏置的积累。
+		> 在所有测试的偏微分方程中，这一机制对于完全无监督环境中的收敛至关重要。
+	* sec2.5 课程学习：先保证拟合 IC,BC，再逐步引入内部 loss；{_q2ne9v}
+		> 在本研究中，我们提出了一种多阶段的课程训练策略，以反映偏微分方程的数学良定性：
+		> 网络在给定初始条件时，首先学习满足边界条件，从而固定解规范，
+		> 只有在后续阶段，PDE 残差才在内域被强制执行。
+		> 每个转变对应课程中的一个新阶段，边界损失和残差损失的相对权重根据第 2.1 节引入的同伦启发表述演变。
+	* fig8 有效学习率，不重新初始化则持续下降
+		* “有效学习率”定义 $\eta m_t/\sqrt v_t$，sec2:-2；即实际参数更新量
+* 2602.04082 Helmholtz 高频解需用扩散生成模型，而非确定性预测；代码数据已公开
+	* "A Probabilistic Framework for Solving High-Frequency Helmholtz Equations via Diffusion Models"
+		* Zou, Yicheng; Lanthaler, Samuel; Salahshoor, Hossein; 
+		> created on 2026-02-22
+	* sec4:1 训练数据；{_q2mg2h}
+		> 对于固定频率，我们合成一个由 10000 对声速图和亥姆霍兹解组成的数据集，即 {cj(x),uj(x)}j=110000 。
+		> 每个 cj 数据均使用一族高斯随机场（GRF;见 A.1）生成，GRF 参数从幅值和相关长度范围内随机选择。
+		> 在 10000 个综合数据中，我们分别分配 8190、1020 和 500 个用于训练、验证和测试。
+	> 用于重现所有图形和表格的代码和脚本可在以下网站获取：
+		> https://github.com/YichengZou626/Diffusion-Model-for-High-Frequency-Helmholtz
+		> 本研究、模型训练和后处理流程生成的数据集均记录在仓库中。
+* Transolver-3-2602.04940 （备用）(de)slice 用矩阵乘结合律加速，tile 划分物理态计算
+	* "Transolver-3: Scaling Up Transformer Solvers to Industrial-Scale Geometries"
+		* Zhou, Hang; Wu, Haixu; Shangguan, Haonan; Ma, Yuezhou; Weng, Huikun; Wang, Jianmin; Long, Mingsheng; 
+		> created on 2026-02-22
+	* 摘要摘录
+		> 我们介绍 Transolver-3，Transolver 家族的新成员，作为一个高度可扩展的框架，专为高精度物理仿真设计。
+		> 为了弥合 GPU 有限容量与复杂工程任务分辨率要求之间的差距，我们引入了两项关键的架构优化：
+			> 利用矩阵乘法结合性质实现更快的切片和解片，
+			> 以及几何切片铺砌来划分物理态计算。
+			> 结合通过在原始高分辨率网格的随机子集上学习的摊销训练策略和推断过程中的物理状态缓存技术，Transolver-3 实现了工业级网格的高保真场预测。
+		> 大量实验表明，Transolver-3 能够处理超过 1.6 亿个网格，在包括飞机和汽车设计任务在内的三个具有挑战性的模拟基准中取得令人印象深刻的性能。
+	> fig3 Transolver-3 的解耦推断。（a） 物理状态缓存：将高分辨率网格中全局信息汇聚为缓存状态。（b） 全网格解码：通过与物理状态缓存交互预测网格坐标上的物理场。
+* Phaedra-2602.03915 VQ-VAE 离散 token 不适用于物理场，建议 形态、振幅 独立表示；Poseidon 组
+	* "Phaedra: Learning High-Fidelity Discrete Tokenization for the Physical Science"
+		* Lingsch, Levi; Kissas, Georgios; Jakubik, Johannes; Mishra, Siddhartha; 
+		> created on 2026-02-21
+	* VQ-VAE,FSQ 等离散 tokenizer 不适用于物理场
+		> 我们认为像 VQ-VAE 和 FSQ 这样的图像分词器在此语境下的缺陷可归因于以下因素
+		> i） 感知与物理真实度：
+			> 图像分词器针对感知相似性（LPIPS）进行了优化，产生模仿自然纹理的高频信息。
+			> 在物理学中，小尺度梯度中的此类误差可能违反守恒定律和对称性，或在时间步进过程中导致光谱行为发散。
+		> ii） 无界动态范围：
+			> 自然图像是严格有界的（例如像素值在[0,255]）。
+			> 而物理场则表现出较大的重尾分布，动态范围较大，如图 2 所示。
+			> 因此，标准的固定令牌码本难以捕捉稀有的高能量事件，同时又不牺牲大部分低能量流的分辨率。
+		> iii） 振幅-形态冲突：
+			> 离散码本迫使权衡。
+			> 为了捕捉细微的大小变化，码本必须达到指数级的庞大。
+			> 然而，要捕捉多样的几何形状，密码本必须语义丰富。
+			> 试图用单一整数码同时实现两者，会造成瓶颈，模型生成特征的正确“形状”，但无法重建其精确强度，反之亦然。
+		* 注：FSQ 指 finite scalar quantization
+	* 提出的 tokenizer：形态、振幅 独立表示，分别 向量、标量；{_q2lf2b}
+		> 为了解决现有科学数据图像分词器的这些不足，本文的主要贡献是提出 Phaedra，
+		> 这是一种用于物理科学的新型分词器，旨在通过两种互补的离散表示来表示空间变化的场域：形态学，即存在的模式;以及振幅，一个正交元素，捕捉场的绝对大小。
+			> 形态通过矢量量化离散化形成可重用的局部模式码本，而振幅流则通过标量量化离散化，以保持大小和动态范围，保持稳定且分布感知性。
+			> 通过重组这两个因式分解词来重建物理场，使模式和物理尺度能够独立学习，从而纠正图像分词器的失效模式。
+		> 离散令牌化使得使用可扩展的生成模型成为可能，同时不牺牲科学所需的数值精度。
+			> 我们证明，Phaedra 在复杂物理数据集上的表现显著优于最先进的图像分词器（包括 Cosmos [25] 和 VAR [37]）。
+			> 此外，我们证明该表示具有强有力的推广性，在未见偏微分方程族、地球观测数据和 ERA5 再分析天气数据上展现出强大的零射点重建能力。
