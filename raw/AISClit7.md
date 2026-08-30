@@ -3,36 +3,6 @@
 		* Fear, Rio Alexa; Mukhopadhyay, Payel; McCabe, Michael; Bietti, Alberto; Cranmer, Miles; 
 		> created on 2026-01-24
 	* [知乎翻译](https://zhuanlan.zhihu.com/p/1981077068402926776)
-* MATEY-2412.20601 多历史步输入 PDE 基础模型，ViT patch-size 自适应加密，根据 patch 内方差；随物理场时间推进动态改加密位置
-	* "MATEY: multiscale adaptive foundation models for spatiotemporal physical systems"
-		* Zhang, Pei; Laiu, M. Paul; Norman, Matthew; Stefanski, Doug; Gounley, John; 
-		> created on 2026-01-18
-	* 摘要摘录
-		> 使用视觉变换器（ViT）架构准确表示时空物理系统中的多尺度特征需要极长且计算量极大的令牌序列。
-		> 为解决这一问题，我们提出了两种自适应分词方案，基于局部特征动态调整补丁大小：一种确保行为趋同于均匀的斑块细化，另一种提供更好的计算效率。
-		> 此外，我们提出了一组时空注意力方案，其中时间或轴空间维度被解耦，并评估其计算和数据效率。
-		> 我们通过一系列实验评估了提出的多尺度自适应模型 MATEY 的性能。
-		> 结果表明，自适应分词方案在不显著增加令牌序列长度的情况下，实现了更高的准确性。
-		> 与完全时空注意力方案或仅解耦时间维度的方案相比，我们发现完全解耦的轴向注意力效率和表现力较低，需要更多训练时间和模型权重才能达到相同准确性。
-		> 最后，我们在两个具有不同物理特性的微调任务中证明，基于 PDEBench 数据预训练的模型优于从零训练的模型，尤其是在低数据且注意力冻结的环境中。
-	* sec3:0 模型输入多历史步（最后到 $u_t$）、向前推进步长 $\delta t$，输出 $u_{t+\delta t}$
-		* （评）历史步的时间间隔固定，但预测推进的时间步长可变；{_q1if95}
-	* fig1 预训练-微调范式，预训练 PDEBench INS、CNS、ReacDiff2D、SWE（变量个数不同）
-		* 微调 热对流碰撞 2D，冷热气泡碰撞，引文 Norman 2020；{_q1ia34}
-		* 微调 液态金属 MHD，方腔流，引文 Fambri 2023；{_q1ia3c}
-	* 注：SViT 即 ViViT；进一步分离 xy 轴即得到 AViT
-	* 自适应加密
-		* 小 patch 还会引入“area bias”嵌入？
-		* eqn(3)-1 patchify 用 CNN 块；eqn(5)-1 各尺度有专门的 ConvTranspose decoder
-		* 加密依据：patch 内方差；先求所有 patch 中方差最大值，其 $\gamma\in[0,1]$ 倍作为加细阈值 eqn(4)；{_q1ij4n}
-			* 阈值临界值：$=0$ 完全加细，$=1$ 完全不加细
-		* 多分辨率组合方式 1，multi-resolution，同一位置保留 原 patch、细分后子 patch，两种分辨率 patch 独立过注意力块
-			* （评）似乎只有两种 patch 尺寸，原分辨率和 STS？
-			* 解码方式：各分辨率分别解码，结果相加 eqn(5)-1
-		* 多分辨率组合方式 2，mixed-resolution，同一位置只保留细分后子 patch，放入一个序列，统一算注意力
-			* batch 中不同样本加细 patch 数不同，需在序列中补充 pad tokens
-		* 方式比较 eqn(9)+1：mul 实现简单、代码修改小、支持 AViT、序列长度不增
-			* Mix 序列变长，不支持 AViT，但更能捕捉跨尺度相关性
 * 2507.09264 基于 ViT 的 NO 可调 patch 大小
 	* "Controllable Patching for Compute-Adaptive Surrogate Modeling of Partial Differential Equations"
 		* Mukhopadhyay, Payel; McCabe, Michael; Ohana, Ruben; Cranmer, Miles; 
@@ -49,97 +19,6 @@
 			> 这些伪影在基于固定补丁的 ViT 架构中无处不在，无论注意力类型（原版、轴向、Swin），且仅通过训练无法消除（附录 E）。
 			> 交替推出能带来更清晰、更稳定的长期预测。
 			> 重要的是，这一发现之所以成为可能，完全得益于我们框架提供的测试时间灵活性——这是之前偏微分方程替代工具完全不具备的能力。
-* Walrus-2511.15684 基于多历史步输入的 PDE 基础模型
-	* "Walrus: A Cross-Domain Foundation Model for Continuum Dynamics"
-		* McCabe, Michael; Mukhopadhyay, Payel; Marwah, Tanya; Blancard, Bruno Regaldo-Saint; Rozet, Francois; Diaconu, Cristiana; Meyer, Lucas; Wong, Kaze W. K.; Sotoudeh, Hadi; Bietti, Alberto; Espejo, Irina; Fear, Rio; Golkar, Siavash; Hehir, Tom; Hirashima, Keiya; Krawezik, Geraud; Lanusse, Francois; Morel, Rudy; Ohana, Ruben; Parker, Liam; Pettee, Mariel; Shen, Jeff; Cho, Kyunghyun; Cranmer, Miles; Ho, Shirley; 
-		* 一作也是 MPP，TheWell 作者
-		> created on 2026-01-15
-	* 摘要摘录
-		> 数据异质性和不稳定的长期动力学阻碍了从足够多样化的动态中学习，而不同分辨率和维度则挑战了现代硬件上的高效训练。
-		> 通过实证和理论分析，我们引入了新的方法来缓解这些障碍，包括基于谐和分析的稳定方法、负载均衡的分布式二维和三维训练策略，以及计算自适应分词。
-		> 利用这些工具，我们开发了 Walrus，这是一种基于变压器的基础模型，主要用于流体类连续介质动力学。
-		> Walrus 接受了十九种涵盖天体物理、地球科学、流变学、等离子体物理、声学和经典流体的多样场景的预先培训。
-		> 实验显示，Walrus 在下游任务的短期和长期预测视野以及广泛的预训练数据中都优于以往的基础模型，而消融研究则证实了我们在预测稳定性、训练吞吐量和传输性能方面的贡献相较于传统方法的价值。
-		> 代码和权重会发布供社区使用。
-	* fig1 整体架构，计算单步时间推进
-		* 注意力块（重复 L 层），时空分解（同前序 MPP）
-			* 时间因果注意力
-			* 空间并行注意力
-				* 用 RoPE；（评）可行前提或为 对非周期 BC 引入了 可学 padding；PDEformer 新架构无此 padding，因此纯 RoPE 无法充分体现边界位置信息，不如 APE
-		* tokenize 用了 CSM 以支持 可变降采样级别（涉及可学边界 padding）sec3.1:2
-			* 预训练数据集分辨率不同，相应用不同 stride 使同维数数据的总 token 数大致相同
-			* 用 hMLP（> 多次线性小核卷积层复合，而非单次大核卷积）
-				* （评）hMLP 可参考 [知乎](https://zhuanlan.zhihu.com/p/488574791)
-		* 编解码器有 2D、3D 两版本 sec3.1:3
-		* PreLN 用 RMSGroupNorm；QKNorm 用 LayerNorm sec3.1:4
-		* sec3.1:5 输入场幅值归一化，除以整个历史轨迹的 RMS；输出逆归一化，乘的是历史轨迹中更新量的 RMS（与输入非对称）{_q1m87i}
-	* sec3.2 基于谐波分析的稳定化方法（Patch Jittering）：显著降低自回归长期预测的不稳定
-		> （知乎）可以采用随机化的方式来解决：对输入进行随机平移（translation jitter），并在输出中逆平移回来。{_q1mc95}
-		> 总结，Patch Jitter 不需要额外网络、不增加算力，它通过数学性质让：
-		> 高频混叠的误差 → 变成随机噪声 → 被平均稀释 → 预测更稳定
-			> jitter 本质上是把图像往上／下／左／右平移几个像素；
-			> 对于卷积而言，小范围的平移不会改变＂统计意义上的特征提取＂；
-			> 所以 jitter 的最大平移范围不需要超过＂有效卷积核尺寸＂。
-		> 通过不断随机 roll（周期边界）或 roll+padding（非周期边界），让模型：看到偏左一点的 patch；看到偏右一点的 patch；看到偏上偏下的 patch；
-		> 最终模型学会：无论切 patch 的起点在哪里，我都能正确预测 → 提升平移鲁棒性
-	* sec4:1 训练使用激进的数据增强
-		> 避免对特定数据源的特殊性进行过拟合至关重要。
-		> 我们通过激进的多样性增强策略设计Walrus的训练方案，以最大化训练过程中的异质性水平。
-		> 该方案需要精密的分布策略来维持训练期间的高硬件利用率。
-		> 在微调阶段，我们保留了放宽部分限制的能力以提升对下游任务的适应性，具体讨论详见附录B.2.1。
-	* fig3 2D、3D 联训，2D 额外维度网格量设为 1，多余变量（如 z 速度）置 0，sec4.1:1；{_q1na6z}
-		* （评）RoPE 也是直接用的 3D 的？
-		* 2D 数据增强：旋转、反射，随机朝向嵌入 3D；注意速度场需使用相同群变换 sec4.1:2；{_q1nb7i}
-		* 时间步长随机选（类似 VICON），1-5 间均匀采样 sec4.1:3；{_q1nb7y}
-	* 并行训练用 PyTorch FSDP（> fully-sharded data parallel）sec4.2:2
-		* 2D token 数 32²，3D 16³ p7:2
-		* 2D bsz ×2，T ×2，以对齐 3D 总 token 数，因主要计算成本在线性投影层；{_q1nc16}
-		* batch 内多样性、负载均衡性的折衷
-			> 理想情况下，我们希望每个 GPU 能够独立采样数据集，以最大化批量多样性，然而，这些成本差异可能导致显著的无谓损失。
-			> 作为折中，我们采用了为 HSDP 设计的抽样策略（Zhao 等，2023），即分片组内的所有排名都必须从同一数据集中每一步抽样。
-			> 然而，每组独立采样，因此整个批次包含许多数据集。
-			> 结合 McCabe 等人（2023a）中使用的梯度累积作为随机负载均衡技巧，我们得到一个系统，
-			> 使 AllGather 作成为瓶颈的节点组被迫采样相同分辨率和维度的数据，而通过在参数更新前对 AllReduce 作间的多个微批次平均，
-			> 从而降低了整体每步时间的方差，平衡了采样多样性与计算性能。
-			> 我们可以在图 4 中看到这些变化的迭代影响。
-			> 在给定的抽样方案下，这些综合变化使吞吐量比单纯使用 FSDP 提高了 262%。
-	* 预训练数据 TheWell、FlowBench 混合，PDEBench 等用于微调
-		> The Well 含有多种由现实科学问题产生的高分辨率数据，而 FlowBench 则在标准流体场景中引入了几何上复杂的障碍物。
-		> 总体来说，这些数据一共包含 19 个数据集，涵盖 63 个状态变量，这些变量是基于多种不同的方程、边界条件和物理参数设置所模拟得到的。
-		> 一个重要的点是：我们在预训练中同时使用了 2D 数据和 3D 数据。
-		> 为了验证迁移性能，我们在若干 预留出来的（held out）数据集 上进行微调，这些数据集来自 The Well、FlowBench、PDEBench、PDEArena以及 PDEGym。
-	* 预训练超参数
-		* 历史长度 T=16
-			> 为实现公平比较，我们规定：所有预测轨迹都从 T=17 开始，这样可以与那些使用与 MPP 预训练时相同“上下文长度”（context length）的模型进行公平对比——也就是使用 16 个时间步的上下文长度。
-		> 预训练总步数约 400,000。
-		> mini-batch 设定：2D：micro-batch size = 192，3D：micro-batch size = 96
-	* HalfWalrus 预训练仅 2D，有向 3D 泛化能力但十分有限；{_q1nc1f}
-		> （知乎）尽管 HalfWalrus 从未见过 3D 数据，但在极少的数据样本下，它仍然能比从头训练的模型表现更好。
-		> 不过，这种提升幅度并不大，同时也可以看出：预训练覆盖不够广（这里指不包含 3D 数据）实际上会成为模型的一种阻碍。
-	* 相关：[知乎介绍](https://zhuanlan.zhihu.com/p/1977782353939174124)
-* 2511.20455 （备用）CFD 的 scaling law，似有领域需求综述性质；Poseidon 组与 NVIDIA 合作
-	* "Fluid Intelligence: A Forward Look on AI Foundation Models in Computational Fluid Dynamics"
-		* Ashton, Neil; Brandstetter, Johannes; Mishra, Siddhartha; 
-		> created on 2026-01-15
-	* 摘要摘录
-		> 本文通过将工业规模的 CFD 模拟拆解为其核心组成部分，弥合了机器学习与计算流体力学（CFD）领域之间的鸿沟。
-		> 我们的主要贡献是提出首个将计算流体力学输入纳入数据生成和模型训练的尺度定律，以概述开发和部署这些下一代人工智能模型以应对复杂流体力学问题的独特挑战。
-		> 利用我们的新缩放定律，我们建立了大规模极限的定量估计，区分了数据生成成本为总计算主导因素的区域与以模型训练成本为主的区域。
-		> 我们得出结论，高保真度瞬态数据的纳入为基础模型提供了最佳路径。
-		> 我们用具体数字来约束理论，首次公开估算构建计算流体力学基础模型的计算成本和时间。
-	* sec2 CFD 计算过程概述
-		* sec2.3.1 概述数据类型，稳态、瞬态、时间平均
-	* sec3.2 eqn(9) CFD NO 输入，几何、几何预处理、IC/BC、网格（拓扑、分辨率）、物理模型（如湍流模型）、数值离散
-		* 后两个变量离散，前面的连续
-	* 训练瓶颈，compute/memory bound；PDE 求解时还涉及 data/train bound
-	* sec5:1 网络输入包括仿真配置，包括湍流模型、数值方法
-		> 这些数据不仅包括连续体输入，如初始/边界条件、域几何等，还包括类别变量，即底层物理（湍流）模型和网格离散化/数值方法等。
-	* 数据比较了 用低保真 RANS、高保真 LES
-* PDE-FM-2511.21861 PDE 基础模型，TheWell 预训练，PDE 泛化通过逐个训针对性输入层
-	* "Towards a Foundation Model for Partial Differential Equations Across Physics Domains"
-		* Soares, Eduardo; Brazil, Emilio Vital; Shirasuna, Victor; de Carvalho, Breno W. S. R.; Malossi, Cristiano; 
-		> created on 2026-01-14
-	* eqn(1)-1 dataset-specific 1x1 adapters, 输出 shared latent channel budget；{_q1ec4k}
 * LinearNO-2511.06294
 	* "Transolver is a Linear Transformer: Revisiting Physics-Attention through the Lens of Linear Attention"
 		* Hu, Wenjie; Liu, Sidun; Qiao, Peng; Sun, Zhenglun; Dou, Yong; 
@@ -338,21 +217,6 @@
 		> 由于求解器生成的标签很昂贵，我们在极小极大（PGD风格）公式中嵌入了一个主动/对抗样本选择循环：
 		> 在学生固定的情况下，我们（通过投影梯度最大化）搜索最大化学生与教师差异的输入扰动（受物理动机的平滑度/能量约束），将这些最坏情况的例子添加到训练池中，并更新学生。{_pcfa5l}
 		> 利用可微分谱求解器，如Exponax，可以将求解器梯度反向传播到对抗搜索中，在周期/谱设置下稳定和加强样本挖掘。
-* XNN-2510.13665 PDE 基础模型支持不同维数联训方案，卷积、池化、注意力均遍历所有轴置换
-	* "Axial Neural Networks for Dimension-Free Foundation Models"
-		* Kim, Hyunsu; Park, Jonggeon; Bruna, Joan; Yang, Hongseok; Lee, Juho; 
-		> created on 2025-11-17
-	* fig1,2 遍历坐标轴置换的操作，lifting 每次选一轴作汇总中心，注意力类似
-	* sec3.1 set-based，eqn(12) 求和遍历所有轴，每轴轮换、对末轴操作、反轮换
-		* 包括 Conv1D+Pool，注意力；{_pbha90}
-		* eqn(13) Conv2D 也可用，每次选两轴
-	* sec3.2 graph-based
-		* eqn(15) 对坐标轴有类似 DeepSet 的操作
-	* sec5.2 实验，基于 MPP 修改得 X-MPP，另有（仿 MPP 所用基线）X-CViT
-		* 数据集：PDEBench，PDEArena
-		* 1D 处理：p9:-1 zero-padding（> 为啥不是 repeat）
-		* 跨维数迁移：p10:2 2D 预训练，1D、3D 微调；{_pbhb0l}
-		* 各维数联合预训练 tbl2
 * MoE-POT-2510.25803 （备用）DPOT 架构引入 MoE；{_q7jb08}
 	* "Mixture-of-Experts Operator Transformer for Large-Scale PDE Pre-Training", NeurIPS 2025
 		* Wang, Hong; Xin, Haiyang; Wang, Jie; Yang, Xuanze; Zha, Fei; Dong, Huanshuo; Jiang, Yan; 
@@ -395,91 +259,6 @@
 		* （评）方形均匀网格上用多尺度 GNN 有些奇怪，为何不直接 U-Net
 	* 时间推进：eqn(7) NeuralODE，网络预测当前速度
 	* 状态修正：eqn(9,10) 基于浅层 CNN，时间离散，仅预测下一时间步，避免 NeuralODE 的长期误差累积、或系统本身无法完全用 ODE 描述
-* P3D-2509.10186 3D 细网格 NO，划多窗口独立编解码，隐空间全局混合各窗口信息
-	* "P3D: Scalable Neural Surrogates for High-Resolution 3D Physics Simulations with Global Context", ICLR 2026
-		* Holzschuh, Benjamin; Kohl, Georg; Redinger, Florian; Thuerey, Nils; 
-		> created on 2025-10-20
-	* 摘要摘录
-		> 我们提出了一种可扩展的框架，用于学习高分辨率3D物理模拟的确定性和概率性神经替代物。
-		> 我们介绍了一种针对3D物理模拟的混合CNNTransformer骨干架构，在速度和精度方面明显优于现有架构。
-		> 我们提出的网络可以在模拟域的小块上进行预训练，可以将其融合以获得全局解决方案，
-		> 可选地通过快速和可扩展的序列到序列模型进行引导，以包括长程依赖关系。
-		> 这种设置允许训练大规模模型，减少高分辨率数据集的内存和计算要求。
-		> 我们根据一系列基线方法评估了我们的骨干架构，目的是在3D中同时学习14种不同类型PDE的动态。
-		> 我们演示了如何将我们的模型扩展到空间分辨率高达512^3的高分辨率各向同性湍流。
-		> 最后，我们通过将其训练为扩散模型来展示我们的网络的多功能性，以生成不同雷诺数下高度湍流3D通道流的概率样本，准确捕捉潜在的流量统计数据。
-	* （评）在((p8ag76))集合元素打包处理 框架下，目的为降注意力复杂度，打包结果暂时
-	* fig2 编码器分二阶段，先 CNN tokenize，再 Transformer 逐窗口注意力
-		* 解码器类似，窗口注意力后 CNN detokenize
-		* sec3.1:2 3D tokenize 基于 CNN，因 3D patch 中格点数多、待编码信息密度大；{_pbf87s}
-			> 完全基于变换器的架构在像素空间中适用于二维数据和图像，如ViTs，它依赖于将大小为p×p的补丁转换为令牌的patchification操作。
-			> 3D中的相应方法将把大小为p3的补丁转换为单个令牌，显著增加了每个令牌中编码的信息量。
-			> 为了平衡转换器的令牌数量和每个令牌的信息密度，我们通过卷积编码器学习局部特征，以获得优化的压缩表示。
-			> 卷积编码器/解码器遵循现代UNet块的设计，使用自适应实例归一化和组归一化。
-			* 注：暂不确定该观点可靠性
-		* secA.2 CNN 架构，(全卷积、stride=2 卷积) 重复两次，最终分辨率降 4 倍；下采样有残差连接至解码器
-			> 卷积编码器首先使用具有与配置的嵌入维度相对应的滤波器的Conv3D层（核大小3，填充1）嵌入输入。
-			> 接下来是通过Conv3D层实现的下采样层（内核大小3，填充1，步长2）。
-			> 每次下采样操作之前的中间状态都会被保存以用于剩余连接。
-			> 编码器块和连续下采样被应用两次。
-			> 对于每一层，相应的过滤器数量如表5所示。
-			> 编码器块重复两次。
-				* （评）推测这句是没注意到之前写过，重复写了一遍
-			> 每个编码器块由GroupNormalization层组成，然后是GELU激活、Conv3D层（核大小3，填充1）、GroupNormalization、根据条件通过移位和缩放操作进行调制、GELU和一个额外的Conv3D层（核大小3，填充1）。
-			> 每个编码器块的输入和输出通过跳过连接连接。
-			> 通过线性层从卷积编码器/解码器的嵌入向量中学习移位和缩放向量。
-		* sec3.1:-1 降注意力计算量：窗口注意力，窗口位置固定（消融中性能未降）
-			> 为了计算标记之间的注意力得分，我们使用标记在同一窗口内的对数间隔相对位置。
-			> 变换器编码器块的架构将Swin transformer[41]和扩散变换器[46，DiT]组合成3D变体。
-			> 它与PDE-Transformer有相似之处[21]，但重要的变化是：（1）patchification被大型卷积编码器和解码器所取代，（2）我们删除了计算窗口注意力的窗口移位。
-				* 注：本文作者同 PDE-Transformer 团队
-			> 我们没有看到性能的明显下降，并决定优化以减少窗口的移动，从而提高计算效率。
-	* fig3 整体架构，各窗口独立编解码、算注意力，中间隐空间层进行窗口间（长程）信息交互；{_pbf897}
-		* sec3.2:1 二阶段训练，先学窗口内预测、再加窗口间交互：小 crop 预训练编解码器，扩展到大空间尺度后再引入隐层长程交互、全局上下文
-			> P3D故意不使用任何绝对位置嵌入，也不进行全局聚合和分发信息的操作。
-				> 因此，它必须依赖于学习感知场中的局部特征和动态。
-				> 这促进了平移等价性，这是PDE替代建模的一个重要归纳偏差。
-				* 注：“不使用绝对位置嵌入”仅指编解码阶段，后续长程信息交互仍有位置编码
-			> 与此同时，全局信息和长期依赖关系往往对获得正确的解决方案起着至关重要的作用。
-				> 我们学习大规模模拟的一般策略是在较小的模拟 crop 上预训练模型，然后将训练好的网络扩展到更大的输入。
-				> 然而，这不允许对长程依赖关系进行建模。
-			> 为了解决这一缺点，我们将U型架构的瓶颈层与序列模型联系起来。
-		* sec3.2:2 长程信息交互联用两类 token：latent、region，算 6 层近线性的注意力
-			* latent：对应空间尺寸 32³，初始化为 encoder 输出的压缩结果，带 ViT 频率式绝对位置编码
-				> 令牌嵌入瓶颈层由令牌组成，令牌通过线性层嵌入到潜在令牌中。
-				> P3D将大小为32^3的裁剪压缩成单个潜在令牌。
-				> 然后，类似于[10]，将基于频率的位置嵌入向量添加到每个潜在令牌中。
-				* （评）尺寸似乎小于编解码所用 window，这样看只对 window 内部做部分聚合，单个 window 内仍保留多个 latent token
-			* region：对应预训练所用空间尺寸，初始化为可学嵌入，同样加绝对位置编码；{_pbff7h}
-				* 注：sec3.4 举例所用的预训练尺寸 64³，sec4.2 实验 128³，故应比 latent 对应区域范围更大一些
-				> 此外，我们将域划分为多个区域，并将区域的大小与P3D预训练的域裁剪的大小相匹配。
-				> 对于每个区域，我们在潜在标记序列中包含一个相应的所谓区域标记，类似于ViTs中的分类标记。
-					* （评）即相当于 ViT [CLS]
-				> 每个区域标记都通过一个可学习的嵌入层进行初始化，我们添加了一个基于频率的位置嵌入向量。
-				> 区域令牌的目的是作为解码器的更直接的反馈机制，我们将在下一段中对此进行描述。
-				* fig4 caption 将 region token 称为 messenger token
-			* 注意力用 HyperAttention（有引文，近似线性复杂度），共 6 层
-				> 我们的实现使用n=6层超注意力[16]。
-				> 图3提供了此设置的概述。
-				> 原则上，可以使用任何有效的序列模型。
-		* 解码器引入 latent、region token 信息方式不同：前者加进输入层、一次性，后者作调制、每层都引入；{_pbfc1j}
-			> (sec3.2:2) 在处理完区域和潜在令牌序列后，通过跳过连接将潜在令牌添加到解码器的输入端。
-			* sec3.2:3 各 region 的 decoder block 引入 scale+shift 调制，具体位置为 InstantNorm
-			* 调制向量：MLP(region token 输出) + 其他全局调制（> 流匹配时间等）
-		* fig4 第二阶段训练 编解码器参与微调，为降低 GPU 显存需求，每步训练可仅对部分窗口反传；{_pbff3o}
-			* c 完整微调，所有窗口的编解码器都参与微调
-			* d 随机选部分窗口的参与微调，编解码器的窗口选择独立
-				* （评）不反传部分不仅不累积网络梯度，也不算激活值梯度
-				* （评）编码器获取激活值梯度的路径：其他窗口解码器反传激活值梯度，再通过中间交互层传播到当前窗口
-			* e 编码器不微调，仅解码器选随机窗口微调
-				* （评）解码器引入了 region token 的额外输入，故必须微调；编码器架构无改变
-	* sec3.3 预期使用方式，有监督、流匹配生成 均可，仅训练 loss 不同
-	* sec4.1 实验，14 种不同 PDE 数据联训，数据集基于 APEBench；{_pbf88x}
-		* （评）虽然文章没说是基础模型，但多样化数据集联合预训练应该符合基础模型的定义
-		* sec4.1:1 从数据里随机截 crops；相应动力学非确定，因区域外影响未知
-			* 因此 crop 扩大时预测精度提高
-		* sec4.1:1 最大通道数 3，不够的数据集 zero-pad；PDE 类型与模拟超参对模型未知（不作为输入）
-		* sec4.2 用于 John Hopkins 高分辨率湍流数据集（1024³ 网格 DNS 数据）
 * FC4NO-2510.05995 NO 基准测试：6 个 3D 不规则区域工业级工程设计数据集，比较 4 大 NO 范式
 	* "A comprehensive comparison of neural operators for 3D industry-scale engineering designs"
 		* Zhong, Weiheng; Liu, Qibang; Abueidda, Diab; Koric, Seid; Meidani, Hadi; 
@@ -561,85 +340,6 @@
 		* （评）直观上合理：混沌系统初值敏感，$C\gg 1$，误差迅速放大；耗散系统 $C<1$，初值差异逐渐被抹平
 	* thm2 离散时间步进的通用近似定理，针对 FD-Net，K 时间步进算子可由单时间步进代理的 K 次复合逼近；{_pak85d}
 		* （评）未考虑单时间步进是否是良好逼近，形式上不排除是代理算子拟合另一动力学，只是过 K 步后流映射恰好与原动力学一致
-* FMT-2509.18611 多历史 PDE 基础模型，流匹配生成结合动力学步进，为支持多 PDE 据历史总结态做条件生成
-	* "Flow marching for a generative PDE foundation model"
-		* Chen, Zituo; Deng, Sili; 
-		> created on 2025-10-19
-	* 摘要摘录
-		> 最近，在PDE控制的时空轨迹的大规模集合上进行的预训练显示出建立动力系统可推广模型的前景。
-		> 然而，大多数现有的PDE基础模型依赖于确定性的Transformer架构，这在许多科学和工程应用中缺乏生成灵活性。
-		> 我们提出了Flow Marching，这是一种将神经算子学习与由物理动态系统中误差累积分析驱动的流匹配联系起来的算法，并在此基础上构建了一个生成性PDE基础模型。
-			> 通过联合采样相邻状态之间的噪声水平和物理时间步长，该模型学习了一个统一的速度场，将有噪声的当前状态传输到其干净的后续状态，减少了长期的部署漂移，同时实现了不确定性感知的集成生成。
-			> 除了这个核心算法，我们还引入了一个物理预训练变分自编码器（P2VAE），将物理状态嵌入到一个紧凑的潜在空间中，
-			> 以及一个高效的流行进变换器（FMT），它将扩散强迫方案与潜在的时间金字塔相结合，实现了比全长视频扩散模型高15倍的计算效率，从而能够以大幅降低的成本进行大规模预训练。
-		> 我们在12个不同的PDE家族中整理了约250万条轨迹，并在多个尺度上训练了P2VAE和FMT套件。
-		> 在下游评估中，我们对看不见的柯尔莫哥洛夫湍流进行了基准测试，进行少样本微调，证明了确定性对应物的长期部署稳定性，并呈现了不确定性分层集成结果，强调了生成PDE基础模型在实际应用中的重要性。
-	* fig1 eqn(6) flow-marching，k=0 为普通流匹配，k=1 为相邻时间步线性插值
-	* sec3.3 多动力学联合学习：历史步总结为隐向量 h；{_pajf4p}
-		* eqn(11) 时间推进：条件生成，h 作为条件
-		* eqn(12) h 更新：轻量级 RNN，新输入包括 新生成的时间步、当前时间
-			* （评）公式中 h 更新有随机性（普通 RNN 不应有）；未 check 引文 diffusion forcing
-			* sec3.4 训练时固定输入 4 个历史时间步
-	* sec3.4 提高计算效率：
-		* 1. 在隐空间计算，基于 P2VAE 编解码
-		* 2. PFM temporal pyramids，由系统 Markov 性，弱化远期历史时间步，通过对隐状态下采样；{_pajf6p}
-			* 训练时固定输入 4 个历史时间步，下采样程度依次 8,4,2,1
-	* sec3.5 推理时 UQ：隔离 aleatoric 不确定性（> 预测本身？）、IC 不确定性，后者通过调整 k；{_pajf6c}
-	* sec4.1:1 数据集：FNO，PDEBench，PDEArena，TheWell
-* SPUS-2510.01370 相对轻量级 U-Net 输入单历史步，单方程多 IC 预训练后微调到下游方程，称为基础模型
-	* "SPUS: A Lightweight and Parameter-Efficient Foundation Model for PDEs" by Los Alamos National Laboratory
-		* Siddik, Abu Bucker; Oyen, Diane; Most, Alexander; Kucer, Michal; Biswas, Ayan; 
-		> created on 2025-10-19
-	* 摘要摘录
-		> 小型偏微分方程U-Net求解器（SPUS），这是一种紧凑高效的基础模型（FM），被设计为求解各种偏微分方程（PDE）的统一神经算子。
-		> 与现有的最先进的PDE FM（主要基于具有高计算和参数开销的大型复杂变压器架构）不同，SPUS利用了一种轻量级的基于剩余U-Net的架构，该架构在该领域作为基础模型架构的探索程度很低。
-		> 为了在这个极简主义框架中实现有效的学习，我们利用了一种简单而强大的自回归预训练策略，该策略紧密复制了数值求解器的行为来学习底层物理。
-		> SPUS在一组不同的流体动力学PDE上进行了预训练，并在跨越各种物理系统的6个具有挑战性的看不见的下游PDE中进行了评估。
-		> 实验结果表明，使用基于残差U-Net架构的SPUS在这些下游任务上实现了最先进的泛化，同时需要更少的参数和最少的微调数据，突显了其作为解决各种PDE系统的高参数效率FM的潜力。
-	* eqn(2) 直接假定是 Markov 系统，方程固定？（实验预训练确实都是可压 Euler 方程）
-	* fig1 训练阶段，单步预测预训练，单步预测微调，rollout 微调
-* GPhyT-2509.13805 多历史 PDE 基础模型，输入增广引入时空导数信息，完整时空注意力处理，NeuralODE 输出
-	* "Towards a Physics Foundation Model"
-		* Wiesner, Florian; Wessling, Matthias; Baek, Stephen; 
-		> created on 2025-10-18
-	* 摘要摘录
-		> 我们展示了普通物理变换器（GPhy T），它基于1.8 TB的各种模拟数据进行训练，证明了物理学可以实现基础模型能力。
-		> 我们的关键见解是，变压器可以学习从上下文中推断出控制动力学，使单个模型能够模拟流固相互作用、冲击波、热对流和多相动力学，而无需告知底层方程。
-		> GPhy T实现了三个关键突破：（1）跨多个物理领域的卓越性能，比专门的体系结构高出29倍；（2）通过上下文学习对完全看不见的物理系统进行零样本泛化；（3）通过50时间步的推出进行稳定的长期预测。
-	* sec3.1 用完整时空注意力；不用计算少的轴向注意力是为保证最大表达力，捕捉复杂、不可分解的物理机制
-	* sec3.1:2 输出为时间导数，用数值 ODE 预测下一时间步（相当于 NeuralODE）
-		* 用前向 Euler；消融实验中 RK4 等无明显精度增益；{_pak822}
-	* sec3.1:3 输入用时空导数（中心差分）增广
-	* （评）未仔细确认输入时间步数是否固定，fig1 写的是 4 步；{_paim5g}
-	* sec3.2 数据来源：TheWell + 自造数据，后者引入了复杂区域形状和边界
-	* sec6.1 本文只用 2D 数据，尽管架构支持 3D，因数据少、完整注意力计算开销大
-		* 空间分辨率目前固定为 256×128
-* MORPH-2509.21670 自回归 PDE 基础模型，支持多步历史输入但按单步预训练后微调方式，支持不同分辨率、1-3D，隐空间合并多变量信息以支持可变变量数
-	* "MORPH: Shape-agnostic PDE Foundation Models" by Los Alamos National Laboratory
-		* Rautela, Mahindra Singh; Most, Alexander; Mansingh, Siddharth; Love, Bradley C.; Biswas, Ayan; Oyen, Diane; Lawrence, Earl; 
-		> created on 2025-10-18
-	* 摘要摘录
-		> 我们介绍MORPH，一个形状不可知的偏微分方程（PDE）自回归基础模型。
-		> MORPH建立在卷积视觉变换器骨干上，可以无缝处理不同分辨率、具有混合标量和矢量分量的多个场的不同数据维度（1D-3D）的异构时空数据集。
-		> 该架构结合了
-			> （i）分量卷积，它联合处理标量和矢量通道以捕获局部交互，
-			> （ii）场间交叉注意力，它在不同物理场之间建模和选择性地传播信息，
-			> （iii）轴向注意力，它沿着单个空间和时间轴分解完整的时空自注意力，以减少计算负担，同时保持表现力。
-		> 我们在各种异构PDE数据集上预训练多个模型变体，并评估向一系列下游预测任务的转移。
-		> 使用全模型微调和参数有效的低秩适配器（LoRA），MORPH在零样本和全射泛化方面都优于从头开始训练的模型。
-	* fig1 整体架构
-		* fig1a 输入编码：各输入变量过 conv3d
-			* 注：速度等多分量场视为一整个变量，参考 tbl1 各数据集 shape 描述
-		* fig1b 变量信息合并，打 patch 后交叉注意力合并各变量，得隐空间的单变量 patches；{_pain6j}
-		* fig1c 4D 时空轴向注意力（由 b 无需再引入通道注意力）
-		* fig1d 解码到原变量，unpatchify
-	* sec4.1 数据集：PDEBench，PDEgym，TheWell；1-3D 联合使用
-		* p5:-1 数据加载：各数据集 DataLoader 独立；DistributedDataParallel 没法直接用，自己实现了多 worker,rank 的 sharding 操作
-	* p7:2 计算资源，M（126M）、L（480M）模型用 2 节点，每节点 8 块 H100
-	* p7:2 基线模型 MPP，DPOT，Poseidon；另有 FNO，U-Net
-	* p7:3 自回归历史长度：架构支持固定历史时间步数、可变历史步数
-		* 本文尊重初值问题设定，仅输入一步预测下一步；{_pain68}
-		* sec4.3:-1 对 DPOT，MPP 按同样单步输入方式微调（根据 p7:3 是微调而非从头重训）
 * HyPINO-2509.05117 二阶线性方程 NO 生成 INR 权重，边值延拓+掩码输入，loss 含 PINN、采 u 算 f 的数据，提精度用线性方程重解残差、微调
 	* "HyPINO: Multi-Physics Neural Operators via HyperPINNs and the Method of Manufactured Solutions"
 		* Bischof, Rafael; Piovarči, Michal; Kraus, Michael A.; Mishra, Siddhartha; Bickel, Bernd; 

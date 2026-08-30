@@ -521,35 +521,6 @@
 			* 相对能量，过渡金属电离势，基态4s和3d轨道占有率
 			* 势垒高度（重原子转移、亲核取代、单分子缔合、氢转移反应）
 			* 相互作用能（氢键相互作用体系、色散相互作用体系、混合静电-色散相互作用系统）
-* UPS-2403.07187 预训练 LLM 微调得 NO 基础模型，输入物理场编码为 l token，先将其输出分布与 LLM 对齐
-	* "UPS: Efficiently Building Foundation Models for PDE Solving via Cross-Modal Adaptation", TMLR2024
-		* Shen, Junhong; Marwah, Tanya; Talwalkar, Ameet; 
-		> created on 2025-01-04
-	* sec3.1:-2 多分量处理：预设分量全集，本文为 $\rho,u,v,p$，分量数 $N=4$；{_p15a19}
-	* sec3.2 时间推进网络架构，concat 场信息（物理场过编码器）与方程形式信息（文本），过 LLM 后解码
-		* sec3.2:3 FNO 嵌入模块结构，输入 $n^d$ 空间网格，每点 N 分量；变换为 l 个嵌入 token，每个维数 e
-			* FNO 输入 N 通道输出 l 通道
-			* 空间网格点数 $n^d$ 线性变换（通过 1x1 卷积实现）压缩为 e 维
-			* sec5.3 超参数 ablation
-		* sec3.2:4 concat 场信息（FNO 物理场嵌入模块给出）、方程形式信息；{_p15a30}
-			* 方程形式信息包括：PDE 名称、标量系数取值；{_p15a2c}
-		* sec3.2:-2 基于预训练后的 LLM，效果好于从头训，尽管预训练过程没见过数值模态
-			* sec3.2:-3 物理场空间无顺序，故注意力不加因果结构
-		* sec3.2:-1 预测下一时间步：1. 过 LLM，2. 所有 token 取平均得单个 e 维嵌入，3. 过线性层得 $Nn^d$ 维输出，reshape 得物理场
-	* sec4 二阶段训练，预测 loss 为 nRMSE
-		* stage1 loss 分布匹配 + 预测，更新部分为 物理场编、解码器；不涉及 LLM
-		* stage2 loss 仅预测，接入 LLM、更新所有网络参数
-		* 解码器输入有差异：stage 1 场、方程形式信息的 concat 直接输入解码器，stage2 经 LLM 处理后才输入解码器
-	* sec4 分布匹配：训物理场编码器使其输出分布与 LLM 输入匹配；必要性源于 LLM 没见过数值模态
-		* 必要性：有引文说明“直接微调非文本输入上的预训练LLM可能会导致次优性能”
-		* 方法：先前文献的 ORCA，“以实现跨模态自适应”；所用的参考文本数据集 CoNLL-2003 与之相同；{_p15a4e}
-			> 给定一个随机初始化的嵌入网络，我们首先对其进行预训练，以最小化嵌入网络的输出（在我们的例子中为hmix）与外部参考NLP数据集的文本嵌入之间的分布距离，我们将其表示为hLM。
-			> 这个过程使跨模态分布类似于LLM预训练的文本分布。
-		* loss：MMD（maximum mean discrepancy），不同于原 ORCA 的最优传输距离，因物理场分布连续而非离散；{_p15a5h}
-			* （评）看公式 eqn(2) 是概率密度函数的 L2 距离（我没理解是哪种意义下的 L2），似乎是经推导可改写为期望形式，只需通过采样估计，无需获取概率密度实际取值
-	* 实验，sec5.1 零样本超过专用 NO，sec5.2 向新 PDE 类型/方程系数 零样本/少样本泛化
-		* tbl1 baseline：专用模型 FNO，GNOT，OFormer，U-Net，ORCA，通用模型 unified FNO（？）、MPP、DPOT
-		* tbl2 微调样本量 0, 10, 100, 9k；类型包括没见过的 PDE 形式、没见过的 PDE 系数；tbl3 没见过的网格分辨率
 * TheWell-2412.00568 丰富的基准数据集
 	* "The Well: a Large-Scale Collection of Diverse Physics Simulations for Machine Learning", NIPS2024 Track on Datasets and Benchmarks
 		* Ohana, Ruben; McCabe, Michael; Meyer, Lucas; Morel, Rudy; Agocs, Fruzsina J.; Beneitez, Miguel; Berger, Marsha; Burkhart, Blakesley; Dalziel, Stuart B.; Fielding, Drummond B.; Fortunato, Daniel; Goldberg, Jared A.; Hirashima, Keiya; Jiang, Yan-Fei; Kerswell, Rich R.; Maddu, Suryanarayana; Miller, Jonah; Mukhopadhyay, Payel; Nixon, Stefan S.; Shen, Jeff; Watteaux, Romain; Blancard, Bruno Régaldo-Saint; Rozet, François; Parker, Liam H.; Cranmer, Miles; Ho, Shirley; 
@@ -742,30 +713,6 @@
 			> 我们提出使用“多个相邻优化步之间的梯度方差”近似“局域梯度方差”
 				* 称 Adam 有类似思想；原文有相应理论分析
 		* 优化泛化平衡（略）
-* 2409.12293 线性 PDE 使用上下文学习的理论、实验研究，包括预训练任务多样性定义、OoD 任务推理能力
-	* "Provable In-Context Learning of Linear Systems and Linear Elliptic PDEs with Transformers"
-		* Cole, Frank; Lu, Yulong; O&#39; Neill, Riley; Zhang, Tianhao; 
-		> created on 2024-11-16
-	* 摘要摘录：标度律（网格规模、训练任务量、上下文长度），OoD（系数、源项分布变化）可通过增加推理提示长度处理
-		> 这项工作对应用于与线性椭圆PDE家族相关的解算子的基于变换器的ICL进行了严格的误差分析。
-		> 我们首先证明了由线性自关注层定义的线性变换器可以在上下文中可证明地学习，以反转PDE空间离散化产生的线性系统。
-			> 这是通过推导所提出的线性变换器在空间离散化大小、训练任务数量以及训练和推理过程中使用的提示长度方面的预测风险的理论标度律来实现的。
-			> 这些缩放定律还使我们能够为学习PDE解建立定量误差界限。
-		> 此外，我们量化了预训练变换器对下游PDE任务的适应性，这些任务在任务（由PDE系数表示）和输入协变量（由源项表示）中都经历了分布变化。
-			> 为了分析任务分布的变化，我们引入了任务多样性的新概念，并假设预训练任务具有足够的多样性，根据任务变化的幅度来表征变换器的预测误差。
-			> 我们的结果表明，通过增加下游任务中的提示长度可以减轻任务转移错误，这证明了预训练基础模型的价值和力量。{_obgf7g}
-			> 我们还创造了足够的条件来确保任务的多样性。
-		> 最后，我们通过广泛的数值实验验证了变压器的ICL能力。
-	* contributions 摘录，各定理的结论概括
-		> 我们形式化了一个框架，用于在上下文中学习线性椭圆偏微分方程的解算子。
-		> 这是基于（1）将无限维PDE问题简化为求解PDE空间离散化产生的有限维线性系统的问题，以及（2）学习在上下文中反转有限维线性系我们采用由单个线性自关注层定义的变换器来处理线性系统的ICL，
-		> 并根据离散化大小、预训练任务的数量以及预训练和下游任务中使用的提示长度，建立ICL的定量泛化误差界；见定理1。
-		> 这个界进一步使我们能够证明学习偏微分方程解的H1误差界；参见定理2
-		> 在定理3和定理7中，我们分别针对任务（由偏微分方程的系数表示）和数据协变量（由源项表示）的分布偏移，为预训练的变换器建立了一般预测误差界。
-		> 在任务转移的背景下，我们引入了一个新的任务多样性概念，并表明，只要预训练任务分布足够多样化，即使下游任务经历了分布转移，预训练的变换器也可以证明是泛化的；参见定理4
-		> 此外，我们提供了任务多样性条件成立的几个充分条件（见定理5），
-		> 并构造了任务多样度不成立的简单例子（见定理6）
-		> 我们通过大量的数值实验证明了线性变换器学习PDE解和相关线性系统的ICL能力。
 * Text2PDE-2410.01153 隐扩散模型生成 PDE 完整时空解
 	* "Text2PDE: Latent Diffusion Models for Accessible Physics Simulation"
 		* Zhou, Anthony; Li, Zijie; Schneier, Michael; Buchanan Jr, John R; Farimani, Amir Barati; 

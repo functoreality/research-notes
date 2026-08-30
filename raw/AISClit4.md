@@ -81,11 +81,6 @@
 				> 如果作者不确定给定PDE的最先进基准，他们应与领域科学家或其他专家交流并/或合作，并清楚地承认他们的不确定性。
 				> 一个好的例子是Lippe等人的附录D.1中的速度比较。
 			> 第四，除了规则1和2，我们提出了另外三条公平比较的建议（见方法）。
-* MODNO-2404.02892（备用）基于 MTL 实现 PDE 基础模型，不同 PDE 对应不同输出层基底函数
-	* "MODNO: Multi Operator Learning With Distributed Neural Operators"
-		* Zhang, Zecheng; 
-		> created on 2024-09-11
-	> （摘要）核心思想是使用每个运算符的专用数据独立学习其输出基函数，同时使用整个数据集集中学习所有运算符共享的输入函数编码。{_o9bg4t}
 * 2209.04934 （备用）利用 Clifford 代数结构设计 NN 层，包括 CNN、Fourier 层
 	* "Clifford Neural Layers for PDE Modeling", ICLR2023
 		* Brandstetter, Johannes; Berg, Rianne van den; Welling, Max; Gupta, Jayesh K.; 
@@ -432,23 +427,6 @@
 	* 多分量处理，sec2.4 暗示了固定 3 channels？（涉及的方程为 SWE，INS，CNS；CNS 似乎不包括 $\rho$ 分量）
 	* tbl2 引入 PDE 形式信息能一定程度上提高精度，rel L2 4.0% 到 3.7%；无该部分符号信息时算纯粹的基于历史时间步预测；{_oam980}
 	* （评）BC 未参与编码？还提到了“complex geometry”？
-* 2502.06026 PROSE+ICON 组联合工作
-	* "A Multimodal PDE Foundation Model for Prediction and Scientific Text Descriptions"
-		* Negrini, Elisa; Liu, Yuxuan; Yang, Liu; Osher, Stanley J.; Schaeffer, Hayden; 
-		> created on 2025-02-20
-	* 摘要摘录
-		> 当前的PDE基础模型侧重于学习通解算子和/或控制方程组，因此只处理数值或符号模态。
-		> 然而，现实世界的应用程序可能需要更灵活的数据模式，例如文本分析或描述性输出。
-		> 提出了一种新的多模态深度学习方法，该方法利用基于变换器的架构来近似各种ODE和PDE的解算子。
-		> 将方程参数和初始条件等数值输入与物理过程或系统动力学的文本描述相结合。
-		> 这使我们的模型能够处理符号表示可能不完整或不可用的设置。
-		> 除了提供准确的数值预测外，我们的方法还生成了可解释的科学文本描述，为潜在的动力学和解决方案属性提供了更深入的见解。
-	* fig1 架构，基于 GPT-2
-		* 输入文本“The equation is u_t=.. The initial condition is u_0=[IC]”；{_p2ka1y}
-		* [IC] 数值通过 MLP 编码为一个 token
-		* 相应输出 token 整体输入 data decoder，再输入 query location 获得预测解；基于交叉注意力
-		* 后续自回归预测输出为对解的描述，包括“无粘性守恒律”、“会产生稀疏波”等
-	* 实验仅 ODE 与空间 1D PDE
 * `bc-PINN` PINN 训含时问题逐步增大时间长度，仅新增时间段用 PINN loss，之前时间段用有监督 loss（已算出的解作为 label）
 	* "A novel sequential method to train physics informed neural networks for Allen Cahn and Cahn Hilliard equations", CMAME2022
 		* Revanth Matteya, Susanta Ghosha

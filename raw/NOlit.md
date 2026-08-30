@@ -267,10 +267,6 @@
 		> 具体来说，提出了低保真、可解释的物理模拟器和神经网络生成器组合，该生成器经过端到端训练，以全局匹配昂贵的高保真数值求解器的输出。
 		> 在扩散、反应-扩散和电磁散射模型这三个示例测试用例上的实验表明，物理增强深度代理PEDS 替代项的精度，比数据有限的前馈神经网络集合（大约 10e3训练点），并将训练数据需求至少减少 100 倍，以实现 5% 目标误差。
 		* fig1 downsampled geometry；{_q8fm8k}
-* `PITT-2305.08757` （备用）将 PDE 形式输入 Transformer，似乎用于 为 NO 的时间迭代误差的修正提供信息
-	* "Physics Informed Token Transformer"
-		* Lorsung, Cooper; Li, Zijie; Farimani, Amir Barati; 
-		> created on 2023-12-01
 * `sFNO-2301.11509` FNO 将线性层与 FT 积分算子层分开（实验有明显提升），并引入残差连接、随机深度
 	* "Out-of-distributional risk bounds for neural operators with applications to the Helmholtz equation"
 		* Benitez, J. Antonio Lara; Furuya, Takashi; Faucher, Florian; Kratsios, Anastasis; Tricoche, Xavier; de Hoop, Maarten V.; 
