@@ -671,11 +671,6 @@
 		* 卷积核旋转等变性，一套卷积核衍生出 4 个角度的旋转版本、同时作用于输入；{_p78a72}
 		* 输出层强制保证质量、动量的守恒性（因网格交错）{_p78a5h}
 	* 实验：closed 浅水方程，INS（湍流衰减设定）
-* OmniFluids-2506.10862 （备用）NO 用 PDE loss 预训练后蒸馏到小模型降时空分辨率，by 孙浩
-	* "OmniFluids: Unified Physics Pre-trained Modeling of Fluid Dynamics"
-		* Zhang, Rui; Meng, Qi; Wan, Han; Liu, Yang; Ma, Zhi-Ming; Sun, Hao; 
-		> created on 2025-07-07
-	* 预训练第一阶段用纯 PDE loss，需较高时空分辨率；之后按 teacher-student 设定蒸馏到粗时空分辨率模型
 * 2505.17032 高维 PDE 的 deep BSDE 求解方法简要综述；{_p6ne8k}
 	* "A brief review of the Deep BSDE method for solving high-dimensional partial differential equations"
 		* Han, Jiequn; Jentzen, Arnulf; E, Weinan; 

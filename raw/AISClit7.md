@@ -375,19 +375,6 @@
 	* 8 稳态 + 1 非定常，均有引文；未摘录；{_pcfj2j}
 	> 上述8条全部都是充分发展不随时间变动的稳态解。如果拓展到非定常的磁流固耦合振荡问题，半解析解已被位移预测-压力稳定格式Benchmark过：
 	* 注：后一个回答也有许多有价值内容
-* 2510.20141 单变量 PDE 训练后，迁移至多变量耦合 PDE，基于扩散生成模型
-	* "Compositional Generation for Long-Horizon Coupled PDEs"
-		* Dhulipala, Somayajulu L. N.; Ray, Deep; Forman, Nicholas; 
-		> created on 2025-12-15
-	* 摘要摘录
-		> 在本文中，我们研究了组合扩散方法，其中扩散模型仅在解耦的PDE数据上训练，并在推理时组合以恢复耦合场。{_pcfb6g}
-		> 具体而言，我们研究了在涉及大量时间步长的长时间范围内，组合策略是否可行。
-		> 此外，我们将基线扩散模型与使用v参数化策略训练的模型进行了比较。
-		> 我们还介绍了一种基于欧拉方案的耦合场对称组合方案。
-		> 我们使用更长的时间网格对ReactionDiffusion和改进的Burgers进行评估，并与在耦合数据上训练的傅里叶神经算子进行基准测试。
-		> 尽管只看到解耦的训练数据，但成分扩散模型以低误差恢复了耦合轨迹。
-		> v参数化可以提高基线扩散模型的准确性，而神经算子替代物在耦合数据上训练后仍然最强。
-		> 这些结果表明，成分扩散是实现耦合偏微分方程高效、长期建模的可行策略。
 * HA30k-2510.09657 Helmholtz 数据集（2D），31k 样本
 	* "Generative Models for Helmholtz Equation Solutions: A Dataset of Acoustic Materials"
 		* Gramaccioni, Riccardo Fosco; Marinoni, Christian; Frezza, Fabrizio; Uncini, Aurelio; Comminiello, Danilo; 
@@ -522,35 +509,6 @@
 		* （评）直观上合理：混沌系统初值敏感，$C\gg 1$，误差迅速放大；耗散系统 $C<1$，初值差异逐渐被抹平
 	* thm2 离散时间步进的通用近似定理，针对 FD-Net，K 时间步进算子可由单时间步进代理的 K 次复合逼近；{_pak85d}
 		* （评）未考虑单时间步进是否是良好逼近，形式上不排除是代理算子拟合另一动力学，只是过 K 步后流映射恰好与原动力学一致
-* HyPINO-2509.05117 二阶线性方程 NO 生成 INR 权重，边值延拓+掩码输入，loss 含 PINN、采 u 算 f 的数据，提精度用线性方程重解残差、微调
-	* "HyPINO: Multi-Physics Neural Operators via HyperPINNs and the Method of Manufactured Solutions"
-		* Bischof, Rafael; Piovarči, Michal; Kraus, Michael A.; Mishra, Siddhartha; Bickel, Bernd; 
-		* 作者名单包括 Poseidon 组的导师
-		> created on 2025-10-15
-	* 摘要摘录
-		> 一种多物理神经算子，设计用于在不需要特定任务微调的情况下在广泛的一类参数偏微分方程上进行零样本泛化。
-			> 我们的方法将基于Swin Transformer的超级网络与混合监督相结合：（i）通过制造解决方案方法（MMS）生成的分析解决方案中的标记数据，以及（ii）使用物理知情目标优化的未标记样本。
-			> 该模型将PDE参数化映射到目标物理知情神经网络（PINN），
-			> 可以处理二维线性椭圆、双曲线和抛物线方程，具有不同的源项、几何形状和混合狄利克雷/诺伊曼边界条件，包括内部边界。
-		> HyPINO在PINN文献中的七个基准问题上实现了强大的零样本精度，优于U-Nets、Poseidon和PhysicsInformed Neural Operators（PINO）。
-		> 此外，我们引入了一种迭代细化过程，将生成的PINN的物理特性与请求的PDE进行比较，并使用差异生成“增量”PINN。
-		> 将他们的贡献相加并重复这一过程形成一个集合，其组合解决方案逐步减少了六个基准的误差，在最好的情况下，平均L2损耗的增益超过100倍，同时保留了仅向前推断。
-		> 此外，我们评估了由HyPINO初始化的PINN的微调行为，并表明它们在五个基准测试中比随机初始化和爬虫元学习PINN收敛更快，最终误差更低，与其余两个基准测试的性能相当。
-	* sec3 本文只考虑二阶线性方程
-	* fig1 整体架构
-		* 输入 1，方程标量系数，嵌入为隐向量
-			* eqn(3)-1 标量系数共 5 个，嵌入为固定维数隐向量表征（涉及 Fourier feature mapping）
-			* （评）本来是做方程嵌入，但二阶线性方程只涉及 5 系数，故系数嵌入就是方程嵌入
-		* 输入 2，系数场（含延拓后的边值、边界位置的 mask），逐分量编码
-			* eqn(3)-1 系数场共 5 个，直接 concat
-		* 处理网络：系数场编码过 SWin，据隐向量生成 scale,shift modulation（即 FiLM）
-		* 输出：生成 INR 权重，每层所用的 MLP 超网络独立
-			* eqn(3)+1 超网络输入：SWin 各中间层输出汇总，用交叉注意力机制得多隐向量，分别输入各 MLP
-		* 训练 loss：1. PINN，2. 随机生成 u 算右端项 f
-			* 法 2 称为 method of manufactured solutions（MMS），有 1995 年引文；{_paia5k}
-				> [39] William Oberkampf, Frederick Blottner, and Daniel Aeschliman. Methodology for computational fluid dynamics code verification/validation. In Fluid dynamics conference, page 2226, 1995.
-		* 下游适配：1. 迭代精化，2. 微调
-			* 迭代精化 依赖于方程是线性的，每次 PDE 残差输入 NO 得解残差预测；{_paia6k}
 * 2508.19419 解实际问题，油藏注水提取 地下压力控制，正问题 NO 解多相流含时方程，从单相流稳态迁移学习
 	* "Differentiable multiphase flow model for physics-informed machine learning in reservoir pressure management"
 		* Rashid, Harun Ur; Pachalieva, Aleksandra; O&#39; Malley, Daniel; 
