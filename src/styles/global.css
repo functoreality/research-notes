@@ -22,6 +22,8 @@
   --color-link-hover: #0f766e;    /* Darker teal on hover */
   --color-highlight: #fef3c7;     /* Warm amber highlight */
   --color-highlight-ring: #f59e0b; /* Amber ring */
+  --color-selection: #0f766e;
+  --color-selection-text: #ffffff;
   --color-code: #be185d;          /* Deep pink for code */
   --color-accent: #c2410c;        /* Burnt orange accent */
   
@@ -73,6 +75,8 @@
   --color-link-hover: #79c0ff;
   --color-highlight: #3d2a00;
   --color-highlight-ring: #d29922;
+  --color-selection: #79c0ff;
+  --color-selection-text: #0d1117;
   --color-code: #ff7b72;
   --color-accent: #ffa657;
   
@@ -131,8 +135,8 @@ body {
 
 /* Selection */
 ::selection {
-  background-color: var(--color-highlight);
-  color: var(--color-text);
+  background-color: var(--color-selection);
+  color: var(--color-selection-text);
 }
 
 /* Focus styles */
