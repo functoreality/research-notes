@@ -30,3 +30,6 @@ public/data/notes.json
 
 # Temporary location for the separate Personal Notes repository
 personal-notes/
+
+# Local paper analysis plans and literature-note drafts
+/paper-to-notes-drafts/
