@@ -157,6 +157,7 @@
 				* 2024-03-19 zmy 在 Pf 小群推荐 http://www.dyfluid.com/solvers.html
 				* 2024-04-10 lhu 在 Pf 大群里提到可考察 mindflow.cfd，jax sph
 					> （JAX-CFD）这个项目之前我们分析过，可以做一些简单的低雷诺数湍流求解（from 2024-05-05 Pf 大群 VhYi）
+  			* 受控流动轨迹：HydroGym((_qa4g0b))数值求解器包装为交互环境，暴露 reset/step 与流场状态
 				* ((o44b37))CoDA-NO 考察不可压 NS 与弹性力学耦合，数据用 TurtleFSI 包生成
 				* [CFD中文网](https://cfd-china.com/)
 				* 相关：((o1ol2j))一般 PDE 数值软件，((o1ok9o))求导-科学计算-可微分传统求解器

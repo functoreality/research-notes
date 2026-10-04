@@ -1,3 +1,126 @@
+* HydroGym-2512.17534 流动控制训练太贵时，在共享近壁机制的槽道训局部策略，按壁面尺度映射到翼面
+	* "The HydroGym reinforcement learning platform for fluid dynamics", Nature 2026
+		* Christian Lagemann; Sajeda Mokbel; Miro Gondrum; Mario Rüttgers; Yuning Wang; Pol Suárez; Ludger Paehler; Deniz A. Bezgin; Aaron B. Buhendwa; Jared L. Callaham; Samuel Ahnert; Nicholas Zolman; Xiao Shao; Jean-Christophe Loiseau; Nikolaus A. Adams; Matthias Meinke; Wolfgang Schröder; Kai Lagemann; Esther Lagemann; Ricardo Vinuesa; Steven L. Brunton
+		* UW、RWTH Aachen、TUM、KTH 等
+		* [Nature 正式版](https://doi.org/10.1038/s41586-026-10917-6)，657:369–376
+		> created on 2026-10-04 by Codex + GPT-6.1-Sol-high
+	* 方法全称：HydroGym reinforcement learning platform for fluid dynamics
+	* 复用流动控制实验：统一 CFD 与 RL 接口，提供 61 个验证过的环境，兼容可微求解器、多智能体和迁移；{_qa4f9o}
+		* 环境覆盖 2D/3D、层流/湍流、不可压/可压，翼型最高 $Re_c=4\times10^5$（Fig.1、Extended Data Tables 1–2）
+		* （AI 评）平台与控制策略迁移实验，未训练覆盖所有环境的基础模型
+	* 降复杂流动的探索成本：选共享控制机制的简单系统作训练环境（Fig.4、Methods: Physics-guided transfer）
+		* 选择依据：槽道保留近壁条带和内层尺度，虽缺翼面曲率、流向压力梯度及边界层发展，仍可训练翼面局部控制；{_qa4g1n}
+			* 匹配动量厚度雷诺数：槽道 $Re_\theta=365$，接近翼面区域均值 382，槽道对应 $Re_\tau=206$（补充材料 5K）
+		* 训练部署：仅在 $Re_\tau=206$ 槽道训 TD3，直接部署到 $Re_c=200000$ 的 NACA0012 翼段，不在翼面微调；{_qa4g23}
+		* 观测动作：在 $y^+=15$ 取 $u',v'$，输出壁面吹吸速度 $a$，限于 $[-u_\tau,u_\tau]$，区域整体保持零净质量流量
+		* 训练目标：$r=1-\tau_w^{\mathrm{ctrl}}/\tau_w^{\mathrm{ref}}$，优化相对壁面剪应力
+		* 对齐局部控制的物理尺度：匹配壁面单位下网格间距，部署时按翼面局部黏性尺度标准化观测并调整动作更新频率
+			* 黏性尺度：$l_* =\nu/u_\tau$、$t_* =\nu/u_\tau^2$，$\Delta t^+=0.6$（补充材料 5K）
+				* 翼面尺度来源：数据库中的无控参考 $u_\tau(x)$ 剖面，决定感知高度、动作限幅与分块更新时间（补充材料 5E）
+				* 翼面输入输出适配：转换到局部壁面坐标，因流向非齐次，观测与动作均值只沿展向计算（补充材料 5E）
+			* Methods 设想按压力梯度参数 $\beta$ 分块配训练环境，实际只演示中等逆压梯度下的单块
+		* 结果边界：局部摩擦阻力降约 38%，总阻力降约 11%，两种量不能混用（Fig.4）
+			* 探索成本：相对直接在翼面训练，探索所需 core-hours 约降 $10^4$ 倍（Methods: Zero-shot deployment）
+			* 总训练成本：计入周期性翼面验证后，墙钟时间相对直接翼面训练约降 60 倍（Fig.4 后正文）
+		* （AI 评）这里换了全局系统，只要求局部策略可迁移，不要求替身逐轨迹逼近目标系统
+		* （AI 评）迁移成功不能单独证明策略发现了普适不变量，局部尺度对齐与共享输入形式也可解释成功
+	* 降策略梯度的采样需求：经可微环境反传轨迹奖励，并入 PPO 更新（Fig.3、Methods: Gradient-enhanced PPO）
+		* GPPO 经策略和确定性流体求解器反传奖励轨迹，向 PPO 的裁剪目标加入解析梯度信息
+			* 混合权重随梯度幅值、策略熵调整，保留 PPO 裁剪约束（补充材料 4D）
+		* Kolmogorov 流演示少约 65% 训练样本，Fig.3b 只展示一个训练种子
+		* （AI 评）可微求解器提供离散轨迹的导数，有限采样不能据此声称期望回报梯度已精确算出
+			* （AI 评）样本减少不等于墙钟同比加速，需计入环境反传成本
+	* 扩大分布式执行器数量：把控制域拆为局部伪环境，共享策略更新与经验池（Fig.3c–d、Methods: MARL）
+		* 圆柱展向每段控制一对喷口，利用局部不变性重复应用控制策略，流体仍在全域耦合演化
+		* 汇总样本时排除重叠网格节点，分区边界施加一致动作，分别处理重复采样和控制连续性
+		* （AI 评）共享策略不意味着局部流动独立，压力与输运仍会跨分区传播
+	* 耦合 RL 动作与 CFD：按不稳定性特征时间选控制间隔，间隔内跑多个 CFD 步，平滑衔接新旧动作（Methods）
+		* （AI 评）动作平滑改变了环境执行的控制信号，复现实验时应保留在环境定义中
+	* 获取流动数据与交互环境：[代码](https://github.com/dynamicslab/hydrogym)公开，提供求解器、控制定义和运行示例；{_qa4g0b}
+		* [环境文件库](https://huggingface.co/datasets/dynamicslab/HydroGym-environments/tree/main)包含配置、网格与流场状态
+		* 可下载流场：Channel_3D_Retau180/initial_field 含 U.npy、V.npy、W.npy
+		* 圆柱重启状态：Cylinder_2D_Re200 含网格与 restart_.Netcdf
+		* 可生成受控轨迹：公开 Kolmogorov 求解器与运行脚本提供 reset/step，脚本可取 state.trajectory 保存流场
+		* 数据口径：公开文件含初始场和重启状态，不能一概视为带动作标签的完整离线 RL 轨迹
+		* 发布范围：Data availability 声明提供代表性与压缩子集，最大 DNS 全轨迹未全部公开
+		* （AI 评）用于 PDE 预训练需保留时变体力或吹吸边界条件，局部观测不足以替代完整场标签
+	* [公众号报道](https://mp.weixin.qq.com/s/E3d6XGCT33PYM6TSuaceKg)
+* 2605.08915 （备用）带标签轨迹的区间推进，路径残差正则
+	* "Physics-Informed Neural PDE Solvers via Spatio-Temporal MeanFlow"
+		* Hanru Bai; Yuncheng Zhou; Difan Zou
+		* Fudan University、HKU
+		> created on 2026-08-21 by Codex + GPT-5.6-Terra-high
+	* 方法全称：Spatio-Temporal MeanFlow
+	* 定位：带标签 NO 加 MeanFlow 物理正则，不是无数据 PINN，app. F.3
+		* 训练时从标签轨迹抽 $(\tau,t)$ 与网格点，以终点监督损失加时间、空间 MeanFlow loss
+	* 含时 PDE 的推理接口：$u_t=u_\tau+(t-\tau)m_\theta(u_\tau,\tau,t,a)$
+		* 这是规则网格同址 $\xi=x$ 的部署特例，$l=t-\tau$。$u_\tau$ 为完整场，按网格批量前传
+		* 一般公式允许 $(\xi,\tau)\to(x,t)$ 的时空路径，当前实现固定空间坐标，sec. 3.3
+		* $\Delta t$ 是推理旋钮：一步最快，多步时把预测 $u_k$ 送入下一段
+			* 2 至 4 步可降误差，过多步又累计误差，fig. 3
+		> MeanFlow 直接建模有限区间的平均速度，绕过重复速度评估，
+		> 将多步积分转为高效的单步预测。sec. 2
+	* 路径残差约束有限区间更新
+		* 端点 $(\xi,\tau)\to(x,t)$ 的长度 $l=\sqrt{\|x-\xi\|_2^2+(t-\tau)^2}$
+			* 端点差恒等式 $l m=u(x,t)-u(\xi,\tau)$，对起点 $(\xi,\tau)$ 求导
+			* 代入 PDE 后约束 $m_\theta$ 及其导数，eqs. 7 至 11
+			* （AI 评）把空间和时间并入欧氏长度，要先定无量纲化或坐标缩放
+		* 时间项约束区间推进，空间项约束跨点变化
+			* 拆开二者，目标是缓和两方向尺度失配引起的优化耦合
+		> 全局 MeanFlow loss 由时间和空间解耦损失加结构耦合误差控制，
+		> 后者随空间路径长度按 $O(l_s^2)$ 缩小。thm. 3.2
+		* （AI 评）这不是把原 PDE residual 换范数，而是先把路径积分当未知量
+			* 再导出其 residual。已接 conditioned FNO、Fourier U-Net、3D FNO
+			* 理论界仅针对线性梯度型结构，且要求预测器连续
+			* 其他主干能否迁用，取决于可否计算所需导数
+	* 定常 PDE 也用同一接口
+		* 时间维退化，边界条件调和延拓为 $u_0(x)$，以 $u=u_0+m_\theta$ 预测修正
+			* 只保留空间 MeanFlow loss。调和延拓把已知边界值先扩展为全域锚点
+	* 仅规则网格 Burgers 的分辨率失配证据
+		* $128\to256,512$ 时去空间项明显变差，说明此设定下空间损失缓解失配，sec. 4.2
+		* （AI 评）空间连续版本只停留在公式，未验证不规则域或任意采样点泛化
+	* 数据
+		* HYCOM `water_temp` 从 GLBy0.08 OPeNDAP 裁剪为 26,136 个局部温度轨迹
+			* 每条 $9\times32\times32\times8$，对应时间、横向两维和深度，app. F.2
+		* 真实海洋数据没有显式 PDE，仍用平均流结构作弱正则
+			* 文中仅列 OPeNDAP 来源与裁剪参数，未列处理后样本或裁剪脚本链接
+	* （AI 评）带标签的算子学习加重参数化物理正则，不是无数据 PINN 替代
+		* 最可迁移处是把物理约束施加到长区间更新
+* 2604.27255 （备用）粗网格闭式不回归瞬时 SGS，嵌 LES 按可观测统计量反传
+	* "Training of particle-turbulence sub-grid-scale closures with just particle data"
+		* German Saltar Rivera; Laura Villafañe; Jonathan B. Freund;
+		* UIUC Aerospace Engineering
+		> created on 2026-08-21 by Codex + GPT-5.6-Terra-high
+	* 定位：2D 过滤 DNS、方程和耦合参数已知时，可微求解器内训闭式，检验稀疏粒子观测能否反推 SGS
+	* 训练目标：不拟合瞬时 SGS，直接使嵌闭式的 LES 长期统计正确 sec3, sec6
+		* 闭式 $\mathbf h_u,\mathbf h_p$ 进离散流体、粒子方程，前传 LES 后以结果构造 $\mathcal J$
+		* 伴随：先解离散约束的反向伴随，再由闭式输出的梯度更新参数 sec3, eq15--17
+		* 直接回归：$\mathcal J_{\rm SGS}$ 拟合 SGS 应力和亚格速度，降逾 $10^3$，流体、粒子动能 $k_u,k_p$ 却达真值约 25、10 倍 sec6.4
+		* （AI 评）在此粗网格设定，结果更像是给定已解析状态后，瞬时标签仍非唯一，局部 MSE 会追随这部分条件不确定性
+		* 全状态目标：$\mathcal J_x$ 对流体、粒子位置和速度逐时比较，结果过耗散 sec6.1
+		* 谱统计目标：$\mathcal J_\kappa$ 比较 $E_u(\kappa),E_p(\kappa)$ 幅值、舍弃相位，能量谱更准 sec6.2--6.3
+		* （AI 评）此例只支持统计稳态任务改匹配相关统计量，不推出谱 loss 普遍优于轨迹 loss
+		> 对这套二维两相 LES，全时空场目标会妨碍闭式，忽略相位的谱目标预测能量谱更好。sec6.1--6.3, sec7
+	* 粗粒化缺失随机性：确定性闭式可对能谱，却补不回粒子局部色散 sec6.5
+		* 症状：谱正确时 RDF 仍过尖，即近粒子对过多、粒子带退成窄线，遗漏的是亚格随机扰动
+		* Langevin：将粒子亚格速度 $\mathbf u'$ 表示为条件 SDE eq39
+			* 漂移、扩散：$\mathbf h_p,\mathbf f_p$ 满足 $d\mathbf u'=\mathbf h_p\,dt+\mathbf f_p\,d\mathbf W$
+		* RDF 分箱不可微，改匹配反映粒子相对聚集的数密度谱 $E_n(\kappa)$，并与 $E_u,E_p$ 共同构成 loss eq40--44
+		* 伴随：本文每次前向固定 $M$ 条噪声路径，反向复用同一路径，得到路径式伴随梯度 eq43--44
+		* （AI 评）这里随机项不是输出加噪正则化，而是把此设定下粗状态无法确定的粒子色散当成随机有效动力学
+	* 仅粒子观测训闭式：观测目标不含流场，仍能间接训练流体 SGS sec6.6
+		* loss：仅比较粒子速度谱 $\mathcal J^p_\kappa=\langle\Delta E_p,\Delta E_p\rangle_\kappa$，结果近全信息谱训练 eq45
+		* 前向：闭式仍读 LES 局部流速、粒子相对速度和位置，缺的是流场观测标签，不是求解器状态 sec5.2, sec6.6
+		* 噪声：粒子速度噪声达 $20\%V_{p,\rm rms}$ 时谱仍正确，约 $50\%$ 时退化 sec6.6.2
+		* 稀疏：半数粒子约每能量涡 6 粒，仅使流体、粒子动能误差增 $3\%,5\%$，少于 3 粒每涡则明显失效 table2
+		* 单分量：只用一维粒子速度谱仍近全分量效果，输出未显式强制各向同性 sec6.6.3
+		* （AI 评）粒子谱不直接辨识应力，PDE 约束将“应力改流体，再改粒子”的后果送回闭式参数
+		* （AI 评）可辨识性边界：此处是过滤 DNS、方程和耦合参数已知的 2D 系统，真实实验若有模型失配、未知参数或非均匀缺测，粒子统计量未必足够区分闭式
+	* 架构约束—保 Galilean：闭式用局部速度差输入 sec5.2
+	* 架构约束—守总动量：流体应力以散度进入方程，粒子项投影到零和子空间 sec5.1
+		* （AI 评）这里守恒不是靠 loss 罚项，而是输出后的正交投影，适合作为可微闭式的硬结构约束
+	* 数据：自建 2D 两相湍流 DNS，$256^2$ 网格、五个随机初值、每例保存 $1000\tau_\omega$，过滤降采样成 LES sec4
+		* （AI 评）公开性：本次截至 2026-08-21 检索 arXiv、GitHub、Hugging Face 与作者实验室页面，未发现对应代码、数据或生成仓库
 * STCast-2509.25210 全球骨干按月份分专家，区域细化用地理先验从全球取信息
 	* "STCast: Adaptive Boundary Alignment for Global and Regional Weather Forecasting", CVPR 2026
 		* Hao Chen; Tao Han; Jie Zhang; Song Guo; Lei Bai;
