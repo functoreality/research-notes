@@ -726,3 +726,55 @@
 	> （2）从计算量上来看RMSNorm更高效；
 	> （3）数值稳定性/梯度消失上看，RMSNorm梯度稳定并且缓解深层网络梯度消失问题；
 	> （4）模型表现上，RMSNorm的表现和LayerNorm相当；
+* 2510.04212 BF16 FlashAttn 训炸，重复行最大值时动态平移 softmax，缓解舍入偏置沿相似梯度方向累积
+	* "Why Low-Precision Transformer Training Fails: An Analysis on Flash Attention", ICLR 2026 oral
+		* Haiquan Qiu; Quanming Yao;
+		* 清华 EE
+		> created on 2026-10-04 by Codex + GPT-6.1-Sol-high
+	* 低精度训练稳定性诊断，修复一个 GPT-2 失效案例
+	* 反传训炸：低精度前向输出被复用为梯度计算的缓存
+		* 记 $dZ=\partial\ell/\partial Z$，$S=\alpha QK^\top$，$P=\mathrm{softmax}(S)$，$O=PV$
+		* $\alpha=1/\sqrt d$，$d$ 为头维数，$\ell$ 为训练 loss
+		* FA 反传用 $\delta=\mathrm{rowsum}(dO\circ O)$，分数梯度依赖 $dP-\delta$
+		* Sec3.2：改用等价式 $\delta=\mathrm{rowsum}((dOV^\top)\circ P)$，训练恢复稳定；{_qa4g9l}
+		* Sec3.2：仅反传中用 FP32 重算 $O=PV$，训练恢复稳定
+		* Sec3.2：仅前向用 FP32 算 $O$ 亦恢复稳定，误差源落在前向输出
+		* Sec3.2：仅对谱范数异常的若干头高精度算 $O$，足以恢复稳定；{_qa4h03}
+		* （AI 评）精度分配要追到反传依赖，已舍入的 $O$ 转 FP32 不能找回丢失信息
+	* 误差不抵消：系数有偏，外积方向跨 token、跨步相似
+		* Eq2：固定其他量，仅替换 $\delta$，比较查询投影 $W^Q$ 的梯度
+			* $X$ 为层输入，按原文约定 $Q=X(W^Q)^\top$
+			* 记 $e_T=(\delta_{lp}-\delta_{hp})_T$，$R_T=(PK)_T^\top X_T$
+			* 梯度差 $E=dW^Q_{hp}-dW^Q_{lp}=\alpha\sum_T e_T R_T$
+		* Eq3、Fig4–5：$R_T$ 跨 token、跨步有共同低秩结构，$\sum_Te_T$ 持续偏正
+			* 经验近似 $R_T\approx R$，$E\approx\alpha(\sum_Te_T)R$，误差累计伴随谱范数与激活增大；{_qa4g4b}
+		* 偏正系数归因：$e_T=dO_T\cdot(O_{lp}-O_{hp})_T$，关键维度两者均负，Sec3.3.2
+		* 输出舍入误差偏负归因：重复行最大值令多个未归一化权重 $\bar P=1$，与偏负 $V$ 相乘
+			* $\bar P=\exp(S-\mathrm{rowmax}(S))$，$O=\bar PV/\mathrm{rowsum}(\bar P)$
+			* Sec3.3.2、Eq4：$\bar PV$ 点积在 FP32 累加，结果转 BF16 时舍入，再归一化得 $O$
+			* 同号大项的和落近 BF16 舍入中点，小负项形成 sticky bit，将舍入推向更负
+			* 未归一化输出例：约 $-4.70399$ 转 BF16 得 $-4.71875$，单次误差约 $-0.01476$
+		* Sec5：attention sink 易促成高分数与重复最大值，增加这条算术风险；{_qa4g81}
+		* （AI 评）负 $V$ 本身不推出负舍入偏置，要看舍入边界分布及其与 $dO$ 的关联
+			* 单个数值例与经验共同 $R$ 支撑此案例，不能替代一般统计证明
+			* $E$ 是原始梯度差，AdamW/Muon 对它的变换不能直接视为加上固定低秩矩阵
+	* 保低精度又去偏：利用 softmax 平移自由度改变乘积尾数
+		* Sec4：记 $r=\max_jS_j$，$n=\sum_j\mathbf1[r-S_j\le\epsilon]$，容差例 $\epsilon=10^{-3}$
+		* 通常 $m=r$，仅 $n>1$ 时改平移量：正 $r$ 取 $m=\beta r$，负 $r$ 取 $m=0$
+		* $\beta>1$，$\bar P_j=\exp(S_j-m)$，再按行归一化，精确算术下输出不变
+		* AppC：固定偏移会引入新的舍入偏置，采用随行最大值变化的动态偏移；{_qa4g3v}
+		* AppC：只在重复最大值时触发，避免对所有行都偏移而新增下溢风险
+		* Sec4：偏移太小仍舍入回 1，太大可下溢，实验 $\beta\in[2,8]$
+		* Alg3：逐块判重复最大值，候选平移与历史值取最大，反传仍用 $O$ 与 logsumexp 缓存
+			* 旧分母与未归一化输出乘 $e^{m_{\rm old}-m_{\rm new}}$，再加本块贡献
+		* Sec4、Fig7：GPT-2S 配 AdamW/Muon、GPT-2M 配 AdamW 均恢复稳定
+			* AppD：Llama-3.1-8B 也见相似外积与重复最大值，未据此断言其会训炸
+		* （AI 评）可理解为选算术等价表达，以改变有限精度误差的统计结构
+			* $r=0$ 时不改平移量，$m>r$ 也不保证 BF16 指数结果严格小于 1 或不下溢
+			* 平移保留归一化后的 $P$，无需消除 attention sink
+	* 找算术根因：固定训练批次顺序，沿模块与反传依赖做局部精度替换
+		* Sec3.1–3.2：取消分块仍训炸，第二层单独用 FA 可复现，只替换该层则稳定
+		* AppE.1：重复最大值出现频次先于 loss 爆炸增加，给出本案例的预警线索
+	* 数据与实现：[代码](https://github.com/ucker/why-low-precision-training-fails)，OpenWebText 预训练，无自建 PDE 数据
+		* （AI 评）实现：attention.py 为纯 PyTorch FA2 实现，复现代码不等于生产融合内核
+	* [公众号报道](https://mp.weixin.qq.com/s/biMKQjdXSkBfVqz9YFjqqQ)

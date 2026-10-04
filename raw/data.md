@@ -69,6 +69,10 @@
 				* 间接后果—（仅训练）舍入误差多步累积，作为有 bias 的噪声
 					* 缓解—随机舍入((_q5rg04))
 					* 缓解—Hadamard 旋转，((_q5rg0r))量化前引入随机符号、打散数据分布
+					* 累积机制：FlashAttn BP((_qa4g4b))梯度误差系数有偏，且误差方向跨 token、跨步相似；{qa4g52}
+						* 加剧因素—attn sink((_qa4g81))（一般框架((q5ra8m))attn sink）
+						* 后果—BF16 下 GPT2 训炸（相关：((qa4g56))loss spike）
+						* 缓解—归一化消公共缩放自由度，改 softmax 中间值而保留目标映射
 				* 间接后果—（仅训练）准确分类模型在正确类上梯度舍入为 0((_q6kg3a))，softmax collapse；{q6kh08}
 					* 相关：((q6o732))softmax，((n3bh0m))交叉熵 loss
 					* 间接后果—交叉熵训练后期出现 loss spike((q6kg98))（中间因果链较长）
@@ -81,6 +85,8 @@
 				* 需高精度—Transformer 经典的 softmax、LayerNorm 不宜降低精度计算
 				* 需高精度—涉及概率运算 一般都不适合 fp16，尤其 RL（据说来自亚马逊有 RL 经验的工程师）
 					* 比如数值截断以后如果涉及两个概率密度/似然的除法操作，就会出现很大的数
+				* 需高精度—FlashAttn BP 时复用的 FP 激活((_qa4g9l))，解决方案包括 1. 不复用、BP 时高精重算，2. BP 改等价算法、不用 FP 激活
+				* 动态换高精度：如((_qa4h03))FlashAttn 谱范数异常头的输出
 				* 混合精度训练，（权重）fp32 存储、fp16 计算，包括梯度缩放等
 					* ((_o2el07))针对 PINN、DeepONet 引入的额外策略；{o2el0j}
 						* PINN 需高精度：用 fp32 会陷入失败模式((_p8an9c))，换 fp64 可解决；{p8an9p}

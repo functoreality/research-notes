@@ -261,10 +261,11 @@
 		* 训练 loss 下降但不够低，之前曾用过的解决方案：INR 画初始化预测场；调学习率；增大 epoch 数；((n9pn2n))引入课程学习
 		* NaN 可能由于注意力 logits 过大，((_q15j81))SD3 算内积前 QK RMSNorm；{q15j8k}
 			* 相关：((n7pe3p))注意力机制变种
-		* loss spike
+		* loss spike；{qa4g56}
 			* 现象记录—((_nask1j))在 PaLM（LLM）最大规模模型训练过程中出现多次
 			* 归因—((_q6kg2m))数值特征膨胀 NFI 导致长期零梯度突变非零，源于((q6kh08))fp32 浮点尾数不足 导致 softmax collapse；{q6kg98}
 				* 原文解决方案：((_q6kg94))1. 算 logit 用 fp64；2. Adam 分母 ε 调大；3. 分类头前 ((n9174b))BatchNorm
+			* 归因—((qa4g52))FlashAttn BP 计算复用低精 FP 结果，误差沿跨步共同方向累积
 			* 应对—Qwen gated attn 据说可缓解，见((n7pe3p))注意力变种-前后处理
 			* 应对—手工 ckpt 回退
 			* 应对—等它降回来，catapult 弹弓现象
