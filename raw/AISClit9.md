@@ -1,3 +1,64 @@
+* Neptuna-2607.22280 激波驱动多相流公开基准，守恒粗化数据，分开检查界面、细尺度和积分量
+	* "Neptuna: A Comprehensive Machine Learning Framework for Benchmarking Complex Multiphase Flows"
+		* Harish Ramachandran, Björn Kimpel, Thomas Paula, Josef Winter, Steffen Schmidt, Nikolaus Adams
+		* TUM
+		> created on 2026-10-04 by Codex + GPT-6.1-Sol-high
+	* 方法全称：Neptuna，激波驱动可压多相流数据与 ML 基准框架
+	* 扩充含激波与材料界面的预测任务
+		* 数据：ALPACA + RDEMIC 解激波驱动多相 Euler，六组二维/三维轨迹，约 2.4 TB sec3；{_qa5975}
+			* 边界码 S 为对称反射、O 为开放，顺序北南东西顶底，二维省略顶底 fig1
+			* 开放域数据：先在大域仿真，再裁出反射波未进入的目标域 sec3、fig2
+			* 水中空气泡坍塌 SABW：2D 开放 OOOO / 反射 SSOO，3D 反射 SSOOSS
+			* 空气中液滴 SDBA：2D SSOO / 3D SSOOSS，混合低 Weber 穿孔 RTP 与高 Weber 剪切剥离 SIE
+			* 空气中 R22 气泡 SRBA：2D 开放边界，无表面张力，含激波折射与界面涡量生成 sec3.3
+		* 数据形态：HDF5 按轨迹分组，保留密度、各相密度、压力、速度、体积分数 A.1
+			* 群组名含马赫数、泡/滴数、位置、半径等参数，供条件输入 A.1
+		* 发布：[FluidVerse](https://huggingface.co/FluidVerse)，[基准代码](https://github.com/tumaer/Neptuna)
+			* 2026-10-04 核查：六库均有 HDF5，2D 有 256²/512²，3D 已列出的数据为 128³
+			* 3D 的 train/test.h5 为元文件，需同时下载 subsets 分片，SABW 数据卡明确说明
+			* 当前 SABW 数据卡另有马赫数插值/外推测试集，2D 还外推气泡数至 6–7，非原文基准结果
+			* 小样本入口：FluidVerse/2D_SDBA_small_sample，32 训/8 测，约 1.14/0.29 GB
+			* 发布位置有加载、训练代码，未包含六组仿真的批量生成及守恒降采样脚本
+	* 降分辨率后保持积分量，先聚合守恒变量再还原原始变量 A.4
+		* 混合密度与体积分数可直接块平均，速度/压力直接平均一般不保动量/能量 eq6–22
+		* 等体积块平均记为 $\langle\cdot\rangle$，总密度 $\rho$，混合速度 $\boldsymbol u$，相体积分数 $\alpha_l$
+		* 混合速度取质量加权：$\bar{\boldsymbol u}=\langle\rho\boldsymbol u\rangle/\langle\rho\rangle$ eq11–14
+		* 相密度取体积分数加权：$\bar\rho_l=\langle\alpha_l\rho_l\rangle/\langle\alpha_l\rangle$ eq6–8
+		* 各相先保质量、动量、总能量，再由内能与 stiffened-gas EOS 还原压力 eq15–22；{_qa5992}
+			* 相内能用粗化后的相速度扣动能，粗混合压力取相压力的体积分数加权 eq20–22
+			* 原细网格界面假定两相同速、同压，推导依赖此条件 eq11–16
+		* 粗细积分差可达机器精度，直接平均速度则在材料界面制造动量伪影 fig25–26
+		* （AI 评）应平均守恒量：$\langle\rho\rangle\langle\boldsymbol u\rangle\ne\langle\rho\boldsymbol u\rangle$
+	* 防全场误差淹没局部结构，按特征区域与尺度拆开评估 B.4
+		* 界面误差 IRMSE：参考密度落在相间阈值的软掩码，按掩码总量归一化 eq33–34
+			* 当前源码 mask 来自 labels，空间掩码广播到各预测通道，可再高斯扩散
+			* （AI 评）固定标签硬掩码仍可反传，软阈值/空间模糊改变权重区域，不能仅用“可微”解释
+		* 激波误差 SRMSE：按参考压力空间梯度幅值加权，与密度界面掩码分开 eq35–36
+		* 分尺度误差 wfRMSE：比较各级 DWT 细节系数，反射延拓，适配非周期场 eq37–44；{_qa7k7e}
+		* 小幅细节误差 MLW：各级 $\log_2(|HF_i|+\epsilon)$ 差取 L1，可另加时间小波项 eq40–42
+			* （AI 评）MLW 丢系数符号，系数翻号仍可零误差，需配带符号系数差与局部场误差
+		* 整体量误差：回物理单位，比较预测/参考轨迹的质量、动量、动能、enstrophy、质心 B.4.5
+			* 质量/动量等：状态场 $z$ 的积分 $Q(z)=\sum_j c(z_j)\Delta V_j$，$c$ 为物理量密度 eq51–52
+			* 质心另取密度一阶矩与总质量之比 tbl19
+			* 每步比较预测与参考的整体量，不比较它与初值的差 eq52
+			* （AI 评）开放域通量使积分量可随时间变，动能/涡量平方/质心也非一般守恒量
+			* （AI 评）参考积分量近零会放大相对误差，横向动量尤甚，不能据此直接比较物理失真程度
+	* 训练时兼顾场值、导数、界面与结构：MSE + H1 + IRMSE + (1-SSIM) B.4
+		* 预测：从头训模型用四帧历史预测下一帧，预训练模型保留各自输入输出配置 B.2
+		* 评估：从初态自回归至轨迹末尾，表格对测试轨迹及 rollout 步数平均 B.3、C.3
+		* H1 为预测/参考空间导数差，IRMSE 为监督局部误差，均非 PDE 残差
+		* 平衡损失进度，SoftAdapt 按近期变化量增权下降慢的项 eq54；{_qa5n1j}
+			* $s_i=L_i^{(t)}-L_i^{(t-1)}$，$\lambda_i=\mathrm{softmax}_i(\beta s)$，$\beta>0$
+			* 当前代码取相邻 epoch 的未加权损失均值之差，仅需损失历史
+			* （AI 评）原始差值受单位/量级影响，“下降慢”不等于尺度无关的优化难度
+		* GradNorm 按相对初始损失比率定目标梯度范数，再优化各项权重 eq55、alg2
+		* SoftAdapt 在该基准整体更稳定、开销更低，GradNorm 需额外梯度统计 sec5.1、C.1
+		* （AI 评）MSE 对照同时换损失组与权重策略，无固定权重复合损失对照，不能单独归因动态加权
+	* 结构变好，积分量未必同步变好 sec5.1、tbl26/31/36/41
+		* 复合监督损失对界面、频谱较有益，积分物理量误差未见一致改善
+		> 将某项指标纳入训练目标，并不必然保证推理时该指标改善。sec5.1
+		* （AI 评）液滴 IRMSE 改善 40–50% 的正文说法不符 tbl39，除 Poseidon 外实际约 5–27%
+		* （AI 评）从头训/DPOT/Poseidon 历史为 4/10/1 帧，Poseidon 无参数条件输入，未隔离预训练收益 sec4–5.1
 * HydroGym-2512.17534 流动控制训练太贵时，在共享近壁机制的槽道训局部策略，按壁面尺度映射到翼面
 	* "The HydroGym reinforcement learning platform for fluid dynamics", Nature 2026
 		* Christian Lagemann; Sajeda Mokbel; Miro Gondrum; Mario Rüttgers; Yuning Wang; Pol Suárez; Ludger Paehler; Deniz A. Bezgin; Aaron B. Buhendwa; Jared L. Callaham; Samuel Ahnert; Nicholas Zolman; Xiao Shao; Jean-Christophe Loiseau; Nikolaus A. Adams; Matthias Meinke; Wolfgang Schröder; Kai Lagemann; Esther Lagemann; Ricardo Vinuesa; Steven L. Brunton

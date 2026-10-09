@@ -181,6 +181,7 @@
 				* ((_p2re9v))MPFBench 水滴、气泡数据集，以及 related work BubbleML 沸腾 & 实验数据集
 				* （相变？）数据集与 benchmark BubbleML-2307.14623（另见((n8i96v))科学计算数据集）；{n8i96u}
 				* 3D Rayleigh-Taylor Boussinesq DNS((_q7pc1d))
+				* 激波驱动可压多相流((_qa5975))，六组二维/三维多相 Euler 轨迹
 			* 流固耦合：{q4qm4a}
 				* 机翼结冰
 				* 动态区域描述表征方式：((q4qm3q))ALE 含时形变网格 等
@@ -279,7 +280,11 @@
 			* 相关：((ncbn0o))NO-多保真数据训练，((n31m8z))数据的多保真
 		* PDE 区域分解；{n32d8v}
 			* 求解目标：((q8fb7o))区域分解-多区域输出协同
-				* 从而预期全局解应为 各块局部解算子 作用映射的((q8gg4x))映射不动点
+				* 从而预期全局解应为 各块局部解算子 作用映射的((qa9a6g))映射不动点
+					* 具体地：预期解 $u$ 满足 $\forall D,u|D=S(u|\partial D)$
+					* 取预设区域集 $[D_i]$（可有重叠），$y=[u_i]\in \bigoplus U(D_i)$
+						* $y$ 定义本身不要求子域交界处匹配，匹配是映射不动点性质的要求
+					* 映射 $f:[u_i]\mapsto[S(u_{/i}|\partial D_i)]$；若子域边界有多源
 			* 全局（外层循环）求解方式同样可参考((q8gg4x))映射不动点
 			* `2022-04-06`(AISCmeet2) 区域分解块数多时，分解方式可类似 MG 处理，以加快真边界条件传播到内部子区域的速度；单块内部也可结合 MG
 			* 传统区域分解讨论见 `2022-04-06`(AISCmeet2), eg. Dirichlet-Neumann 算法, Robin-Robin 算法
