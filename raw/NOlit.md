@@ -185,6 +185,19 @@
 		> 基于之前通过Transolver学习物理状态来解决PDE的进展，Transolver++还配备了极其优化的并行框架和局部自适应机制，可以有效地从大量网格点捕获理想的物理状态，成功地解决了在扩大输入网格尺寸时计算和物理学习中的棘手挑战。
 		> Transolver++首次将单GPU输入容量增加到百万个缩放点，并能够通过增加GPU以线性复杂度连续缩放输入大小。
 	* fig3b 随网格点增加，GPU 通信量为常数，而 DeepSpeed-Ulysses 线性增长、ring attention 超线性增长
+* Transolver-3-2602.04940 （备用）(de)slice 用矩阵乘结合律加速，tile 划分物理态计算
+	* "Transolver-3: Scaling Up Transformer Solvers to Industrial-Scale Geometries"
+		* Zhou, Hang; Wu, Haixu; Shangguan, Haonan; Ma, Yuezhou; Weng, Huikun; Wang, Jianmin; Long, Mingsheng; 
+		> created on 2026-02-22
+	* 摘要摘录
+		> 我们介绍 Transolver-3，Transolver 家族的新成员，作为一个高度可扩展的框架，专为高精度物理仿真设计。
+		> 为了弥合 GPU 有限容量与复杂工程任务分辨率要求之间的差距，我们引入了两项关键的架构优化：
+			> 利用矩阵乘法结合性质实现更快的切片和解片，
+			> 以及几何切片铺砌来划分物理态计算。
+			> 结合通过在原始高分辨率网格的随机子集上学习的摊销训练策略和推断过程中的物理状态缓存技术，Transolver-3 实现了工业级网格的高保真场预测。
+		> 大量实验表明，Transolver-3 能够处理超过 1.6 亿个网格，在包括飞机和汽车设计任务在内的三个具有挑战性的模拟基准中取得令人印象深刻的性能。
+	> fig3 Transolver-3 的解耦推断。（a） 物理状态缓存：将高分辨率网格中全局信息汇聚为缓存状态。（b） 全网格解码：通过与物理状态缓存交互预测网格坐标上的物理场。
+		* （评）场景推测是单 mesh 换多个输入物理场取值，分别预测输出物理场，因此共享的几何和 mesh 可复用
 * AROMA-2406.02176 无网格 NO，输入散点信息用交叉注意力汇总到固定数目 token，输出用交叉注意力 INR 解码
 	* "AROMA: Preserving Spatial Structure for Latent PDE Modeling with Local Neural Fields"
 		* Serrano, Louis; Wang, Thomas X; Naour, Etienne Le; Vittaut, Jean-Noël; Gallinari, Patrick; 

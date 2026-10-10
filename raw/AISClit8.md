@@ -710,18 +710,6 @@
 	> 用于重现所有图形和表格的代码和脚本可在以下网站获取：
 		> https://github.com/YichengZou626/Diffusion-Model-for-High-Frequency-Helmholtz
 		> 本研究、模型训练和后处理流程生成的数据集均记录在仓库中。
-* Transolver-3-2602.04940 （备用）(de)slice 用矩阵乘结合律加速，tile 划分物理态计算
-	* "Transolver-3: Scaling Up Transformer Solvers to Industrial-Scale Geometries"
-		* Zhou, Hang; Wu, Haixu; Shangguan, Haonan; Ma, Yuezhou; Weng, Huikun; Wang, Jianmin; Long, Mingsheng; 
-		> created on 2026-02-22
-	* 摘要摘录
-		> 我们介绍 Transolver-3，Transolver 家族的新成员，作为一个高度可扩展的框架，专为高精度物理仿真设计。
-		> 为了弥合 GPU 有限容量与复杂工程任务分辨率要求之间的差距，我们引入了两项关键的架构优化：
-			> 利用矩阵乘法结合性质实现更快的切片和解片，
-			> 以及几何切片铺砌来划分物理态计算。
-			> 结合通过在原始高分辨率网格的随机子集上学习的摊销训练策略和推断过程中的物理状态缓存技术，Transolver-3 实现了工业级网格的高保真场预测。
-		> 大量实验表明，Transolver-3 能够处理超过 1.6 亿个网格，在包括飞机和汽车设计任务在内的三个具有挑战性的模拟基准中取得令人印象深刻的性能。
-	> fig3 Transolver-3 的解耦推断。（a） 物理状态缓存：将高分辨率网格中全局信息汇聚为缓存状态。（b） 全网格解码：通过与物理状态缓存交互预测网格坐标上的物理场。
 * Phaedra-2602.03915 VQ-VAE 离散 token 不适用于物理场，建议 形态、振幅 独立表示；Poseidon 组
 	* "Phaedra: Learning High-Fidelity Discrete Tokenization for the Physical Science"
 		* Lingsch, Levi; Kissas, Georgios; Jakubik, Johannes; Mishra, Siddhartha; 

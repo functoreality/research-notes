@@ -142,6 +142,9 @@ description: >-
 
 ## 探索流程
 
+位点探索默认启动多个子 agent，可按技术要素或候选框架分头探索。
+主 agent 汇总比较候选位点并复核上下文。
+
 ### 入口选择
 
 1. **`keywd.md`**：全量读取或搜索关键词（中英文各搜一次），得到相关 `((UID))`。
@@ -262,6 +265,8 @@ description: >-
 - 搜索时优先 Google，不可用时换 Bing；同时搜索 GitHub 和 Hugging Face；中国大陆网络环境下可尝试镜像站（`bgithub.xyz`、`hf-mirror.com`）
 - GitHub clone 优先 SSH 而非 HTTPS；镜像站 bgithub.xyz clone 才默认用 HTTPS
 - 笔记中数据集主要记录在 `numeric.md`，条目分散（如有些在各方程类型的对应位置）。找入口：文件内搜「数据集」，命中后沿周围层级结构定位到合适的子节。浏览建议用 outline-read。
+- 每个值得记录的数据集也按「建议加入」格式给出主笔记位点。放在「可补充的内容」或「数据集」节均可，已有则不重复。
+
 
 ## 输出格式
 
