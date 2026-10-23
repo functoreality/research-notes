@@ -112,21 +112,25 @@
 			* Euler；数据集，MeshGraphNets 涉及机翼（2D）
 			* NS
 				* 数据集，默认速度形式：
-					* [dataset-CFD-湍流](http://turbulence.pha.jhu.edu/) （2021-08-13 CSI讨论，SyQi）Johns Hopkins 的 turbulence database 网站
-					* `2112.05309` 不可压 NS 数据集（2D、3D）；`2108.07799` 涉及不可压 NS（有障碍物），`CFDBench-2310.05963` 方腔流、管道流、堤坝流、圆柱扰流，`2112.15275` 针对湍流
+					* `2112.05309` 不可压 NS 数据集（2D、3D）；`2108.07799` 涉及不可压 NS（有障碍物），`CFDBench-2310.05963` 方腔流、管道流、堤坝流、圆柱扰流
 						* (('o3sk5p))(('q2pm24))CFDBench 数据质量待评估，如 CFL 条件是否满足等
 					* 简单数据集，PDE-bench 包括可压（1D-3D）、不可压（2D），MeshGraphNets 涉及圆柱绕流（2D），((_o39c0z))PDEArena 2D 不可压数据与 Φ-flow 生成代码
 						* PDEBench 2D INS 数据质量待评估(('ocdg09))，可能通过计算方程残差
 					* 用 Lagrange 粒子方法生成的数据集((_o6lg9z))LagrangeBench；((_q85h1a))SPH 流体数据
-					* 3D 高精度数据集((_o7dl1z))BlastNet
 					* FD-Bench((_p64e8o))，针对 2D 方形区域的多种方程，包括有非规则散点离散
-					* 复杂区域—3D 心血管血流数据集((_q14g1k))
-					* 复杂区域—汽车，((_qana8u))ShapeNetCar 汽车几何对应的流场与气动力标签
-					* 复杂区域—飞机几何与来流条件：((_qana9a))AirCraft
+					* 3D 高精度数据集((_o7dl1z))BlastNet
 					* 多保真（粗细网格配对数据）((_q82g1i))圆柱扰流
-					* 使用((q26a8k))随机区域形状
-						* FlowBench((_p4tb4h))区域随机挖洞，形状包括球谐、NURBS、动物形状等；{q26a8c}
-						* 区域带多个洞的数据集((_q14g1l))；放多个对象((_q1ob1d))基于 OpenFOAM 生成；{q26a9m}
+					* 湍流类
+						* [dataset-CFD-湍流](http://turbulence.pha.jhu.edu/) （2021-08-13 CSI讨论，SyQi）Johns Hopkins 的 turbulence database 网站
+						* `2112.15275`
+						* 三维各向同性湍流：FactFormer IT3D((_qanb18))提供速度与压力的规则网格时间序列
+					* 复杂区域类
+						* 3D 心血管血流数据集((_q14g1k))
+						* 汽车，((_qana8u))ShapeNetCar 汽车几何对应的流场与气动力标签
+						* 飞机几何与来流条件：((_qana9a))AirCraft
+						* 使用((q26a8k))随机区域形状
+							* FlowBench((_p4tb4h))区域随机挖洞，形状包括球谐、NURBS、动物形状等；{q26a8c}
+							* 区域带多个洞的数据集((_q14g1l))；放多个对象((_q1ob1d))基于 OpenFOAM 生成；{q26a9m}
 					* 相关：((n8i96v))科学计算数据集
 				* 涡度形式数据集
 					* FNO 原论文有相应不可压 NS 数据集
@@ -195,6 +199,7 @@
 				* 机翼结冰（同是引入流固耦合）
 				* 液体沸腾产生气泡（同时引入多相流）
 			* 流体+热，((_p4tb4x))FlowBench；((_q1ia34))冷热气泡对流碰撞
+			* 流体+密度浮力，FactFormer Smoke3D((_qanb1y))速度与密度轨迹数据
 			* 流体+化学反应，PDE-ODE 耦合
 				* 时间尺度差异大((_q1sa7d)) from REALM 套件
 				* 燃烧，((_p64f11))Open-CK 模拟工业园区火灾发展

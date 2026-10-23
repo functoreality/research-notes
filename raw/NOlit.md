@@ -198,6 +198,65 @@
 		> 大量实验表明，Transolver-3 能够处理超过 1.6 亿个网格，在包括飞机和汽车设计任务在内的三个具有挑战性的模拟基准中取得令人印象深刻的性能。
 	> fig3 Transolver-3 的解耦推断。（a） 物理状态缓存：将高分辨率网格中全局信息汇聚为缓存状态。（b） 全网格解码：通过与物理状态缓存交互预测网格坐标上的物理场。
 		* （评）场景推测是单 mesh 换多个输入物理场取值，分别预测输出物理场，因此共享的几何和 mesh 可复用
+* Transolver-sigma-2609.37279 自回归 PDE 预测，分通道做谱变换与 slice 交互，slice 内保留恒等路径
+	* "Transolver-σ: Joint Spectral-Physical Subspace Modeling for Neural PDE Solving"
+		* Haonan Shangguan; Hang Zhou; Haixu Wu; Yuezhou Ma; Jianmin Wang; Mingsheng Long
+		* 清华大学、MIT CSAIL
+		> created on 2026-10-12 by Codex + GPT-6.1-Sol-high
+	* 方法全称：Transolver-σ，Joint Spectral-Physical Subspace Modeling
+	* 架构：改进 Transolver 的有监督 NO，兼做稳态求解、历史帧到未来帧预测
+		* 含时推理：每次预测一块未来帧，追加到历史后保留最近窗口，继续预测 sec3
+		* 网格条件：当前实现限规则网格，卷积与逐轴 FFT 依赖网格布局 appB.3
+	* 层内协同：物理/谱各占半数通道，分别更新、全通道混合 sec3.1
+		* 谱分支：逐轴 FFT，保留低模态、作可学复数通道混合，逆变换后各轴响应相加 appB.3
+		* 跨分支交换：两支输出拼接，经全通道 SwiGLU 混合，再进入下一层 eqn1
+		* 消融：改为分组 FFN 或物理/谱串行更新，动态任务误差增加 tab3
+		* （AI 评）双域融合是标准组合，价值在下面两种误差机制的拆分
+	* 替换式 slice 注意力有压平风险：保留聚合状态，用 slice 残差注意力 SRPA 修正 sec3.2
+		* 打包：$N$ 点特征 $F$，可学 logits 沿 $M$ 个 slice 作 softmax 得 $P$，$Z=D^{-1}P^\top F$
+			* 质量归一化：$D=\mathrm{diag}(P^\top\mathbf1+\varepsilon\mathbf1)$，$\varepsilon>0$ eqn2
+		* 更新：slice 注意力矩阵 $A$，$\Delta Z=AZW_v$，替换用 $\Delta Z$，SRPA 用 $Z+\gamma\Delta Z$ eqn3
+		* 门控：每层共享一个可学实数 $\gamma$，零初始化，训练后不限正负 appB.3
+		* 内外残差保留不同对象：内层送 $Z$ 到解包得到 $PZ$，外层跳过整个算子、保留点空间输入 eqn4
+		* 无 slice 注意力仍混合全场：解包结果 $PD^{-1}P^\top F$，固定 $P$ 时核秩 $\le M$ appA.1
+			* 恒等只在 slice 空间，$PD^{-1}P^\top$ 一般不是点空间恒等或正交投影
+		* 混合极端：$A$ 各行相同，替换使 slice 全相同，残差保持每对 slice 的原差 appA.1
+		* 条件界：$c=\eta(A)\|W_v\|_2$，$\eta(A)=\frac12\max_{i,j}\|A_i-A_j\|_1$
+			* 替换后直径 $\le c\,\mathrm{diam}(Z)$，残差后直径 $\ge[1-|\gamma|c]_+\mathrm{diam}(Z)$ eqn9
+			* softmax 正权重不保证 $c<1$，该界只管一次 slice 更新，跨层重路由另需条件
+		* 消融：SRPA 优于替换及去注意力，但未分离恒等路径、可学尺度、零初始化各自贡献 tab4、appC
+		* （AI 评）保差异不等于提精度，还要差异与任务相关、修正方向有用
+			* appA.2 仅证固定其余参数时存在有益共享门控，未保证训练找到它
+	* 长期排名反转：单步拟合漏掉弱耗散，遗漏方向可比即时误差更伤后续预测 appA.4
+		* 构造：真实线性步进 $T=I-hL$，$L=L_0+R$，$L_0$ 非负 Fourier 对角，$R$ 低秩正半定
+			* 严格耗散、小步长：$0<\mu I\preceq L\preceq\Lambda I$，$0<h\le\Lambda^{-1}$ eqn30
+		* 受限拟合类：物理用 $I+K$、$\mathrm{rank}(K)\le r$，谱用 Fourier 对角矩阵 eqn31
+		* 各类单步最优：物理只拟合最强耗散，谱取 Fourier 基下 $T$ 的对角部分、漏掉跨模态耦合 eqn32
+		* 排名反转：若物理单步平方误差小于谱，物理先优，长期却因遗漏方向倍率为 1 而劣 eqn33；{_qanb3j}
+		* 联合表示：Fourier 对角加低秩修正可表示上述 $T$，近似实现还需误差小于稳定裕量 eqn35
+		* 限制：物理类固定局部路径为 $I$，允许标量衰减即可消除遗漏方向保持倍率 1 的问题
+			* 两类均非实际深网络的完整假设类，谱类未施加逐轴分解、截断，比较也未等参数量
+			* 无强迫时谱绝对误差趋零，真实状态也趋零，不能推出相对误差趋零
+		* （AI 评）可借鉴的是检查遗漏效应的持续性，不能由此归因“物理分支天然不稳定、谱分支天然稳定”
+	* rollout 诊断：在同模型、同边界时刻配对真历史与自由历史预测 appE.3
+		* 记真历史 $x$、自由历史 $\hat x$、目标块 $y$，注入 $\delta=f(x)-y$，传播 $\pi=f(\hat x)-f(x)$ eqn46
+		* 精确分解：总输出误差 $e=\delta+\pi$，无需小误差线性化
+		* 能量：$\|e\|^2=\|\delta\|^2+\|\pi\|^2+2\langle\delta,\pi\rangle$，交叉项可放大或抵消 eqn47
+		* 统计：各帧各样本先除以 $\|y\|^2$ 再平均，总量为平均平方相对误差
+		* 多帧块：块内帧共用块边界历史，不是在每个预测帧重新喂真历史
+		* 实验：四任务三模型的末帧传播能量均大于注入能量 fig13
+		* 传播项包含已有历史误差与模型响应，不能单独据其大小判 Jacobian 范数 appA.3
+		* 理论递推：单帧状态误差 $e_{k+1}=\delta_k+\bar J_ke_k$，$\bar J_k=\int_0^1Df_k(u_k+t e_k)dt$ eqn24
+			* 多帧时应改用完整历史更新映射，调用次数与预测帧数分开计 appA.3
+		* （AI 评）测到传播项下降尚不能证明某分支降低敏感性，应用相同规定扰动比较响应
+	* 数据：主实验沿用 FNO、FactFormer、RealPDEBench、REALM 的现成数据 appB.1
+		* 自建附加样本：Darcy 数据量实验按原生成过程扩充训练集至 5000，测试集固定 appE.1
+		* 可复用三维数据：FactFormer 的 IT3D，$60^3$、20 帧、三维速度与压力 appB.1；{_qanb18}
+			* 公开：[文件](https://drive.google.com/drive/folders/1sWBMyXfa_ACYkyU-2VwgBOyMVF203r0c)，4 类 .npy
+			* 生成：[代码](https://github.com/BaratiLab/FactFormer/blob/main/dataset/Isotropic.py)，SpectralDNS
+		* 可复用三维数据：FactFormer 的 Smoke3D，$64^3$、20 帧、速度与密度，密度反馈浮力 appB.1；{_qanb1y}
+			* 公开：[文件](https://drive.google.com/drive/folders/14E3cYd_V06jU-i040FVerHYhbFpmWyXv)，smoke_0.npz 等
+			* 生成：[代码](https://github.com/BaratiLab/FactFormer/blob/main/dataset/3d_smoke.py)，PhiFlow
 * AROMA-2406.02176 无网格 NO，输入散点信息用交叉注意力汇总到固定数目 token，输出用交叉注意力 INR 解码
 	* "AROMA: Preserving Spatial Structure for Latent PDE Modeling with Local Neural Fields"
 		* Serrano, Louis; Wang, Thomas X; Naour, Etienne Le; Vittaut, Jean-Noël; Gallinari, Patrick; 
