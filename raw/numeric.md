@@ -120,7 +120,9 @@
 					* 用 Lagrange 粒子方法生成的数据集((_o6lg9z))LagrangeBench；((_q85h1a))SPH 流体数据
 					* 3D 高精度数据集((_o7dl1z))BlastNet
 					* FD-Bench((_p64e8o))，针对 2D 方形区域的多种方程，包括有非规则散点离散
-					* 3D 心血管血流数据集((_q14g1k))
+					* 复杂区域—3D 心血管血流数据集((_q14g1k))
+					* 复杂区域—汽车，((_qana8u))ShapeNetCar 汽车几何对应的流场与气动力标签
+					* 复杂区域—飞机几何与来流条件：((_qana9a))AirCraft
 					* 多保真（粗细网格配对数据）((_q82g1i))圆柱扰流
 					* 使用((q26a8k))随机区域形状
 						* FlowBench((_p4tb4h))区域随机挖洞，形状包括球谐、NURBS、动物形状等；{q26a8c}
@@ -135,6 +137,7 @@
 			* RANS（不含时）
 				* 数据集—`AirfRANS-2212.07564`，针对亚音速、机翼、不同攻角
 				* 数据集—((_q82g17))摩托车骑手真实几何
+				* 数据集—三维飞机工况((_qana8y))NASA-CRM 提供表面压力、摩擦系数与多工况参数
 			* Boltzmann 介观方程，针对 Kn 数范围更大
 				* 涉及额外引入速度空间，碰撞项涉及积分；{n7ul4f}
 					* ((n7ul4w))辐射输运方程涉及类似（相同？）的项
@@ -207,6 +210,8 @@
 			* Multiphysics-Bench 涉及的耦合方程((_p6de6h))Electro-Thermal, Thermo-Fluid, Electro-Fluid, Magneto-Hydrodynamic, Acoustic–Structure, Mass Transport–Fluid
 			* 特例—天气预报，涉及 大气-海洋-陆地-生物圈耦合，包括 气液相变（蒸发、降水）
 				* 数据集包括((_o6lg6o))SuperBench, ClimSim, DynaBench, OceanBench, ChaosBench
+				* 热带气旋观测：TCIR((_qana9j))提供四通道卫星场及强度、尺寸等标签，可用于状态属性推断与变化预测
+				* 风暴多传感器观测：SEVIR((_qana9r))提供对齐的卫星、雷达、闪电时序场，适合跨传感器推断与时序预测
 		* 随机表达式的生成；{n9hm6g}
 			* ML 用于符号计算（不定积分等）((n8v95j)) 涉及
 			* 数据中识别 PDE((n9hm6a))用遗传算法对表达式二叉树采样

@@ -1,3 +1,49 @@
+* PhysFieldBench-2609.34072 读物理场图推机制、参数、结果，复核图上证据，分开测任务迁移与采样覆盖
+	* "PhysFieldBench: Can Multimodal Models Understand Physical Fields?"
+		* Yuezhou Ma; Huikun Weng; Jialong Wu; Chenyi Zhao; Hang Zhou; Haonan Shangguan; Jianmin Wang; Mingsheng Long
+		* 清华 Software、BNRist
+		> created on 2026-10-12 by Codex + GPT-6.1-Sol-high
+	* 评估读场能力：24 任务、1,160 道评测题，输入场图与问题，输出选项（sec3）
+		* 推断目标：识别机制、比较控制参数、比较结果属性或未来变化，三者各测一种能力
+		* 数据来源：PDEFormer 1D/2D、The Well、ShapeNetCar、NASA-CRM、AirCraft、RealPDEBench、TCIR、SEVIR（A.1）
+		* 统一连续量任务：两案例比较大小，联合参数用大小关系组合成选项，避开不同量纲的回归（sec3.2）
+		* 场图保信息：热图、时序拼图、多视角或多通道面板，每案例内同物理量共用色标（sec3.2、A.2）
+			* 幅值保留：保留校准色标，去掉直接泄漏答案的参数文字、案例编号（sec3.2）
+	* 构造可信问题：元数据定标签，还要复核渲染后有可辨的目标证据（A.4）
+		* 标机制：主导项系数幅值至少为其他项 10 倍仅筛候选，再人工核对演化是否有对应机制证据（Table5）
+			> 系数比本身不能确立动力学主导性。（A.4 Table5）
+		* 标大小：按任务设目标间隔阈值、复核图上差异，数值间隔本身不保证图像能提供信息（A.4）
+		* 控混杂：比圆柱频率时固定 Re，比 Re 时固定频率，飞机气动力比较固定工况（A.4）
+		* 防泄漏：不同叶任务之间、训练与测试之间均按物理案例隔离，不仅按渲染图片隔离（sec3.2、C.1）
+		* （AI 评）标签正确与输入可支持标签是两项检查，人工可辨也不证明逆问题唯一可辨识
+	* 诊断答错位置：换提示重新生成六组件解释，裁判读图、解释、真标签，多标签标错并排序（sec4.2、D）
+		* 六环节：视觉观察、物理映射、证据整合、成对比较、因素解耦、目标对齐（D.1）
+		* 错例：剪切流示踪剂扩散率 $D=1/(Re\cdot Sc)$，只看模糊程度不能在 Re 也变时排序 Sc（G.3）
+		* 统计：162 个 Gemini 3 Flash 解释错例，89.5% 有多类错误，排序首位最多为物理映射（Table7、9）
+		* （AI 评）诊断对象是新提示下的外显解释，不能直接归因为原答题过程或内部推理机制
+	* 评估学到什么：18 个已见任务、6 个留出任务，两组测试案例均与训练案例分离（A.5、C.1）
+		* 留出轴：单机制转双机制、1D 转 2D 比较、汽车转飞机、换待推参数、换气旋海盆（A.5）
+		* 分数：选项数 $K$、准确率 $a$，报 $100(a-1/K)/(1-1/K)$，按任务宏平均（B.3）
+		* 读场基线：零样本最高 29.3，逐任务监督 ViT 为 70.4，后者连六个留出任务也单独训过（Table1、E.1）
+			* （AI 评）ViT 只证实有可学习关联，不能据此把差距归为架构优劣或物理推理能力
+		* 训练路径：答案/CoT SFT 独立微调 Qwen3-VL-8B-Thinking，GRPO 接 CoT SFT（C）
+			* 答案 SFT：4,500 题，已见/留出分数 58.2/16.2（sec4.3）
+			* CoT SFT：1,012 题，已见/留出 28.7/22.3，接 2,000 题 GRPO 后 45.4/33.3（sec4.3）
+			* 比较范围：训练数据、训练量、响应形式不同，只比较各路径表现与接续阶段效果（C.3）
+		* 加数据未必提迁移：答案 SFT 从 2,250 到 4,500 题，已见分数升、留出分数降，每档仅一次训练（Table12）
+	* 评估多次采样：单次准确率与多次覆盖分开测，接 GRPO 后 Pass@1 升而 Pass@8 降（sec4.3）
+		* 覆盖定义：8 个采样回答中至少一个选项正确，CoT SFT 已见/留出 Pass@8 为 85.9%/87.8%（Fig6）
+		* （AI 评）Pass@8 借真标签判断命中，不等于能挑出正确回答，也不证明存在物理正确的推理链
+	* 数据复用：未找到 PhysFieldBench 题集或构造代码，以下来源有公开数据，不等于题集已公开（2026-10-12 核验）
+		* ShapeNetCar：汽车外流场与气动力标签，有公开数据、未找到物理生成代码；{_qana8u}
+			* [原始 zip](http://www.nobuyuki-umetani.com/publication/mlcfd_data.zip)，另有 DINOZAUR 的 h5 版本
+		* NASA-CRM：149 个 RANS 案例，飞机表面 Cp/Cf 与工况，有公开数据与导入代码、无生成代码；{_qana8y}
+			* [公开 h5](https://drive.google.com/drive/folders/1eGGJQfS-sIsJmKpE5f3Z1wAjsV0lOfg8)，含训练、测试与网格连通信息
+		* AirCraft：飞机几何、表面压力与气动力，[官方代码及下载入口](https://github.com/thuml/Transolver_plus)，有数据、未找到生成代码；{_qana9a}
+		* TCIR：四通道气旋观测与强度、尺寸标签，[官方 HDF5 入口](https://www.csie.ntu.edu.tw/~htlin/program/TCIR/)，未找到数据生成代码；{_qana9j}
+		* SEVIR：卫星、雷达、闪电时序观测，有公开 h5，无原始观测生成代码；{_qana9r}
+			* [官方数据入口](https://github.com/MIT-AI-Accelerator/eie-sevir)，SEVIRGenerator 只加载、筛选、组织批次
+	* 原文：https://arxiv.org/html/2609.34072v1
 * Neptuna-2607.22280 激波驱动多相流公开基准，守恒粗化数据，分开检查界面、细尺度和积分量
 	* "Neptuna: A Comprehensive Machine Learning Framework for Benchmarking Complex Multiphase Flows"
 		* Harish Ramachandran, Björn Kimpel, Thomas Paula, Josef Winter, Steffen Schmidt, Nikolaus Adams

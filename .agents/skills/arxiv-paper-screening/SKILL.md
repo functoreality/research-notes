@@ -31,6 +31,26 @@ S、A、B、C 排列。名单服务于时间稀缺时的阅读决策，不是尽
 
 ## 输入处理
 
+### 输入源选择
+
+用户明确指定的输入源优先，包括消息中的论文列表、文件、链接或 arXiv ID。
+未指定输入源时，默认调用 `helium-browser-control`，读取用户 Helium 浏览器中
+当前打开的 Scholar Inbox 推荐页 `https://www.scholar-inbox.com/digest`。
+仅调用本 Skill、未附论文列表，也应直接执行这个默认流程，无需先索要列表或链接。
+
+先读取 `helium-browser-control` 的说明并连接现有浏览器会话。本机入口为
+[helium-browser-control/SKILL.md](/home/yzh/sync/main/config/openclaw/skills/helium-browser-control/SKILL.md)。
+沿用推荐页当前的日期范围和筛选状态，以 `Relevant Papers` 为候选，
+不把独立的 `Trending Papers` 栏混入。保留用户的标签页、登录和滚动位置。
+提取标题、完整摘要及 arXiv 链接，并核对分页，不能只读取首屏或已渲染条目。
+具体页面结构与分页线索见
+[references/scholar-inbox.md](references/scholar-inbox.md)。
+
+仅在浏览器技能不可用、会话无法连接或目标页面无法唯一确定时，说明具体障碍，
+再请用户补充必要信息。不要自行改用其他网站、日期范围或旧列表。
+
+### 条目整理
+
 常见输入是多篇论文的标题、摘要和标题链接。标题链接中通常含 arXiv ID。
 
 - 从链接或正文提取 arXiv ID，去掉 `v2` 等版本后缀，并合并重复条目。

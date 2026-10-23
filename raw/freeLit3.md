@@ -811,6 +811,36 @@
 		> 集成多个skill到一块，我们可以获得一个平滑的log形状的loss曲线，说明loss函数可能只能反映一个整体的表现，而非每个具体task的效果。{_n9hg2i}
 * 1912.01412（备用）用深度学习求积分、解常微分方程；{_n8v960}
 	* [2023-08-31](https://mp.weixin.qq.com/s/fm0XwFGrMU182K6RhKYevg)
+* 2609.24746 符号积分：输入附加树路径，交换等价式直接监督增强，固定配置下优于附加对比 loss；{_qana3z}
+	* "Enhancing Transformer Representations of Symbolic ODE Expressions"
+		* Xiyue Fan; Adam Prugel-Bennett; Stuart E. Middleton
+		* University of Southampton
+		> created on 2026-10-12 by Codex + GPT-6.1-Sol-high
+	* 求解范围：符号表达式→解析解的 seq2seq，使用 Lample–Charton 的 Forward 数据（sec3.1）
+		* 训练量 0.5/1/2/5M，同分布测试 10K，另测 fwd_test、ibp_test（sec3.1）
+		* （AI 评）上游将 FWD/IBP 列为积分任务，可写成 $y'=f(x)$，不能当作一般 ODE 验证
+	* 编码器识别结构：前序序列保留 token 顺序，额外提供根到节点的左右路径（sec2.1）
+		* 路径定义：根为 0，左、右子节点在父路径后分别追加 0、1（fig1）
+		* 融合方式：$f_c$ 为 bi-GRU，拼接 token 向量 $x_t$ 与路径嵌入 $p_t$，输入 $x_t+f_c([x_t,p_t])$（eqn2.1）
+		* 生成时不追踪树位置：仅 encoder 用树位置，decoder 用序列绝对位置，省树位置栈（sec2.1）
+		* （AI 评）有序树路径区分同深度节点，但仍区分左右，交换不变性没有硬保证
+		* （AI 评）可借用于表达式树、程序 AST，多父节点 DAG 不能直接用唯一根路径
+	* 学习等价式：交换加乘节点左右子树，原始与改写输入共享目标（sec2.2、sec3.1）
+		* 直接监督：原始 500K 与增强 500K 合并，仍预测原目标（sec4.2）
+		* 对齐表征：SimCLR 拉近编码器首位置（输入前加 SOS）的归一化表征，batch 其余样本作负样本（sec2.1、sec2.2）
+			* 负样本风险：不同表达式仍可能数学等价，无法保证排除（sec2.2）
+		* （AI 评）任务要求输出不变，首 token 对齐是额外约束，不等于整个 token 序列表征不变
+	* 选训练方式：树编码固定配置下，直接监督增强最佳，对比 loss 只带小增益（tab1、tab2）
+		* 原始数据 500K 的同分布比较：序列位置 59.4%，树位置 60.4%，树+对比 60.7%，树+增强 62.4%（tab1）
+		* 算符数分布偏移：依 fwd/ibp 顺序，增强较 CL 高 0.4/0.3 个百分点（tab2、figA.6）
+		* 对比 loss 配置：先训交叉熵 10 epochs，再等权叠加 CL，温度 1（sec3.2）
+		* （AI 评）全跑 60 epochs，增强路线样本量翻倍，未报告匹配训练步数或计算量（sec3.2、sec4.2）
+		* （AI 评）只能支持本配置下增强更好，不能归因于表征不变性，也不能断言 CL 普遍无效
+	* 数据入口：[SymbolicMathematics](https://github.com/facebookresearch/SymbolicMathematics) 提供数据下载及生成器
+		* 任务分类：FWD/BWD/IBP 为积分，ODE1/ODE2 为一、二阶 ODE（上游 README）
+		* 下载：[FWD 压缩包](https://dl.fbaipublicfiles.com/SymbolicMathematics/data/prim_fwd.tar.gz)，约 1.71 GB
+		* 生成器：src/envs/char_sp.py 中 gen_prim_fwd/bwd/ibp、gen_ode1/2（上游代码）
+		* 使用边界：用于符号任务，不是物理场数值解数据，公开版本不等于本篇采样子集
 * `1912.05752` （备用）DL 用于符号不定积分
 	* "The Use of Deep Learning for Symbolic Integration: A Review of (Lample and Charton, 2019)"
 		* Davis, Ernest; 
