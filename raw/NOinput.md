@@ -479,6 +479,7 @@
 				* ((_p15a19))UPS 预设分量全集，没有的分量按 0 处理
 			* OmniArch 用 Transformer 解码器，((_o48c0p))各分量直接按固定顺序输入即可
 			* 各分量独立 tokenize，添加不同的调制：((_p85f0t))PDE-Transformer
+			* 各分量独立 tokenize，示例解对齐各分量、用轴向注意力：((qanf8u))UNICON
 			* 交叉注意力汇总为隐空间单变量，时空信息交互后再解码原变量信息，((_pain6j))MORPH
 			* （非基础模型）组合扩散((_pcfb6g))，先用非耦合 PDE 数据训扩散模型，再泛化到耦合 PDE
 			* 相关，各物理量独立 tokenize 但非用于基础模型；{p8jh4r}
