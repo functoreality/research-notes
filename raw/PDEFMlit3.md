@@ -295,6 +295,71 @@
 		> 部署时，通过选择底板、选择相关块并通过对称斯特朗分割推进所得的简化动力学，创建一个新的偏微分方程实例。
 		> 因此，重新配置算符或边界设置变成了选择与组装的问题，而非重新训练的问题。
 		> 这种模块化视角也使得长视野行为更具解释性：我们的有限视野分析将滚动错误分为块错配和拆分误差，使失败可以归因于学习机制或组合方案。
+* gLegONet-2607.23069 换区域、换线性边界时冻结物理块，用边界零空间坐标组装时间导数、系统识别
+	* "Geometry-aware LegONet for PDE Learning on Arbitrary Domains"
+		* Jiahao Zhang；Yueqi Wang；Guang Lin
+		* Purdue，Math & ME
+		> created on 2026-10-04 by Codex + GPT-6.1-Sol-high
+	* 方法全称：Geometry-aware LegONet
+	* 摘要摘录
+		* 背景，现有做法局限性
+			> 学习到的偏微分方程求解器常常将支配算子与训练中使用的几何、边界条件和离散化纠缠在一起。
+			> 这限制了当相同物理在新域上被提出时的重复使用，同时也使物理定律发现依赖于几何。
+			> 我们介绍了几何感知型 LegONet（gLegONet），这是类乐高运算子学习的边界流形扩展。
+		> 物理机制在环境（ambient）谱域上一次预训练为模变分块（modular variation blocks）。
+		> 对于目标几何，采样边界约束定义了一个仿射可容许流形。{_qane3a}
+			> 其质量单位正交的切坐标用于演化动力学并直接评估候选定律-发现特征。
+			> 因此，改变定义域只会改变代数坐标接口，而不会改变所学算符块。
+			> 这将任意域偏微分方程从几何特定重训或软惩罚执行中学习转变为边界保证的可重用机制组装。
+		> 在对未见域进行前向仿真和稀疏识别测试时，该方法保持边界残差接近代数容忍范围，并从短时间观测中产生预测性的支配律。
+	* 换域复用：冻结内部微分机制，目标域的边界、求积与坐标接口独立组装（Methods）
+		* 统一表示：嵌入域 $\Omega\subset Q=[-1,1]^2$，场 $u=\Phi_Qa$，$a$ 为截断 Fourier 系数
+		* 训练对象：学习 $\Delta u$、$uu_x$、$uu_y$ 的机制响应，不拟合整条轨迹
+		* 复用条件：内部微分表达式限制到子域后仍相同，边界不写进预训练机制
+		* 冻结范围：固定截断 $K$ 下复用，换 $K$ 各训一套库（Extended Data Fig.2）
+		* （AI 评）已知方程时，跨域能力主要来自可重组的数值接口，不能据此认定学出了通用解算子
+	* 硬边界：先参化可行状态，再约束时间导数，两个接口共用同一组坐标（eqn1–5）
+		* 编码约束：采样边界得 $Ca=d(t)$，$C$ 各行取基函数的值、法向导数或 Robin 组合
+			* 混合边界按段拼行，clamped 边界同时拼值与法向导数行
+		* 选自由方向：SVD 取数值零空间 $Z$，$CZ\approx0$
+		* 适配物理域度量：$M_\Omega=\Phi_\Omega^TW\Phi_\Omega$，$W$ 为体积求积权重
+			* 约去低质量方向：$Z^TM_\Omega Z=P\Lambda P^T$，小特征值截掉，再取 $N=ZP_r\Lambda_r^{-1/2}$
+			* 坐标性质：$CN\approx0$，$N^TM_\Omega N=I$，避免反复解降阶质量矩阵（eqn3）
+		* 非齐次边界：取提升 $a_{bc}$ 满足 $Ca_{bc}\approx d$，令 $a=a_{bc}+Nz$
+		* （AI 评）边界硬保证只针对采样约束与数值容差，非齐次数据还需能在当前基底中近似表示
+	* 时间推进：在切空间里积分，各阶段重建的场都满足采样边界（eqn4–5）
+		* 默认机制响应：$q_i(z,t)=N^TM_\Omega F_i^\theta(a_{bc}+Nz)$，$F_i^\theta$ 返回环境域系数响应
+		* 组装动力学：$\dot z=\sum_i c_iq_i-N^TM_\Omega\dot a_{bc}$，固定几何，$c_i$ 为物理系数
+		* 时变边界：提升的时间导数进入动力学，不能只在重建时加 $a_{bc}(t)$
+		* 后投影不同：推进完整空间再投影，一般不等价于先投影向量场再积分（Introduction）
+			* （AI 评）高阶 RK 的内部阶段可能离开可行域，投影与积分可交换需额外条件
+		* 输运实现：MMS-V 复用势密度 $h_\theta(u)\approx u^3/6$，组装 $h_\theta''(u)(u_x+u_y)$（公开代码）
+			* 输运训练：直接监督势密度及其一、二阶导数，$h_\theta''(u)\approx u$
+			* 导数来源：$u_x,u_y$ 由重建场解析求导，投影与求积在目标域重新计算
+		* （AI 评）不能将环境域耗散性直接搬到目标域，$M_\Omega$ 改变后还需检查诱导度量下的结构
+	* 稀疏观测识别：观测只恢复受边界约束的状态坐标，空间机制特征由冻结块或解析项给出（eqn6–8）
+		* 恢复状态：$z_n=\arg\min_z\|\Phi_{obs}(a_{bc}+Nz)-y_n\|_2^2$，$y_n$ 为传感器观测
+		* 构造字典：学习块提供 $\Delta u,uu_x,uu_y$，解析项提供 $u,u^2,u^3$，统一投影为 $q_p$
+		* 恢复系数：估计 $\dot z_n$，列归一化、阈值化 ridge 回归，拟合 $\dot z_n+N^TM_\Omega\dot a_{bc}=\sum_pc_pq_p$
+		* 连接预测：回归与 rollout 使用同一组 $q_p$，恢复的系数直接装入受约束动力学（eqn8）
+		* 观测密度：空间 240 或 1000 点、状态秩 $80$，16 条短轨迹，时间间隔 $5\times10^{-5}$（Fig.6）
+			* 验证跨度：识别窗 $0.012$，预测至 $1$
+			* 同秩消融：无边界 Fourier 字典的系数相对误差 $>10^2$，长时场误差约 $1$（Fig.6）
+		* （AI 评）这是空间稀疏、时间密采样，状态重建仍依赖传感器矩阵的秩与条件数
+		* （AI 评）仅恢复受约束空间中可辨识的组合，$q_p$ 若相关，不能保证原 PDE 系数唯一
+	* 误差定位：边界残差与场误差分开测，区分边界实现误差和内部表征容量（Fig.3–4）
+		* 消融现象：边界采样充分后，继续加点收益小，提高保留秩更有效
+		* （AI 评）边界残差小也不保证内部精度，几何适配与逼近能力是两个独立问题
+	* 高阶组合：在 clamped 坐标里复合 Laplace 块，Swift–Hohenberg 制造解最终误差 $7.01\times10^{-3}$（Fig.5b）
+		* （AI 评）令 $D$ 为环境域离散 Laplace、$P=NN^TM_\Omega$，一般 $PDPD\ne PD^2$，中间态被额外施加边界
+			* clamped $u$ 不推出 $\Delta u$ 也 clamped，组合误差与学习误差需分开
+	* 比较口径：表中的时间是基线目标训练成本与 gLegONet 组装加 rollout 成本，未计离线预训练（Extended Data 表）
+		* （AI 评）能支持免目标训练的复用，不能当作等精度纯推理加速比
+	* 数据可得性：公开生成代码，无预生成数据文件或外部数据下载入口（仓库 main，2026-10-04）
+		* 可生成：随机 Fourier 机制训练样本、MMS-I–V、Allen–Cahn、向量 Burgers、peanut/channel 识别轨迹
+		* MMS-IV：解析制造解与 forcing，脚本可保存参考场和预测场为 .npz
+		* 未发布实现：圆柱尾流与 Swift–Hohenberg 目录只有说明文件
+		* 仓库：https://github.com/Yooki-YueqiWang/gLegONet
 * 2603.04354 PDE 基础模型下游微调，用于材料裂纹扩展预测（OoD），测了 Poseidon、MORPH
 	* "Out-of-distribution transfer of PDE foundation models to material dynamics under extreme loading"
 		* Rautela, Mahindra; Most, Alexander; Mansingh, Siddharth; Pachalieva, Aleksandra; Love, Bradley; Malley, Daniel O; Scheinker, Alexander; Hickmann, Kyle; Oyen, Diane; Debardeleben, Nathan; Lawrence, Earl; Biswas, Ayan; 

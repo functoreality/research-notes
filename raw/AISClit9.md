@@ -1,3 +1,40 @@
+* OperatorCLIP-2609.38517 （备用）NO 引入固定文本条件有效性：保留通路换泛用句作对照，配对 InfoNCE 无法辨识样本
+	* "Does Text Steer Neural PDE Surrogates? A Controlled Diagnostic with OperatorCLIP", NeurIPS 2026 RPS Workshop
+		* Aadi Dash; Lennon J. Shikhman; Michael Galarnyk;
+		* Georgia Tech，Florida Tech
+		> created on 2026-10-12 by Codex + GPT-6.1-Sol-high
+	* 文本收益归因：逐任务独立训练、每个条件模型只见一句描述，诊断通路收益是否被误认作语义收益
+		* 推理：数值场 $x$ 与文本 $p$ 经 $\hat y=G_\theta(x,E_t(p))$ 预测，文本嵌入调制各 FNO 层
+		* 训练：监督场误差叠加文本与数值证据的对称 InfoNCE，sec3 eqn(3–4)
+			* 数值证据取 $(x,y)$ 各通道均值、标准差、极值，目标 $y$ 仅用于训练侧对齐，AppA
+	* 固定文本下配对不可辨识：确定性编码给出相同文本向量，实例配对无从辨识，sec3 Prop1
+		* batch 大小为 $B$、双向 loss 取平均时，$L_{\rm align}\geq\log B$，等号可达
+		* 数据到文本：所有候选相同，loss 恒为 $\log B$
+		* 文本到数据：每行共用同一分数分布，每个数据恰作一次正例，平均 loss 在均匀分布处达 $\log B$
+		* 未到均匀分数仍可有梯度，既不保证嵌入固定，也不能据此认定学到配对，sec3、AppA
+		* （AI 评）设公共候选分布为 $q$、均匀分布为 $U$，则 $L_{t\to d}=\log B+D_{\rm KL}(U\Vert q)$
+			* loss 下降可只是在均匀化分数，不要求数值嵌入全部相同
+			* 这是输入先天缺少实例区分信息，与训练后编码器塌缩须分开
+	* 分离通路与文本内容：保留编码器、FiLM，固定输入泛用句作为对照，sec4
+		* 无条件：去掉文本编码器和 FiLM，仅训 FNO
+		* 常句：保留上述通路、输入泛用句，仅训监督误差
+		* 任务句：固定描述数据集、维数、通道等，监督误差叠加对齐 loss
+		* 常句仍产生数据集共用的可学仿射调制，未分离 FiLM、容量与优化效应，sec5
+		* 常句与任务句同时改变文本、词表大小和 loss，不能独立归因文本或对齐，sec4
+		* 隔离对齐的建议：同一任务句取 $\lambda_{\rm align}=0$，再扫权重，尚未实施，sec5
+	* 区分提示敏感与语义利用：测试正确、缺失、错误、同义改写及数值元信息字符串，sec4、AppA
+		* 语义诊断准则：正确及保义描述应优于缺失或事实错误描述，sec4
+		* 编码器从零训，词嵌入均值池化加 MLP，不含位置编码与 dropout，未见词共用 UNK，AppA
+		> 打乱相同的提示不会改变模型输入，sec3
+		* 数值元信息仍序列化为文本，未做直接数值条件对照，AppA
+		* （AI 评）只训 $G(x,p_0)$，训练目标不能约束换描述后的 $G(x,p)$，干预失败不足以否定文本条件
+			* 同义改写也改变 token 覆盖，需区分表征没保义与预测器没用表征
+	* 实证边界：三任务各三优化种子、同一数据划分，报末轮相对 $L^2$，sec4、Tab1
+		* 常句相对无条件：Darcy2D 均值误差降 19.0%，ShallowWater2D 降 17.7%，CNS3D 升 0.6%
+		* 任务句加对齐相对常句：依次升 29.7%、降 1.5%、降 0.5%，种子不确定性大
+		* 浅水相对正确提示：错误事实误差 $+2.3\%\pm14.2\%$，同义改写 $+50.6\%\pm62.3\%$，三种子均值±标准差，Fig2
+		* 三种子只反映优化变化，同号种子也不保证骨干初值、batch 顺序相同，AppA
+		* （AI 评）可借鉴固定条件的失效诊断，不能把这些均值排序外推为文本模型或 PDE 家族的优劣
 * PhysFieldBench-2609.34072 读物理场图推机制、参数、结果，复核图上证据，分开测任务迁移与采样覆盖
 	* "PhysFieldBench: Can Multimodal Models Understand Physical Fields?"
 		* Yuezhou Ma; Huikun Weng; Jialong Wu; Chenyi Zhao; Hang Zhou; Haonan Shangguan; Jianmin Wang; Mingsheng Long
