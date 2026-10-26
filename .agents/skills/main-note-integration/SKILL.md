@@ -54,14 +54,20 @@ plan 中各建议位点下的拟写条目仅作为参考。
 
 笔记中使用 6-7 位 36 进制 UID 作为锚点标识。写入前需先用脚本生成：
 
+先加载已安装的 `outline-read` skill，确定其实际安装目录。
+它由 `functoreality/agent-skills` 提供，
+未安装时可用 `npx skills add functoreality/agent-skills --skill outline-read` 安装。
+下文 `/path/to/outline-read` 均需替换为实际安装路径。
+时间编码和文献前缀是本科研笔记项目采用的规则，不是通用定位器的要求。
+
 ```bash
-# 脚本位于 outline-read skill 目录（路径相对于本 skill 的 base dir）
-../outline-read/scripts/gen-uid --dir raw
+/path/to/outline-read/scripts/gen-uid --dir raw
 ```
 
-脚本 stdout 输出一个基础 UID（如 `q6uk3b`），stderr 输出使用提示（如何递增、文献笔记格式等）。
+脚本 stdout 输出一个带花括号的基础 UID（如 `{q6uk3b}`），stderr 输出递增和碰撞检查提示。
 
 **需要多个 UID 时**：在基础 UID 上逐次递增（36 进制），如 `q6uk3b` → `q6uk3c` → `q6uk3d`。
+递增得到的各个候选也需检查冲突，生成脚本不会预留尚未写入的 UID。
 
 **UID 前缀约定**：
 - **文献笔记 UID**：加下划线 → `{_q6uk3b}`，表示该锚点位于文献笔记中
@@ -219,10 +225,10 @@ plan 中各建议位点下的拟写条目仅作为参考。
 
 ```bash
 # 1. 先用 outline-read 看目录结构
-../outline-read/scripts/outline-read --dir raw PINN
+/path/to/outline-read/scripts/outline-read --dir raw PINN
 
 # 2. 有 UID 参考点时，直接跳转
-../outline-read/scripts/outline-read --dir raw --uid n3bg3i
+/path/to/outline-read/scripts/outline-read --dir raw --uid n3bg3i
 
 # 3. 用 read 看周围原文，理解上下文和层级
 read raw/PINN.md <start_line> <range>

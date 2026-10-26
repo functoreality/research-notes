@@ -36,6 +36,18 @@ npm run site -- dev ../personal-notes
 npm run site -- build ../personal-notes
 ```
 
+## AI 笔记工具
+
+本仓库的专用 skill 位于 `.agents/skills/`。
+通用的 `outline-read` 已迁至
+[agent-skills](https://github.com/functoreality/agent-skills/tree/main/skills/outline-read)，
+提供大纲折叠阅读、独立 UID 定位及可选 UID 生成器。
+需要读取主笔记或跟随 UID 的专用 skill 使用已安装的阅读器：
+
+```bash
+npx skills add functoreality/agent-skills --skill outline-read
+```
+
 ## 功能
 
 - 层级折叠（支持键盘操作）

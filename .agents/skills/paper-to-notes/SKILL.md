@@ -26,7 +26,10 @@ description: >-
 ## 笔记系统结构
 
 工具准备：笔记浏览需使用 outline-read 工具。
-开始前请先加载 `outline-read` skill（`../outline-read/SKILL.md`）了解其完整用法。后续不再重复这些基础用法。
+开始前请先加载已安装的 `outline-read` skill，了解其完整用法并确认脚本安装路径。
+它由 `functoreality/agent-skills` 仓库提供，
+未安装时可用 `npx skills add functoreality/agent-skills --skill outline-read` 安装。
+后续不再重复这些基础用法。
 
 笔记根目录：`raw/`（本项目中相对于仓库根目录；迁移到其他项目时需调整此路径）。
 
@@ -317,7 +320,7 @@ description: >-
 [是否有值得迁移到主笔记的内容？如有，优先补充哪些？]
 ```
 
-> outline-read 的完整用法见 `../outline-read/SKILL.md`。
+> outline-read 的完整用法见已安装的 `outline-read` skill 中的 `SKILL.md`。
 > 目的手段链条的详细方法论（节点类型、展开方式、AND/OR 区分等）见 `references/purpose-means-guide.md`。
 > 数据集状态判断的完整流程（搜索策略、验证维度、报告要求）见 `references/dataset-guide.md`。
 
