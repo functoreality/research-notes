@@ -124,6 +124,7 @@
 						* [dataset-CFD-湍流](http://turbulence.pha.jhu.edu/) （2021-08-13 CSI讨论，SyQi）Johns Hopkins 的 turbulence database 网站
 						* `2112.15275`
 						* 三维各向同性湍流：FactFormer IT3D((_qanb18))提供速度与压力的规则网格时间序列
+						* 3D 不可压湍流语料 TIDE((_qanh1f))，配置覆盖多种外力、扩展物理与自由衰减，用于 预测、超分辨、稀疏重建、压力及亚网格应力任务
 					* 复杂区域类
 						* 3D 心血管血流数据集((_q14g1k))
 						* 汽车，((_qana8u))ShapeNetCar 汽车几何对应的流场与气动力标签
