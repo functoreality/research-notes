@@ -105,6 +105,7 @@
 					* 另：周蜀林 PDE 习题 3-13 也是求解析解
 					* 利用这点进行数据生成，2202.07643 用 Cole-Hopf 变换转为热方程、进而给出数值解
 				* 数据集可用 PDE-bench（1D 有粘性）
+				* 变种—Schwarzschild–Burgers 平衡律，1D 生成代码如((_qaqg9m))
 				* FNO 用的数据集（GRF 初值）有 [MindSpore 自行重生成版本](https://mindspore.cn/mindflow/docs/zh-CN/r0.1/data_driven/burgers_KNO1D.html)（文中搜“下载”），下载无需梯子
 					* 文件尺寸相对小很多：存储数据个数 5→2，样本数 2k→1k，空间分辨率 8k→1k，精度 float64→32
 					* 另有 [Kaggle 版本](https://www.kaggle.com/datasets/scaomath/pde-dataset)
