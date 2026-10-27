@@ -1,4 +1,53 @@
 > 2026-08-30 从多个源笔记中抽取整合
+* NSLoRA-2608.07053 给定真实历史与全时段边界，PDE 基础模型用残差适配新方程，低秩因子前向近似正交化
+	* "Unsupervised Adaptation of PDE Foundation Models"
+		* Ziye Song; Zhao Wei; Xin Yu; Ivor Tsang; Yueming Lyu
+		* NTU、CFAR A*STAR、Adelaide
+		> created on 2026-10-27 by Codex + GPT-6.1-Sol-high
+	* 方法全称：Newton-Schulz orthogonalized LoRA
+	* 架构基于邻域注意力
+	* 适配新方程：先多方程监督预训，再用 PDE 残差与边界观测微调，无未来内部场监督损失；{_qarg5y}
+		* 输入输出：8 帧历史，输出等长移位序列并监督各位置，推理只取末帧（sec3.2）
+		* 物理约束：需目标方程、输入真实历史窗口、全时段最外一格边界真值（sec3.1、3.3）
+		* 更新部分：冻结 Transformer 主干，插入低秩适配器，编码器与解码器仍训（sec3.4）
+		* 架构：局部时空注意力，时间因果掩码防止移位序列监督泄露答案（sec3.2）
+			* 跨维数共享逐点层，注意力按维数独立，2D 还按长宽比使用独立核（sec3.2、appA.2）
+	* 低秩更新方向冗余：前向近似正交化两个因子，缓解有效秩偏低（sec3.4）
+		* 记号：预训权重 $W_0$，因子 $A\in\mathbb R^{r\times d_{in}}$、$B\in\mathbb R^{d_{out}\times r}$
+		* 更新：$W=W_0+\Delta W$，$\Delta W=\|A\|_F\|B\|_F\mathrm{NS}_5(B)\mathrm{NS}_5(A)$（eq7、appA.4）
+		* 分离方向与幅度：NS 变换给方向，原因子范数乘积给可学的模块幅度（sec3.4）
+		* 近似正交：因子先除以 Frobenius 范数，再做 5 步 Gram 矩阵多项式迭代（appA.4）
+		* 切换阶段：先标准 LoRA 预热，验证 VRMSE 连续 5 epoch 不降后切换，保留因子与优化器状态（appA.4）
+		* 幅度训练：两因子范数经 $A,B$ 的标准 LoRA 梯度路径保持可学（appA.4）
+		* 缓解程度：名义秩 16，标准 LoRA 的 $\Delta W$ 稳定秩约 1.31–2.20，NSLoRA 平均提高 5.2%（tab5）
+		* 预测效果：共享 LoRA 预热起点后，NSLoRA 在八个 2D 任务均改善，VRMSE 平均降低约 4%（sec4.3）
+		* 通道效果：Taylor–Green 压力、Shear Flow 示踪剂改善，部分速度分量变差（tab14）
+		* （AI 评）谱更分散与弱通道改善同时出现，尚不能确定后者由前者导致
+			* 范数乘积也改变更新尺度，不能把整个前向变换的效果仅归因于正交化
+		* （AI 评）严格行列正交且满秩时，乘积的非零奇异值应相同；实测稳定秩仍远低于 16，勿按严格正交理解
+	* 构造物理损失：内部算离散方程违反程度，边界与观测对齐（sec3.3）
+		* 组合：$L=\lambda_{BC}L_{BC}+L_{PDE}$，两项均开均方根，边界项虽被文字称作 MSE（eq3–5）
+		* 微分：扩散和梯度项用中心差分，对流项用二阶迎风面通量（sec3.3、appA.5）
+		* 平衡子方程：各残差平方除以对应输入历史残差均方 $s_k^2$，再跨方程汇总开根（eq4）
+			* 边界权重仍影响结果，归一化后另调边界相对权重的变体有额外收益（tab6）
+		* 数据筛选：对比参考轨迹的同格式差分残差，选残差较小的解析数据与 The Well（sec4.1、fig3）
+		* （AI 评）精确采样解析解仅消除数值求解误差，仍有残差差分截断误差
+			* appB.4 称解析数据的差分残差接近机器精度，不能由精确采样直接推出
+		* （AI 评）输入历史残差接近零时，按其倒数缩放可能放大微小离散误差，eq4 未写尺度下限
+	* 迁移收益依赖起点：同一物理目标对不同预训来源和架构有不同效果（sec4.2、tab2、15）
+		* 单源模型适配对比零样本：CNextU-Net 的 26 个组合中，14 个改善、12 个退化，TFNO 均改善（sec4.2）
+		* （AI 评）tab3 比较随机全参训练与预训 NSLoRA，混合了初始化和更新参数化，不能单独识别预训的贡献
+	* 推理与无标签结果的范围：只评单步预测，适配 loss 不用未来内部真值，模型选择仍需真值
+		* 验证选择：VRMSE 需全场真值，用于切换阶段与 early-stop（eq9、appA.4）
+		* 单步评测：每次输入真实历史窗口，不做自回归 rollout（appE）
+		* 数据划分：轨迹按 90%/10% 分训练与验证，验证集兼作结果评测，无独立测试集（appE）
+		* （AI 评）结果支持带真实历史的单步适配，尚不支持从初值持续求解，也未展示无需内部标签的模型选择
+	* 数据：PDEBench 六个子集预训，The Well 四个子集与七个解析解数据集适配（tab10）
+		* 自建解析集：TG 2D、Wave 2D、AdvDiff 2D、Burgers 1D/2D、Advection 1D/3D（appB.2）
+		* 解析族限制：2D Burgers 由可分离 Cole–Hopf 势生成，两速度分量分别仅依赖一个空间坐标（eq33–34）
+		* 公开代码：[PDE](https://github.com/george-ziye-song/PDE)，Burgers、平流、Taylor–Green、波动、平流扩散，覆盖1D–3D
+		* 发布状态：未找到七类成品数据下载入口，已核查的解析解生成脚本可写 HDF5（2026-10-27）
+		* 使用差异：脚本需改本机输出路径，Taylor–Green 默认 50 条轨迹，表10 为 100 条
 * jNO-2605.10159 JAX 库：统一符号程序接 FEM/PINN/NO/PDE基模微调
 	* "jNO: A JAX Library for Neural Operator and Foundation Model Training"
 		* Leon Armbruster; Rathan Ramesh; Georg Kruse; Christopher Straub
