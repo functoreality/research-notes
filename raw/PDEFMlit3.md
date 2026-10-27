@@ -1,4 +1,43 @@
 > 2026-08-30 从多个源笔记中抽取整合
+* TREX-2608.11937 含时 PDE 基模蒸馏：初值分布未知时，从少量观测启动教师长轨迹，蒸馏小型时间推进器
+	* "Distillation of Foundation Models for Time-dependent PDEs", NeurIPS 2026
+		* Daniel Musekamp；Boshra Ariguib；Andrei Manolache；Mathias Niepert
+		* U Stuttgart，U Cologne，Bitdefender
+		> created on 2026-10-27 by Codex + GPT-6.1-Sol-high
+	* 方法全称：Teacher Rollout Extension
+	* 部署降成本：下游微调 PDE 基础模型，再用合成轨迹蒸馏小型推进器
+		* 教师 $T$：Poseidon 或 Walrus，学生 $S$：主要用 TFNO
+		* 代表配置：628.6M 参数降至 174.4K，整段自回归推理约快 12 倍（tab1）
+	* 初值采样器缺失时，扩充转移样本：从已有观测启动教师长时间演化（sec4.1）
+		* 无噪声采样：$\rho_T^K=K^{-1}\sum_{t=0}^{K-1}(T^t)_\#\nu_0$
+			* $\nu_0$：已有初值的经验分布，$K$：教师演化步数
+		* 多帧教师从观测历史窗口启动，免为新初值额外仿真启动历史（sec4）
+		* 长轨迹可能接近教师不变测度，需另加遍历或混合假设（sec4.1）
+		* （AI 评）采到的是教师可达状态，不能据此声称匹配学生自身推理分布
+	* 学生训练：混合真实与合成轨迹，以周期扰动扩充教师轨迹邻域监督（sec4.2）
+		* 注入时刻：$\tilde z_t=z_t+\xi_t$，后继 $z_{t+1}=T(\tilde z_t)$（eq6）
+		* 零均值高斯噪声按空间点、通道独立采样，尺度为通道全局标准差的固定倍数（eq7）
+		> 常见做法可扰动训练输入而保持目标轨迹不变，TREX 则在扰动后显式查询教师（sec4.2）
+		* 多步训练不跨加噪跳变：切出相邻注入点间的连续演化子段（sec4.2）
+		* 保留恢复过程：注入间隔允许教师重新接近自身典型状态（sec4.2）
+		* 学生拟合 $L=L_{\mathrm{GT}}+\lambda L_{\mathrm{TREX}}$，两项均用多步自回归损失
+			* 从子段首态启动 $S$，后续输入用 $S$ 自己的预测，目标取真实或教师后继
+		* 主配置：真实轨迹 8 帧，教师扩到 100 步，每 10 步注入，学生用 2 步损失（sec5）
+		* （AI 评）新标签监督扰动起点的演化，不要求把轨迹纠回扰动前的真实后继
+	* 多帧兼作系统描述时，加噪未必有益：Walrus 演化中加噪有害（appF）{_qark25}
+		* Walrus 用六帧历史预测下一帧，单条下游轨迹即可启动多个教师演化片段（sec5.2.1）
+		> 加噪可能向模型暗示不同物理系统，若模型已学会从多帧输入推断物理（appF，推测）
+		* 标签降随机性：关闭 Walrus 推理自带 jitter，避免随机预测形成噪声标签（appF）
+	* 学生补任务先验：方程平移对称且取周期域时，用平移等变的 TFNO（sec4.3）
+		* 空间平移测试：学生误差基本不变，教师在 NS-SVS 上明显恶化（tab4）
+		* （AI 评）通用教师给监督，专用学生限制假设空间，任务先验不必由教师先学会
+	* 超过教师的收益归因：去掉真实样本后仍有改善，取消加噪后改善缩小（tab2）
+		* 教师来源对照：真实数据训出的 TFNO 自蒸馏，收益小于从 Poseidon 蒸馏（appH.1）
+		* （AI 评）教师与学生的训练目标、架构均不同，未隔离等变性对超教师的贡献
+		* 教师选择：验证集上教师弱于纯真实数据学生时，加入教师标签可能拉低学生（sec5.1）
+	* 真实数据复用：Poseidon 四个流体任务及 MNO 的 Re=5000 Kolmogorov Flow（appE）
+		* Poseidon：NS-PwC、NS-BB、NS-SVS、CE-RPUI
+		* Kolmogorov Flow：涡度转速度以适配 Walrus，501 帧去掉前 100 帧
 * NSLoRA-2608.07053 给定真实历史与全时段边界，PDE 基础模型用残差适配新方程，低秩因子前向近似正交化
 	* "Unsupervised Adaptation of PDE Foundation Models"
 		* Ziye Song; Zhao Wei; Xin Yu; Ivor Tsang; Yueming Lyu
