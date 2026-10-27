@@ -258,6 +258,66 @@
 		* 不能据此否定 Walrus 已学到物理，也分不清模型失配和探针失配
 		* 机制证据应先挑候选，再验参数、时间、种子与输出失效模式的稳定性
 		* 还应干预候选特征，比较物理量、预测误差和对照特征的响应
+* Kastor-2608.06107 Walrus 微调为去噪生成式代理，零噪声支路联训标签回归，粗步推进后用非因果网络插帧
+	* "Kastor: An Efficient Fine-Tuning Strategy for Generative Emulation of PDE Simulations"
+		* Guillaume Couairon; Alexis Jacq; Yu-Han Wu; Renu Singh; Yana Hasson; Quentin Berthet; Romuald Elie
+		* Google DeepMind
+		> created on 2026-10-04 by Codex + GPT-6.1-Sol-high
+	* 适配确定性基模：Walrus 权重微调，同时解决条件分布采样与稠密轨迹推理成本
+	* 生成时保持可预测的中心趋势：随机支路拟合分布，零噪声支路额外对标签回归，共享骨干权重（sec3.2）
+		* 预测对象：历史状态 $c=x_{t-k\tau:t::\tau}$，$k$ 为历史帧数减一，标签 $d$ 为归一化状态增量
+		* 单步采样用函数生成网络（FGN）：$\hat d^j=f_\theta(c,\epsilon_j)$，$\epsilon_j\sim\mathcal N(0,I)$（sec3.3）
+			* 注入随机性：32 维全局噪声经 MLP，在空间注意力层用 AdaLN 调制
+			* 拟合条件边缘分布：两个独立生成样本估计公平 CRPS（fCRPS），每个条件只需一个标签（eqn4）
+				* $L_s=(\|\hat d^1-d\|_1+\|\hat d^2-d\|_1-\|\hat d^1-\hat d^2\|_1)/2$
+			* 集合推进：各成员按自身历史递归，反标准化增量后加回当前状态（sec3.6）
+			* （AI 评）全局噪声指空间共享，跨推进步是否复用未明确，不能据此推出时间相关性
+		* 增加均值预测正则（MPR）：$\hat d^0=f_\theta(c,0)$，$L_r=\|\hat d^0-d\|_1$，额外一次前传（eqn1–2）
+			* 零噪声保留骨干路径：噪声 MLP 与 AdaLN 去 bias，零噪声使调制恒等（sec3.3）
+			* 初始化随机支路：AdaLN 参数置零，初始行为与未加调制模型一致（sec3.3）
+			> 噪声分布的均值应映射到输出分布的均值。（sec3.2，MPR 的命名依据）
+			* （AI 评）零噪声回归不保证均值：L1 人口风险通常拟合逐分量条件中位数
+				* 非线性生成器一般不满足 $f_\theta(c,0)=\mathbb E_\epsilon f_\theta(c,\epsilon)$
+				* 骨干权重仍微调，调制恒等不等于保留原 checkpoint 的预测
+		* 扩散也加回归支路：撤掉带噪目标输入，只看历史状态，噪声等级置零（appB.4）
+			* 随机支路输入：历史状态与带噪增量沿通道拼接，预测干净增量
+			* 复用预训输出：通道数翻倍后只取原输出通道，避免另加投影头
+		* 组件归因：无 MPR 的 FGN 弱于 MAE 基线，MPR 改善 FGN 与扩散（fig7，四数据集）
+		* FGN 另训中心后生成残差：预测 $f(c)+\sigma g(c,\epsilon)$，残差训练对 $f$ 停梯度（appC.8）
+			* 残差缩放：$\sigma$ 取中心模型在训练集上的预测误差尺度
+			* 取舍：FGN 残差版每步需两模型前传，收益依数据集而变，未普遍优于 MPR
+	* 生成场还需控制空间结构：分布评分改善不保证功率谱改善，增加梯度差异损失（GDL，sec4.3）
+		* 监督对象分开：无 MPR 时对随机样本导数算 CRPS，有 MPR 时只对零噪声输出导数算 MAE（sec3.5）
+			* 有 MPR 的目标：$L=L_s+L_r+\lambda_G\|\partial\hat d^0-\partial d\|_1$，$\partial$ 为空间差分
+		* 组件归因：FGN 可改善集合离散度却恶化频谱，GDL 缓和后者（fig9）
+		* （AI 评）中心支路梯度监督不保证各随机样本的空间结构，仍需检查采样功率谱
+			* 作用位置缺独立消融，不能据此判断中心支路优于随机导数分布监督
+	* 稠密长轨迹降低递归成本：粗时间锚点因果推进，区间内部由非因果模型重建（sec3.1）{_qar88u}
+		* 粗步推进：预测 $x_{t+\tau}$，历史输入也按 $\tau$ 抽稀，常取 $\tau=4$
+		* 补齐内部帧：$(x_{t-4},x_t,x_{t+4})\mapsto x_{t+1:t+3}$，粗锚点不改、不回馈插帧结果（fig2）
+		* 保持训练分工：推进器保留因果掩码与 teacher forcing，补帧器移除因果掩码、单独微调并用 GDL（sec4.1）
+			* （AI 评）集合插帧的随机性未单独描述，不能默认补帧器也用 FGN
+		* 长期成本估算：粗推进用 KV 缓存，补帧模型取半尺寸，总成本渐近为基线的 $5/8$（appB.2）
+			* （AI 评）37.5% 为模型调用成本估算，未给出同配置端到端耗时对比
+		* 步长选择：八个数据集适合 $\tau=4$，Active Matter、Rayleigh-Bénard 保留 $\tau=1$（sec4.1）
+			* 预测距离影响最优步长：短距离常宜小步，长距离可受益于减少递归次数（appC.3）
+			* （AI 评）应比较 $\tau\Delta t_{\mathrm{data}}$，不能只比较帧数，原数据可能已高度抽稀
+	* 生成式推进选择采样预算：扩散步数增加，轨迹分布评分与频谱质量可能反降（appC.10）
+		* 不加 GDL：约四步后收益饱和，超过五步恶化，加 GDL 后较优范围移至约六至七步（fig31–32）
+		* （AI 评）步数需按部署时的轨迹质量选，高频伪影随调用累积只是解释假说
+	* 推进器取因果掩码的收益：四历史帧时因果版更好，去掉前缀预测监督后优势消失（appC.9）
+		* （AI 评）收益主要来自更多前缀监督，不能只归因于因果结构或预训结构匹配
+	* 随机性来源取舍：保留 patch jitter 的平移与反向平移，MAE 模型也可据此生成集合（sec3.4）
+		* 组件归因：AdaLN 噪声与 jitter 同用较好，dropout 替换 AdaLN 较差（appC.6）
+	* 评估生成质量：每个初始上下文取八成员、推到 32 帧，起点覆盖轨迹前段与中段（sec3.6，appB.6）
+		* 汇总指标：统一按间隔四抽稀轨迹计算，不覆盖全部插帧位置（sec3.6）
+		* 指标各有对象：集合均值 RMSE、边缘分布 fCRPS、离散度校准、径向平均功率谱误差
+		* （AI 评）边缘分布与功率谱吻合仍不保证联合分布正确，不能据此确认完整物理随机性
+		* 结果口径：平均 fCRPS 比自重训 Walrus 基线低 42.9%，不是解误差或实测加速比（fig1）
+	* 数据：全部来自 The Well 十个二维数据集，无自建数据（appB.1）
+		* 排除三项：Turbulent Radiative Layer 2D、Helmholtz Staircase、Visco-Elastic Instability
+		* 公开数据：[HF 测试集](https://huggingface.co/datasets/polymathic-ai/active_matter/tree/main/data/test) 已列出 HDF5
+		* 下载接口：[The Well 官方仓库](https://github.com/PolymathicAI/the_well)
 ## Poseidon
 * `Poseidon-2405.19101` 在可压 Euler + 不可压 NS 数据上预训练 NO（架构基于 SwinV2，时间推进按 modulation 输入），迁移学习到其他方程（包括不含时），自称是基础模型
 	* "Poseidon: Efficient Foundation Models for PDEs"
