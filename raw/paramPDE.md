@@ -254,6 +254,7 @@
 		* 可处理的问题，不限于 PDE 正问题；{o1lg3c}
 			* PDE QoI：只用于提供参数到可观测量的 surrogate，信息少于完整 PDE 的解
 			* 解含时含参 PDE((o1lg2x))，有多种方式
+			* 多解正问题（定解条件不完整，含多稳态情形），同一参数映射到共存解集，如((_qas91f))PatternFormer
 			* 解反问题((o1hn0d))
 			* 参化 PDE 迭代求解器((n2rm3m))
 			* 机理未知的自然系统((p3rb0r))
@@ -519,6 +520,7 @@
 				* MOD-Net（粗网格生成部分数据，相比纯 PDE loss 能起到 ((n41g1e))正则化 效果）{n41g1a}
 				* meta-learning 系列的部分（DeepONet，我的 AD 做法，`AD3losses:` 3 种 loss 同时包含有/无监督版本）
 				* 扩散生成模型建立 $(a,u)$ 联合分布，((_o6uf4l))推理（扩散生成）过程额外引入 PDE loss 可提高生成质量、预测精度
+				* 多可行解预测场景 所有解用 PDE loss、有标签解补监督 loss，如((_qasa07))
 				* 相关：((o1lb81))coordLoss-多项 loss
 			* 相关：((ncbn0o))用多保真数据训练
 			* 相关：除 PDE 正问题求解外，另有((o1lg15))作求解器迭代算子，((o1lj8k))反问题解算子 的训练问题

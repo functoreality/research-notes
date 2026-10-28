@@ -49,6 +49,7 @@
 			* Darcy flow，分片常数系数；数据集可用 FNO，PDE-bench（2D）
 			* 系数分布：可形如 exp(GRF)，DeepONet 实验涉及（1D，源项 $f$ 常数，0 (D) BC）
 			* 数据集((_o6ll0h))ConDiff，系数场对比度高
+			* 数据集((_qas88r))1D 四次非线性、2D 二次非线性椭圆多解数据，同参数对应多解
 			* 非线性 Poisson 方程 $\Delta u+e^u=f$，((_p1mf95))在微分几何、流体力学、量子场论中有应用
 			* Poisson 电场-孔形状((_q82g0z))
 		* 弹塑性力学
@@ -91,6 +92,7 @@
 		* 反应项，常用于反应扩散 reaction-diffusion
 			* 数据集可用 PDE-bench：1D $u_t=Du_{xx}+ru(1-u)$，2D 为 Fitzhugh-Nagumo 方程（涉及 $u,v$）
 				* DeepONet 1D $u_t=Du_{xx}+ku^2+f$
+			* 数据集((_qas88z))2D Gray–Scott 共存稳态解集，多解设定参考解集不全
 			* 反应项其他形式：((_o9ba18))square Logistic $u^2(1-u)^2$，bistable $u^2(1-u)$
 			* 还有二分量的((_oc3b8l))2D $\lambda-\Omega$ 方程、3D GS 方程
 		* 扩散及其变种
