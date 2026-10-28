@@ -88,7 +88,8 @@ if [ "$non_indented" -eq 1 ] && echo "$TITLE" | grep -qP '^\* [A-Za-z]'; then
     fi
 fi
 
-check_pattern FAIL "EM dash" '——'
+# 中文破折号用两个连续的 —，允许行首以单个 — 分隔检索入口。
+check_pattern FAIL "中文破折号（——）" '——'
 check_pattern FAIL "粗体/斜体标记" '\*\*|__' "URL 中可能误报，按行内容判断"
 
 # 行首格式：每行必须匹配 ^\t*(\*|>)  (任意个 tab 缩进 + * 或 > + 空格)
